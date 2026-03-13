@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { like, eq, or } from "drizzle-orm";
 import { db, food, serving } from "@savoro/db";
-import { searchOFF, normalizeOFFProduct, type NormalizedResult } from "@savoro/food-data";
+import { searchOFF, getOFFProduct, normalizeOFFProduct, type NormalizedResult } from "@savoro/food-data";
 import { requireAuth, type AuthEnv } from "../middleware/auth";
 
 const foodRoutes = new Hono<AuthEnv>();
@@ -129,6 +129,107 @@ foodRoutes.get("/search", requireAuth, async (c) => {
   // 4. Merge local + OFF, deduplicate, return
   const merged = [...localResults, ...offResults].slice(0, limit);
   return c.json({ foods: merged });
+});
+
+// ---------------------------------------------------------------------------
+// GET /food/barcode/:code
+// ---------------------------------------------------------------------------
+foodRoutes.get("/barcode/:code", requireAuth, async (c) => {
+  const code = c.req.param("code")?.trim();
+
+  if (!code) {
+    return c.json({ error: "Barcode is required" }, 400);
+  }
+
+  // 1. Check local DB first
+  const cached = await db
+    .select()
+    .from(food)
+    .where(eq(food.barcode, code))
+    .get();
+
+  if (cached) {
+    const servings = await db
+      .select()
+      .from(serving)
+      .where(eq(serving.foodId, cached.id))
+      .all();
+
+    return c.json({
+      food: {
+        id: cached.id,
+        name: cached.name,
+        brandName: cached.brandName,
+        barcode: cached.barcode,
+        source: cached.source,
+        isVerified: cached.isVerified,
+      },
+      servings: servings.map((s) => ({
+        id: s.id,
+        description: s.description,
+        amountGrams: s.amountGrams,
+        isDefault: s.isDefault,
+        calories: s.calories,
+        protein: s.protein,
+        carb: s.carb,
+        fat: s.fat,
+        saturatedFat: s.saturatedFat,
+        transFat: s.transFat,
+        fiber: s.fiber,
+        sugar: s.sugar,
+        sodium: s.sodium,
+      })),
+    });
+  }
+
+  // 2. Fallback: fetch from OFF API
+  try {
+    const offProduct = await getOFFProduct(code);
+    if (!offProduct) {
+      return c.json({ error: "Product not found" }, 404);
+    }
+
+    const normalized = normalizeOFFProduct(offProduct);
+    if (!normalized) {
+      return c.json({ error: "Product has incomplete nutrition data" }, 404);
+    }
+
+    // Cache in local DB (fire-and-forget)
+    cacheOFFResults([normalized]).catch((err) =>
+      console.error("Failed to cache barcode result:", err)
+    );
+
+    return c.json({
+      food: {
+        id: normalized.food.id,
+        name: normalized.food.name,
+        brandName: normalized.food.brandName,
+        barcode: normalized.food.barcode,
+        source: normalized.food.source,
+        isVerified: normalized.food.isVerified,
+      },
+      servings: [
+        {
+          id: normalized.serving.id,
+          description: normalized.serving.description,
+          amountGrams: normalized.serving.amountGrams,
+          isDefault: normalized.serving.isDefault,
+          calories: normalized.serving.calories,
+          protein: normalized.serving.protein,
+          carb: normalized.serving.carb,
+          fat: normalized.serving.fat,
+          saturatedFat: normalized.serving.saturatedFat,
+          transFat: normalized.serving.transFat,
+          fiber: normalized.serving.fiber,
+          sugar: normalized.serving.sugar,
+          sodium: normalized.serving.sodium,
+        },
+      ],
+    });
+  } catch (err) {
+    console.error("OFF barcode lookup error:", err);
+    return c.json({ error: "Failed to look up barcode" }, 500);
+  }
 });
 
 // ---------------------------------------------------------------------------
