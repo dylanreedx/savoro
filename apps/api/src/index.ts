@@ -3,7 +3,10 @@ import { serve } from "@hono/node-server";
 import { logger } from "hono/logger";
 import { corsMiddleware } from "./middleware/cors";
 import authRoutes from "./routes/auth";
+import chatRoutes from "./routes/chat";
 import foodRoutes from "./routes/food";
+import logRoutes from "./routes/log";
+import goalRoutes from "./routes/goal";
 
 const app = new Hono();
 
@@ -13,7 +16,10 @@ app.use("*", corsMiddleware);
 app.get("/health", (c) => c.json({ status: "ok" }));
 
 app.route("/auth", authRoutes);
+app.route("/chat", chatRoutes);
 app.route("/food", foodRoutes);
+app.route("/log", logRoutes);
+app.route("/goal", goalRoutes);
 
 const port = Number(process.env.PORT) || 3001;
 console.log(`Savoro API listening on port ${port}`);
