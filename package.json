@@ -1,0 +1,22 @@
+{
+  "name": "savoro",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "seed:usda": "tsx scripts/seed-usda.ts"
+  },
+  "packageManager": "npm@11.5.1",
+  "devDependencies": {
+    "csv-parse": "^6.1.0",
+    "tsx": "^4.21.0",
+    "turbo": "^2.5.0",
+    "typescript": "~5.9.2"
+  }
+}

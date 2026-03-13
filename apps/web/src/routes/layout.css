@@ -1,0 +1,128 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+@font-face {
+	font-family: 'Plus Jakarta Sans Variable';
+	src: url('@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2')
+		format('woff2-variations');
+	font-weight: 200 800;
+	font-display: swap;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Plus Jakarta Sans Variable';
+	src: url('@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-italic.woff2')
+		format('woff2-variations');
+	font-weight: 200 800;
+	font-display: swap;
+	font-style: italic;
+}
+
+@theme {
+	--font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, -apple-system,
+		sans-serif;
+
+	/* Sand — warm grey/stone neutrals */
+	--color-sand-50: oklch(0.98 0.005 80);
+	--color-sand-100: oklch(0.96 0.008 80);
+	--color-sand-200: oklch(0.92 0.012 80);
+	--color-sand-300: oklch(0.86 0.016 75);
+	--color-sand-400: oklch(0.72 0.02 70);
+	--color-sand-500: oklch(0.58 0.02 65);
+	--color-sand-600: oklch(0.48 0.018 60);
+	--color-sand-700: oklch(0.38 0.015 55);
+	--color-sand-800: oklch(0.28 0.012 50);
+	--color-sand-900: oklch(0.18 0.008 45);
+	--color-sand-950: oklch(0.12 0.006 40);
+
+	/* Blush — soft pink pastels */
+	--color-blush-50: oklch(0.97 0.012 10);
+	--color-blush-100: oklch(0.95 0.025 10);
+	--color-blush-200: oklch(0.9 0.04 10);
+	--color-blush-300: oklch(0.85 0.055 10);
+	--color-blush-400: oklch(0.78 0.07 8);
+	--color-blush-500: oklch(0.68 0.085 6);
+
+	/* Sage — muted green */
+	--color-sage-50: oklch(0.97 0.01 145);
+	--color-sage-100: oklch(0.95 0.02 145);
+	--color-sage-200: oklch(0.9 0.035 145);
+	--color-sage-300: oklch(0.83 0.045 145);
+	--color-sage-400: oklch(0.72 0.055 145);
+
+	/* Lavender — subtle cool accent */
+	--color-lavender-100: oklch(0.94 0.025 280);
+	--color-lavender-200: oklch(0.88 0.04 280);
+	--color-lavender-300: oklch(0.82 0.055 280);
+
+	/* Glass surfaces */
+	--color-glass: oklch(1 0 0 / 0.55);
+	--color-glass-strong: oklch(1 0 0 / 0.7);
+	--color-glass-border: oklch(1 0 0 / 0.25);
+	--color-glass-hover: oklch(1 0 0 / 0.72);
+	--color-glass-subtle: oklch(1 0 0 / 0.35);
+
+	/* Border radius */
+	--radius-glass: 1.25rem;
+	--radius-card: 1rem;
+	--radius-chip: 0.625rem;
+	--radius-pill: 9999px;
+
+	/* Shadows */
+	--shadow-glass: 0 4px 24px oklch(0 0 0 / 0.05);
+	--shadow-glass-lg: 0 8px 40px oklch(0 0 0 / 0.08);
+	--shadow-float: 0 20px 60px oklch(0 0 0 / 0.1);
+	--shadow-inner-glass: inset 0 1px 0 oklch(1 0 0 / 0.15);
+}
+
+/* Base styles */
+html {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	scroll-behavior: smooth;
+}
+
+body {
+	background-color: var(--color-sand-50);
+	color: var(--color-sand-900);
+	font-family: var(--font-sans);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* Glass card utility */
+@utility glass {
+	background: var(--color-glass);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border: 1px solid var(--color-glass-border);
+	border-radius: var(--radius-glass);
+	box-shadow: var(--shadow-glass), var(--shadow-inner-glass);
+}
+
+@utility glass-strong {
+	background: var(--color-glass-strong);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border: 1px solid var(--color-glass-border);
+	border-radius: var(--radius-glass);
+	box-shadow: var(--shadow-glass), var(--shadow-inner-glass);
+}
+
+/* Selection color */
+::selection {
+	background-color: var(--color-blush-200);
+	color: var(--color-sand-900);
+}
