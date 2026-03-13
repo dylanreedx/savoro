@@ -4,8 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node22 --outfile=dist/index.mjs --format=esm --external:@node-rs/argon2 --external:@libsql/client",
+    "start": "node dist/index.mjs",
     "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.11",
+    "@libsql/client": "^0.17.0",
+    "@node-rs/argon2": "^2.0.2",
+    "@paralleldrive/cuid2": "^3.3.0",
+    "@savoro/db": "*",
+    "@savoro/food-data": "^0.0.0",
+    "drizzle-orm": "^0.45.1",
+    "hono": "^4.12.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
   }
 }
