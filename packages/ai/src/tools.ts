@@ -84,6 +84,33 @@ export const getDateLog = tool({
   }),
 });
 
+export const searchRecipes = tool({
+  description:
+    "Search the user's saved recipes by name. Returns matching recipes with per-serving macros.",
+  inputSchema: z.object({
+    query: z.string().describe("Recipe name or keyword to search for"),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(10)
+      .default(5)
+      .describe("Max results to return"),
+  }),
+});
+
+export const logRecipe = tool({
+  description:
+    "Log a serving of one of the user's recipes. Creates a food log entry using the recipe's per-serving macros. Call after the user confirms a recipe selection.",
+  inputSchema: z.object({
+    recipeId: z.string().describe("The recipe ID to log"),
+    quantity: z.number().positive().default(1).describe("Number of servings"),
+    meal: z
+      .enum(["breakfast", "lunch", "dinner", "snack"])
+      .describe("Meal category — infer from time of day if not specified"),
+  }),
+});
+
 export const agentTools = {
   search_food: searchFood,
   lookup_barcode: lookupBarcode,
@@ -92,4 +119,6 @@ export const agentTools = {
   get_recent_foods: getRecentFoods,
   delete_log: deleteLog,
   get_date_log: getDateLog,
+  search_recipes: searchRecipes,
+  log_recipe: logRecipe,
 };

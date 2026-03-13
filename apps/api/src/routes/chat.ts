@@ -12,6 +12,7 @@ import {
   foodLog,
   userGoal,
   favorite,
+  recipe,
 } from "@savoro/db";
 import { searchOFF, normalizeOFFProduct, getOFFProduct } from "@savoro/food-data";
 import { buildSystemPrompt, smartRoute } from "@savoro/ai";
@@ -298,6 +299,26 @@ function buildTools(userId: string, today: string) {
         meal: z.enum(["breakfast", "lunch", "dinner", "snack"]).optional().describe("Optional meal filter"),
       }),
       execute: async ({ date, meal }) => getDateLogExecutor(userId, date, meal),
+    }),
+
+    search_recipes: tool({
+      description: "Search the user's saved recipes by name. Returns matching recipes with per-serving macros.",
+      inputSchema: z.object({
+        query: z.string().describe("Recipe name or keyword to search for"),
+        limit: z.number().int().min(1).max(10).default(5).describe("Max results to return"),
+      }),
+      execute: async ({ query, limit }) => searchRecipesExecutor(userId, query, limit),
+    }),
+
+    log_recipe: tool({
+      description: "Log a serving of one of the user's recipes. Creates a food log entry using the recipe's per-serving macros. Call after the user confirms a recipe selection.",
+      inputSchema: z.object({
+        recipeId: z.string().describe("The recipe ID to log"),
+        quantity: z.number().positive().default(1).describe("Number of servings"),
+        meal: z.enum(["breakfast", "lunch", "dinner", "snack"]).describe("Meal category — infer from time of day if not specified"),
+      }),
+      execute: async ({ recipeId, quantity, meal }) =>
+        logRecipeExecutor(userId, today, recipeId, quantity, meal),
     }),
   };
 }
@@ -622,6 +643,179 @@ async function getDateLogExecutor(userId: string, date: string, meal?: string) {
   };
 }
 
+async function searchRecipesExecutor(userId: string, query: string, limit: number = 5) {
+  const pattern = `%${query}%`;
+  const rows = await db
+    .select({
+      id: recipe.id,
+      title: recipe.title,
+      slug: recipe.slug,
+      servings: recipe.servings,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      caloriesPerServing: recipe.caloriesPerServing,
+      proteinPerServing: recipe.proteinPerServing,
+      carbPerServing: recipe.carbPerServing,
+      fatPerServing: recipe.fatPerServing,
+    })
+    .from(recipe)
+    .where(and(eq(recipe.userId, userId), sql`${recipe.title} LIKE ${pattern}`))
+    .orderBy(desc(recipe.updatedAt))
+    .limit(limit)
+    .all();
+
+  return {
+    recipes: rows.map((r) => ({
+      recipeId: r.id,
+      title: r.title,
+      slug: r.slug,
+      servings: r.servings,
+      prepTime: r.prepTime,
+      cookTime: r.cookTime,
+      calories: r.caloriesPerServing,
+      protein: r.proteinPerServing,
+      carb: r.carbPerServing,
+      fat: r.fatPerServing,
+    })),
+  };
+}
+
+async function logRecipeExecutor(
+  userId: string,
+  today: string,
+  recipeId: string,
+  quantity: number,
+  meal: string,
+) {
+  // Get the recipe
+  const row = await db
+    .select()
+    .from(recipe)
+    .where(and(eq(recipe.id, recipeId), eq(recipe.userId, userId)))
+    .get();
+
+  if (!row) {
+    return { logged: false, error: "Recipe not found" };
+  }
+
+  // Get or create the food entry for this recipe (same logic as POST /recipe/:id/food)
+  let foodId: string;
+  let servingId: string;
+
+  const existingFood = await db
+    .select()
+    .from(food)
+    .where(and(eq(food.source, "recipe"), eq(food.sourceId, recipeId)))
+    .get();
+
+  if (existingFood) {
+    foodId = existingFood.id;
+    const existingServing = await db
+      .select()
+      .from(serving)
+      .where(eq(serving.foodId, existingFood.id))
+      .get();
+
+    if (existingServing) {
+      servingId = existingServing.id;
+      // Sync macros
+      await db
+        .update(serving)
+        .set({
+          calories: row.caloriesPerServing,
+          protein: row.proteinPerServing,
+          carb: row.carbPerServing,
+          fat: row.fatPerServing,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(serving.id, existingServing.id));
+    } else {
+      servingId = createId();
+      await db.insert(serving).values({
+        id: servingId,
+        foodId,
+        description: `1 serving (${row.servings} total)`,
+        amountGrams: null,
+        isDefault: true,
+        calories: row.caloriesPerServing,
+        protein: row.proteinPerServing,
+        carb: row.carbPerServing,
+        fat: row.fatPerServing,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  } else {
+    const now = new Date().toISOString();
+    foodId = createId();
+    servingId = createId();
+
+    await db.insert(food).values({
+      id: foodId,
+      name: row.title,
+      brandName: null,
+      barcode: null,
+      source: "recipe",
+      sourceId: recipeId,
+      sourceRevision: null,
+      isVerified: false,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await db.insert(serving).values({
+      id: servingId,
+      foodId,
+      description: `1 serving (${row.servings} total)`,
+      amountGrams: null,
+      isDefault: true,
+      calories: row.caloriesPerServing,
+      protein: row.proteinPerServing,
+      carb: row.carbPerServing,
+      fat: row.fatPerServing,
+      createdAt: now,
+      updatedAt: now,
+    });
+  }
+
+  // Create food log entry
+  await db.insert(foodLog).values({
+    id: createId(),
+    userId,
+    foodId,
+    servingId,
+    quantity,
+    meal: meal as "breakfast" | "lunch" | "dinner" | "snack",
+    date: today,
+    chatMessageId: null,
+  });
+
+  // Update favorite (track recipeId too)
+  const existingFav = await db
+    .select()
+    .from(favorite)
+    .where(and(eq(favorite.userId, userId), eq(favorite.foodId, foodId)))
+    .get();
+
+  if (existingFav) {
+    await db
+      .update(favorite)
+      .set({ useCount: existingFav.useCount + 1, lastUsedAt: new Date().toISOString() })
+      .where(eq(favorite.id, existingFav.id));
+  } else {
+    await db.insert(favorite).values({
+      id: createId(),
+      userId,
+      foodId,
+      recipeId,
+      useCount: 1,
+      lastUsedAt: new Date().toISOString(),
+    });
+  }
+
+  return getDailySummaryExecutor(userId, today);
+}
+
 // ---------------------------------------------------------------------------
 // Smart route handlers
 // ---------------------------------------------------------------------------
@@ -768,6 +962,22 @@ function buildUIComponents(
         if (r.entries?.length) {
           components.push({ type: "food_list", props: { foods: r.entries } });
           components.push({ type: "macro_summary", props: { totals: r.totals, goals: r.goals } });
+        }
+        break;
+      }
+      case "search_recipes": {
+        const r = result as { recipes: unknown[] };
+        if (r.recipes?.length) {
+          for (const rec of r.recipes) {
+            components.push({ type: "recipe_card", props: rec as Record<string, unknown> });
+          }
+        }
+        break;
+      }
+      case "log_recipe": {
+        const r = result as { totals: unknown; goals: unknown; logged?: boolean; error?: string };
+        if (r.totals) {
+          components.push({ type: "macro_summary", props: r });
         }
         break;
       }

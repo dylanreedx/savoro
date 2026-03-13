@@ -6,6 +6,7 @@ import {
   Pressable,
   RefreshControl,
   Platform,
+  StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DateTimePicker, {
@@ -17,7 +18,8 @@ import { MotiView } from "moti";
 import { useDashboardStore } from "../../lib/stores/dashboard";
 import { DashboardRings } from "../../components/dashboard/DashboardRings";
 import { FoodLogList } from "../../components/dashboard/FoodLogList";
-import { colors } from "../../constants/Colors";
+import { SkeletonRings, SkeletonCard } from "../../components/Skeleton";
+import { colors, macroColors, glass, fonts } from "../../constants/Colors";
 
 function formatDateDisplay(dateStr: string): string {
   const d = new Date(dateStr + "T00:00:00");
@@ -31,17 +33,14 @@ function formatDateDisplay(dateStr: string): string {
   if (dateStr === todayStr) return "Today";
   if (dateStr === yesterdayStr) return "Yesterday";
 
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export default function DashboardScreen() {
   const date = useDashboardStore((s) => s.date);
   const entries = useDashboardStore((s) => s.entries);
   const isLoading = useDashboardStore((s) => s.isLoading);
+  const error = useDashboardStore((s) => s.error);
   const fetchDashboard = useDashboardStore((s) => s.fetchDashboard);
   const setDate = useDashboardStore((s) => s.setDate);
 
@@ -49,9 +48,7 @@ export default function DashboardScreen() {
   const [showPicker, setShowPicker] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    fetchDashboard();
-  }, []);
+  useEffect(() => { fetchDashboard(); }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -67,35 +64,21 @@ export default function DashboardScreen() {
     }
   };
 
-  const dismissPicker = () => setShowPicker(false);
-
   const isEmpty = entries.length === 0 && !isLoading;
 
   return (
     <SafeAreaView className="flex-1 bg-stone-50" edges={["top"]}>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 pb-2 pt-3">
-        <Text className="text-2xl font-bold text-stone-900">Dashboard</Text>
-        <View className="flex-row items-center gap-2">
-          <Pressable
-            onPress={() => setShowPicker(true)}
-            className="rounded-full px-3 py-1.5"
-            style={{ backgroundColor: colors.stone[100] }}
-          >
-            <Text className="text-sm font-semibold text-stone-600">
+      <View style={styles.header}>
+        <Text style={[styles.headerTitle, { fontFamily: fonts.bold }]}>Dashboard</Text>
+        <View style={styles.headerActions}>
+          <Pressable onPress={() => setShowPicker(true)} style={styles.dateChip}>
+            <Text style={[styles.dateText, { fontFamily: fonts.semibold }]}>
               {formatDateDisplay(date)}
             </Text>
           </Pressable>
-          <Pressable
-            onPress={() => router.push("/goal")}
-            className="items-center justify-center rounded-full p-1.5"
-            style={{ backgroundColor: colors.stone[100] }}
-          >
-            <SymbolView
-              name={{ ios: "target" }}
-              tintColor={colors.stone[500]}
-              size={20}
-            />
+          <Pressable onPress={() => router.push("/goal")} style={styles.goalButton}>
+            <SymbolView name={{ ios: "target" }} tintColor={colors.stone[500]} size={20} />
           </Pressable>
         </View>
       </View>
@@ -107,10 +90,7 @@ export default function DashboardScreen() {
           animate={{ opacity: 1 }}
           transition={{ type: "timing", duration: 200 }}
         >
-          <View
-            className="mx-4 mb-2 overflow-hidden rounded-2xl"
-            style={{ backgroundColor: colors.stone[50] }}
-          >
+          <View style={styles.pickerContainer}>
             <DateTimePicker
               value={new Date(date + "T00:00:00")}
               mode="date"
@@ -118,17 +98,13 @@ export default function DashboardScreen() {
               onChange={onDateChange}
               maximumDate={new Date()}
             />
-            <Pressable
-              onPress={dismissPicker}
-              className="items-center pb-3 pt-1"
-            >
-              <Text className="text-sm font-semibold text-stone-500">Done</Text>
+            <Pressable onPress={() => setShowPicker(false)} style={styles.pickerDone}>
+              <Text style={[styles.pickerDoneText, { fontFamily: fonts.semibold }]}>Done</Text>
             </Pressable>
           </View>
         </MotiView>
       )}
 
-      {/* Date picker (Android) */}
       {showPicker && Platform.OS === "android" && (
         <DateTimePicker
           value={new Date(date + "T00:00:00")}
@@ -142,31 +118,157 @@ export default function DashboardScreen() {
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        {/* Macro rings */}
         <View className="mt-2">
-          <DashboardRings />
+          {isLoading && entries.length === 0 ? (
+            <SkeletonRings />
+          ) : (
+            <DashboardRings />
+          )}
         </View>
 
-        {/* Food log or empty state */}
-        {isEmpty ? (
+        {/* Error state */}
+        {error && !isLoading && (
           <MotiView
             from={{ opacity: 0, translateY: 10 }}
             animate={{ opacity: 1, translateY: 0 }}
-            transition={{ type: "timing", duration: 400, delay: 200 }}
-            style={{ marginTop: 48, alignItems: "center", paddingHorizontal: 32 }}
+            transition={{ type: "spring", damping: 20, stiffness: 150, delay: 200 }}
+            style={styles.errorState}
           >
-            <Text className="text-center text-base font-medium text-stone-400">
+            <Text style={[styles.errorText, { fontFamily: fonts.medium }]}>
+              {error}
+            </Text>
+            <Pressable onPress={() => fetchDashboard()} style={styles.retryButton}>
+              <Text style={[styles.retryText, { fontFamily: fonts.semibold }]}>
+                Retry
+              </Text>
+            </Pressable>
+          </MotiView>
+        )}
+
+        {/* Skeleton food cards while loading */}
+        {isLoading && entries.length === 0 && !error && (
+          <View style={styles.skeletonCards}>
+            <SkeletonCard />
+            <SkeletonCard />
+          </View>
+        )}
+
+        {isEmpty && !error ? (
+          <MotiView
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "spring", damping: 20, stiffness: 150, delay: 200 }}
+            style={styles.emptyState}
+          >
+            <Text style={[styles.emptyText, { fontFamily: fonts.medium }]}>
               No food logged today.{"\n"}Head to Chat to start tracking!
             </Text>
           </MotiView>
         ) : (
-          <FoodLogList />
+          !isLoading && !error && <FoodLogList />
         )}
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+    paddingTop: 12,
+  },
+  headerTitle: {
+    fontSize: 26,
+    color: colors.stone[900],
+    letterSpacing: -0.5,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  dateChip: {
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: colors.stone[100],
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: glass.borderSubtle,
+  },
+  dateText: {
+    fontSize: 14,
+    color: colors.stone[600],
+  },
+  goalButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+    padding: 6,
+    backgroundColor: colors.stone[100],
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: glass.borderSubtle,
+  },
+  pickerContainer: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    overflow: "hidden",
+    borderRadius: 20,
+    backgroundColor: colors.stone[50],
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: glass.borderSubtle,
+  },
+  pickerDone: {
+    alignItems: "center",
+    paddingBottom: 12,
+    paddingTop: 4,
+  },
+  pickerDoneText: {
+    fontSize: 14,
+    color: colors.stone[500],
+  },
+  emptyState: {
+    marginTop: 48,
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  emptyText: {
+    textAlign: "center",
+    fontSize: 16,
+    color: colors.stone[400],
+    lineHeight: 24,
+  },
+  errorState: {
+    marginTop: 32,
+    alignItems: "center",
+    paddingHorizontal: 32,
+  },
+  errorText: {
+    textAlign: "center",
+    fontSize: 14,
+    color: colors.stone[500],
+    lineHeight: 20,
+  },
+  retryButton: {
+    marginTop: 12,
+    borderRadius: 14,
+    paddingHorizontal: 24,
+    paddingVertical: 8,
+    backgroundColor: macroColors.calories,
+  },
+  retryText: {
+    fontSize: 14,
+    color: "#FFFFFF",
+  },
+  skeletonCards: {
+    marginTop: 16,
+    marginHorizontal: 16,
+    gap: 12,
+  },
+});
+

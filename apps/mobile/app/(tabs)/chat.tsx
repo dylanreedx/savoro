@@ -5,16 +5,20 @@ import { MacroRing } from "../../components/chat/MacroRing";
 import { ChatInput } from "../../components/chat/ChatInput";
 import { ChatBubble } from "../../components/chat/ChatBubble";
 import { DailySnapshot } from "../../components/chat/DailySnapshot";
+import { ThinkingIndicator } from "../../components/chat/ThinkingIndicator";
 
 export default function ChatScreen() {
   const messages = useChatStore((s) => s.messages);
+  const isLoading = useChatStore((s) => s.isLoading);
   const loadMessages = useChatStore((s) => s.loadMessages);
   const fetchMacros = useChatStore((s) => s.fetchMacros);
+  const fetchFavorites = useChatStore((s) => s.fetchFavorites);
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
 
   useEffect(() => {
     loadMessages();
     fetchMacros();
+    fetchFavorites();
   }, []);
 
   const isEmpty = messages.length === 0;
@@ -47,6 +51,7 @@ export default function ChatScreen() {
             renderItem={({ item, index }) => (
               <ChatBubble message={item} index={index} />
             )}
+            ListHeaderComponent={isLoading ? <ThinkingIndicator /> : null}
             inverted
             contentContainerStyle={{
               flexGrow: 1,
