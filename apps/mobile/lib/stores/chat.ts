@@ -66,6 +66,45 @@ type ChatState = {
 
 const AGENT_TIMEOUT_MS = 30_000;
 
+// ---------------------------------------------------------------------------
+// SSE parsing helper
+// ---------------------------------------------------------------------------
+type SSEEvent = { event?: string; data: string };
+
+export function parseSSELines(raw: string): { events: SSEEvent[]; remainder: string } {
+  const events: SSEEvent[] = [];
+  const lines = raw.split("\n");
+  let currentEvent: string | undefined;
+  let currentData: string[] = [];
+  let lastCompleteIdx = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.startsWith("event:")) {
+      currentEvent = line.slice(6).trim();
+    } else if (line.startsWith("data:")) {
+      currentData.push(line.slice(5).trim());
+    } else if (line === "") {
+      // Empty line = end of SSE message
+      if (currentData.length > 0) {
+        events.push({ event: currentEvent, data: currentData.join("\n") });
+        currentEvent = undefined;
+        currentData = [];
+      }
+      lastCompleteIdx = i;
+    }
+  }
+
+  // If there's leftover data without a trailing blank line, it's an incomplete event.
+  // Return it as remainder so the next chunk can complete it.
+  const remainder = lastCompleteIdx < lines.length - 1
+    ? lines.slice(lastCompleteIdx + 1).join("\n")
+    : "";
+
+  return { events, remainder };
+}
+
 const today = () => new Date().toISOString().slice(0, 10);
 
 export const useChatStore = create<ChatState>((set, get) => ({
@@ -194,7 +233,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
           isTimedOut: false,
         }));
       } else {
-        // LLM path returns a text stream — read chunks and build response
+        // LLM path returns an SSE stream — parse events and build response
         const reader = res.body?.getReader();
         if (!reader) {
           set({ isLoading: false, isTimedOut: false });
@@ -203,6 +242,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
         const decoder = new TextDecoder();
         let fullText = "";
+        let uiComponents: UiComponent[] = [];
+        let sseBuffer = "";
 
         // Add a streaming placeholder for the assistant
         const streamId = `stream-${Date.now()}`;
@@ -218,17 +259,47 @@ export const useChatStore = create<ChatState>((set, get) => ({
           ],
         }));
 
-        while (true) {
+        let streamDone = false;
+        while (!streamDone) {
           const { done, value } = await reader.read();
           if (done) break;
 
           const chunk = decoder.decode(value, { stream: true });
-          fullText += chunk;
+          sseBuffer += chunk;
+
+          const { events, remainder } = parseSSELines(sseBuffer);
+          sseBuffer = remainder;
+
+          for (const evt of events) {
+            if (evt.event === "done" || evt.data === "[DONE]") {
+              streamDone = true;
+              break;
+            }
+
+            if (evt.event === "ui") {
+              // Parse UI component JSON
+              try {
+                const comp = JSON.parse(evt.data) as UiComponent;
+                uiComponents = [...uiComponents, comp];
+              } catch {
+                // malformed UI event — skip
+              }
+            } else {
+              // Default / "text" event — append to fullText
+              fullText += evt.data;
+            }
+          }
 
           // Update the streaming message in place
           set((s) => ({
             messages: s.messages.map((m) =>
-              m.id === streamId ? { ...m, content: fullText } : m,
+              m.id === streamId
+                ? {
+                    ...m,
+                    content: fullText,
+                    uiComponents: uiComponents.length > 0 ? uiComponents : undefined,
+                  }
+                : m,
             ),
             streamingText: fullText,
           }));
@@ -236,7 +307,13 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
         set((s) => ({
           messages: s.messages.map((m) =>
-            m.id === streamId ? { ...m, content: fullText || null } : m,
+            m.id === streamId
+              ? {
+                  ...m,
+                  content: fullText || null,
+                  uiComponents: uiComponents.length > 0 ? uiComponents : undefined,
+                }
+              : m,
           ),
           isLoading: false,
           isTimedOut: false,
