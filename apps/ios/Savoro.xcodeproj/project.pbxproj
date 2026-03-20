@@ -34,6 +34,12 @@
 		BB00000000000000000011AA /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000011AA /* APIError.swift */; };
 		BB00000000000000000012AA /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000012AA /* KeychainHelper.swift */; };
 		BB00000000000000000013AA /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000013AA /* APIClient.swift */; };
+		BB00000000000000000014AA /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000014AA /* AuthService.swift */; };
+		BB00000000000000000015AA /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000015AA /* AuthViewModel.swift */; };
+		BB00000000000000000016AA /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000016AA /* LoginView.swift */; };
+		BB00000000000000000017AA /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000017AA /* RegisterView.swift */; };
+		TT00000000000000000001AA /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF00000000000000000001AA /* APIClientTests.swift */; };
+		TT00000000000000000002AA /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF00000000000000000002AA /* AuthTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +71,13 @@
 		AA00000000000000000011AA /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
 		AA00000000000000000012AA /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
 		AA00000000000000000013AA /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		AA00000000000000000014AA /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		AA00000000000000000015AA /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		AA00000000000000000016AA /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		AA00000000000000000017AA /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		FF00000000000000000001AA /* APIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientTests.swift; sourceTree = "<group>"; };
+		FF00000000000000000002AA /* AuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTests.swift; sourceTree = "<group>"; };
+		EE00000000000000000001AA /* SavoroTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SavoroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -72,8 +85,19 @@
 			isa = PBXGroup;
 			children = (
 				2EEA7CAE46BE1D534D5F5657 /* Savoro.app */,
+				EE00000000000000000001AA /* SavoroTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DD00000000000000000001AA /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				FF00000000000000000001AA /* APIClientTests.swift */,
+				FF00000000000000000002AA /* AuthTests.swift */,
+			);
+			name = Tests;
+			path = Savoro/Tests;
 			sourceTree = "<group>";
 		};
 		5224781163C21952163432F4 /* Savoro */ = {
@@ -105,10 +129,19 @@
 				CC00000000000000000005AA /* Models */,
 				CC00000000000000000007AA /* Services */,
 				CC00000000000000000002AA /* Utilities */,
+				CC00000000000000000009AA /* ViewModels */,
 				CC00000000000000000003AA /* Views */,
 			);
 			name = Sources;
 			path = Savoro/Sources;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000009AA /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000015AA /* AuthViewModel.swift */,
+			);
+			path = ViewModels;
 			sourceTree = "<group>";
 		};
 		CE460240E78B4399AC82B379 = {
@@ -117,6 +150,7 @@
 				F462C4B448433ABC6D733861 /* Resources */,
 				5224781163C21952163432F4 /* Savoro */,
 				98C2C94009CFECD5DBCBD920 /* Sources */,
+				DD00000000000000000001AA /* Tests */,
 				39628B649357518B095D1915 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -153,9 +187,19 @@
 		CC00000000000000000003AA /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				CC00000000000000000008AA /* Auth */,
 				CC00000000000000000004AA /* Components */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000008AA /* Auth */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000016AA /* LoginView.swift */,
+				AA00000000000000000017AA /* RegisterView.swift */,
+			);
+			path = Auth;
 			sourceTree = "<group>";
 		};
 		CC00000000000000000004AA /* Components */ = {
@@ -195,6 +239,7 @@
 			children = (
 				AA00000000000000000013AA /* APIClient.swift */,
 				AA00000000000000000011AA /* APIError.swift */,
+				AA00000000000000000014AA /* AuthService.swift */,
 				AA00000000000000000012AA /* KeychainHelper.swift */,
 			);
 			path = Services;
@@ -221,6 +266,22 @@
 			productReference = 2EEA7CAE46BE1D534D5F5657 /* Savoro.app */;
 			productType = "com.apple.product-type.application";
 		};
+		EE00000000000000000002AA /* SavoroTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EE00000000000000000005AA /* Build configuration list for PBXNativeTarget "SavoroTests" */;
+			buildPhases = (
+				EE00000000000000000003AA /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EE00000000000000000006AA /* PBXTargetDependency */,
+			);
+			name = SavoroTests;
+			productName = SavoroTests;
+			productReference = EE00000000000000000001AA /* SavoroTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -232,6 +293,10 @@
 				TargetAttributes = {
 					EB7D07FF1FA0F3A12122DDCC = {
 						ProvisioningStyle = Automatic;
+					};
+					EE00000000000000000002AA = {
+						ProvisioningStyle = Automatic;
+						TestTargetID = EB7D07FF1FA0F3A12122DDCC;
 					};
 				};
 			};
@@ -250,9 +315,28 @@
 			projectRoot = "";
 			targets = (
 				EB7D07FF1FA0F3A12122DDCC /* Savoro */,
+				EE00000000000000000002AA /* SavoroTests */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXContainerItemProxy section */
+		EE00000000000000000007AA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8287BB108503BD1071BD3E27 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EB7D07FF1FA0F3A12122DDCC;
+			remoteInfo = Savoro;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		EE00000000000000000006AA /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EB7D07FF1FA0F3A12122DDCC /* Savoro */;
+			targetProxy = EE00000000000000000007AA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A63A009E424C691CF8AE1963 /* Resources */ = {
@@ -296,6 +380,19 @@
 				BB00000000000000000011AA /* APIError.swift in Sources */,
 				BB00000000000000000012AA /* KeychainHelper.swift in Sources */,
 				BB00000000000000000013AA /* APIClient.swift in Sources */,
+				BB00000000000000000014AA /* AuthService.swift in Sources */,
+				BB00000000000000000015AA /* AuthViewModel.swift in Sources */,
+				BB00000000000000000016AA /* LoginView.swift in Sources */,
+				BB00000000000000000017AA /* RegisterView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EE00000000000000000003AA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TT00000000000000000001AA /* APIClientTests.swift in Sources */,
+				TT00000000000000000002AA /* AuthTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -461,6 +558,36 @@
 			};
 			name = Release;
 		};
+		EE00000000000000000008AA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.savoro.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savoro.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Savoro";
+			};
+			name = Debug;
+		};
+		EE00000000000000000009AA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.savoro.app.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savoro.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Savoro";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -478,6 +605,15 @@
 			buildConfigurations = (
 				7909CA45008407F6572ECB20 /* Debug */,
 				6BEB15D6F068D43823A87FB7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		EE00000000000000000005AA /* Build configuration list for PBXNativeTarget "SavoroTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE00000000000000000008AA /* Debug */,
+				EE00000000000000000009AA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

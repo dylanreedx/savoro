@@ -1,21 +1,24 @@
 import SwiftUI
 
 struct ContentView: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            Text("Savoro")
-                .font(.custom("PlusJakartaSans-Bold", size: 32))
-                .foregroundStyle(Color("stone-900"))
+    @Environment(AuthViewModel.self) private var authViewModel
 
-            Text("Your personal food companion")
-                .font(.custom("PlusJakartaSans-Regular", size: 16))
-                .foregroundStyle(Color("stone-500"))
+    var body: some View {
+        if authViewModel.isAuthenticated {
+            Text("Home")
+                .font(SavoroFonts.title)
+                .foregroundStyle(SavoroColors.textPrimary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(SavoroColors.canvas)
+        } else {
+            NavigationStack {
+                LoginView()
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color("stone-50"))
     }
 }
 
 #Preview {
     ContentView()
+        .environment(AuthViewModel())
 }
