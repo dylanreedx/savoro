@@ -20,7 +20,10 @@ export const user = sqliteTable("user", {
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
   isPublic: integer("is_public", { mode: "boolean" }).default(false).notNull(),
-  passwordHash: text("password_hash").notNull(),
+  passwordHash: text("password_hash"),
+  // Apple Sign-In
+  appleId: text("apple_id").unique(),
+  isApplePrivateEmail: integer("is_apple_private_email", { mode: "boolean" }).default(false).notNull(),
   ...timestamps,
 });
 
@@ -225,6 +228,176 @@ export const favorite = sqliteTable("favorite", {
 });
 
 // ---------------------------------------------------------------------------
+// Kitchen
+// ---------------------------------------------------------------------------
+export const kitchen = sqliteTable("kitchen", {
+  id: text("id").primaryKey(), // cuid2
+  name: text("name").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  ownerId: text("owner_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  ...timestamps,
+});
+
+// ---------------------------------------------------------------------------
+// Kitchen Member
+// ---------------------------------------------------------------------------
+export const kitchenMember = sqliteTable(
+  "kitchen_member",
+  {
+    id: text("id").primaryKey(), // cuid2
+    kitchenId: text("kitchen_id")
+      .notNull()
+      .references(() => kitchen.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: text("role", { enum: ["owner", "admin", "member"] }).default("member").notNull(),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("kitchen_member_kitchen_user_idx").on(table.kitchenId, table.userId),
+  ]
+);
+
+// ---------------------------------------------------------------------------
+// Kitchen Invite
+// ---------------------------------------------------------------------------
+export const kitchenInvite = sqliteTable(
+  "kitchen_invite",
+  {
+    id: text("id").primaryKey(), // cuid2
+    kitchenId: text("kitchen_id")
+      .notNull()
+      .references(() => kitchen.id, { onDelete: "cascade" }),
+    invitedBy: text("invited_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    invitedUserId: text("invited_user_id")
+      .references(() => user.id, { onDelete: "cascade" }),
+    email: text("email"),
+    status: text("status", { enum: ["pending", "accepted", "declined", "expired"] }).default("pending").notNull(),
+    expiresAt: text("expires_at"),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("kitchen_invite_kitchen_user_idx").on(table.kitchenId, table.invitedUserId),
+  ]
+);
+
+// ---------------------------------------------------------------------------
+// Meal Plan
+// ---------------------------------------------------------------------------
+export const mealPlan = sqliteTable("meal_plan", {
+  id: text("id").primaryKey(), // cuid2
+  kitchenId: text("kitchen_id")
+    .references(() => kitchen.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  startDate: text("start_date").notNull(),
+  endDate: text("end_date").notNull(),
+  ...timestamps,
+});
+
+// ---------------------------------------------------------------------------
+// Grocery List
+// ---------------------------------------------------------------------------
+export const groceryList = sqliteTable("grocery_list", {
+  id: text("id").primaryKey(), // cuid2
+  kitchenId: text("kitchen_id")
+    .references(() => kitchen.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .references(() => user.id, { onDelete: "cascade" }),
+  mealPlanId: text("meal_plan_id")
+    .references(() => mealPlan.id, { onDelete: "set null" }),
+  name: text("name").notNull(),
+  isCompleted: integer("is_completed", { mode: "boolean" }).default(false).notNull(),
+  ...timestamps,
+});
+
+// ---------------------------------------------------------------------------
+// Grocery Item
+// ---------------------------------------------------------------------------
+export const groceryItem = sqliteTable("grocery_item", {
+  id: text("id").primaryKey(), // cuid2
+  groceryListId: text("grocery_list_id")
+    .notNull()
+    .references(() => groceryList.id, { onDelete: "cascade" }),
+  foodId: text("food_id")
+    .references(() => food.id),
+  name: text("name").notNull(),
+  quantity: real("quantity"),
+  unit: text("unit"),
+  isChecked: integer("is_checked", { mode: "boolean" }).default(false).notNull(),
+  sortOrder: integer("sort_order").default(0).notNull(),
+  ...timestamps,
+});
+
+// ---------------------------------------------------------------------------
+// Follow
+// ---------------------------------------------------------------------------
+export const follow = sqliteTable(
+  "follow",
+  {
+    id: text("id").primaryKey(), // cuid2
+    followerId: text("follower_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    followingId: text("following_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    ...timestamps,
+  },
+  (table) => [
+    uniqueIndex("follow_follower_following_idx").on(table.followerId, table.followingId),
+  ]
+);
+
+// ---------------------------------------------------------------------------
+// Recipe Share
+// ---------------------------------------------------------------------------
+export const recipeShare = sqliteTable("recipe_share", {
+  id: text("id").primaryKey(), // cuid2
+  recipeId: text("recipe_id")
+    .notNull()
+    .references(() => recipe.id, { onDelete: "cascade" }),
+  sharedBy: text("shared_by")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  sharedToUserId: text("shared_to_user_id")
+    .references(() => user.id, { onDelete: "cascade" }),
+  sharedToKitchenId: text("shared_to_kitchen_id")
+    .references(() => kitchen.id, { onDelete: "cascade" }),
+  message: text("message"),
+  ...timestamps,
+});
+
+// ---------------------------------------------------------------------------
+// Kitchen Activity
+// ---------------------------------------------------------------------------
+export const kitchenActivity = sqliteTable(
+  "kitchen_activity",
+  {
+    id: text("id").primaryKey(), // cuid2
+    kitchenId: text("kitchen_id")
+      .notNull()
+      .references(() => kitchen.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    action: text("action").notNull(),
+    metadata: text("metadata", { mode: "json" }).$type<Record<string, unknown>>(),
+    ...timestamps,
+  },
+  (table) => [
+    index("kitchen_activity_kitchen_idx").on(table.kitchenId),
+  ]
+);
+
+// ---------------------------------------------------------------------------
 // Type exports
 // ---------------------------------------------------------------------------
 export type User = typeof user.$inferSelect;
@@ -249,3 +422,21 @@ export type ChatMessage = typeof chatMessage.$inferSelect;
 export type NewChatMessage = typeof chatMessage.$inferInsert;
 export type Favorite = typeof favorite.$inferSelect;
 export type NewFavorite = typeof favorite.$inferInsert;
+export type Kitchen = typeof kitchen.$inferSelect;
+export type NewKitchen = typeof kitchen.$inferInsert;
+export type KitchenMember = typeof kitchenMember.$inferSelect;
+export type NewKitchenMember = typeof kitchenMember.$inferInsert;
+export type KitchenInvite = typeof kitchenInvite.$inferSelect;
+export type NewKitchenInvite = typeof kitchenInvite.$inferInsert;
+export type MealPlan = typeof mealPlan.$inferSelect;
+export type NewMealPlan = typeof mealPlan.$inferInsert;
+export type GroceryList = typeof groceryList.$inferSelect;
+export type NewGroceryList = typeof groceryList.$inferInsert;
+export type GroceryItem = typeof groceryItem.$inferSelect;
+export type NewGroceryItem = typeof groceryItem.$inferInsert;
+export type Follow = typeof follow.$inferSelect;
+export type NewFollow = typeof follow.$inferInsert;
+export type RecipeShare = typeof recipeShare.$inferSelect;
+export type NewRecipeShare = typeof recipeShare.$inferInsert;
+export type KitchenActivity = typeof kitchenActivity.$inferSelect;
+export type NewKitchenActivity = typeof kitchenActivity.$inferInsert;
