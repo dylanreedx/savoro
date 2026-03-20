@@ -51,6 +51,8 @@
 		F39BE13167058460106E7851 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D147F670C28D5CC1EAA197 /* AuthViewModel.swift */; };
 		F8C68FBC0F134CDF25110D3E /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */; };
 		FC8E4CB743BBBBB7414DDF6D /* TodayScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A2B3C4D5E6F7A8B9C0D1E2F /* BarcodeScannerView.swift */; };
+		B2C3D4E5F6A7B8C9D0E1F2A3 /* ViewfinderOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B3C4D5E6F7A8B9C0D1E2F3A /* ViewfinderOverlay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -110,6 +112,8 @@
 		F0D141D16DC1C0B2C9072747 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatServiceTests.swift; sourceTree = "<group>"; };
+		1A2B3C4D5E6F7A8B9C0D1E2F /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
+		2B3C4D5E6F7A8B9C0D1E2F3A /* ViewfinderOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewfinderOverlay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -169,9 +173,19 @@
 			children = (
 				411E05E0B9D5729EFFCDDA96 /* Auth */,
 				7D449BCEE0DAFB23A5AA1FEA /* Components */,
+				3C4D5E6F7A8B9C0D1E2F3A4B /* Scanner */,
 				BF680BCBC97C624C2F3708DF /* Today */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		3C4D5E6F7A8B9C0D1E2F3A4B /* Scanner */ = {
+			isa = PBXGroup;
+			children = (
+				1A2B3C4D5E6F7A8B9C0D1E2F /* BarcodeScannerView.swift */,
+				2B3C4D5E6F7A8B9C0D1E2F3A /* ViewfinderOverlay.swift */,
+			);
+			path = Scanner;
 			sourceTree = "<group>";
 		};
 		7D449BCEE0DAFB23A5AA1FEA /* Components */ = {
@@ -410,6 +424,7 @@
 				0258CE1D2FA3A4F035FB0908 /* AnyCodable.swift in Sources */,
 				0BE34BB265D909C13AAD4DEE /* AuthService.swift in Sources */,
 				F39BE13167058460106E7851 /* AuthViewModel.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* BarcodeScannerView.swift in Sources */,
 				4BB65F377A73387D2F5A6AA9 /* Chat.swift in Sources */,
 				AED5EC275CE6199456923ECB /* ChatService.swift in Sources */,
 				A68C8092120BCBF0D651CAD9 /* Color+Hex.swift in Sources */,
@@ -438,6 +453,7 @@
 				7CF41F9ABE0EBB61A6D5F2A2 /* TodayView.swift in Sources */,
 				9C725B798F92F44BDEC0AA4B /* TodayViewModel.swift in Sources */,
 				822DD159689E8CB314581F6D /* User.swift in Sources */,
+				B2C3D4E5F6A7B8C9D0E1F2A3 /* ViewfinderOverlay.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
