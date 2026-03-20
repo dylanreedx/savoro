@@ -1,0 +1,356 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		07753689B8C19C27A5870D6B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5321AA72CBB22E3937CCC43B /* Assets.xcassets */; };
+		446B16FDF633056C085E3513 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B0060590BC9F2F185F6EF015 /* PlusJakartaSans-Regular.ttf */; };
+		4C0A85017AE0F9C451CA8864 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F7AA5A5879F85F230CA9C70 /* PlusJakartaSans-Medium.ttf */; };
+		79D702D09D1F373A7E8CBD58 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D2A8848DF4E94CA3D580E53 /* PlusJakartaSans-Bold.ttf */; };
+		98CB877742A28C743DF56F07 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3048FBF816B5C27CADBE93BD /* ContentView.swift */; };
+		B9ECB0379151DF64B1E618C0 /* SavoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */; };
+		CE4618DE6D13F29E8F79D6E7 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E2FBCF0490BEB23DBB165ED4 /* PlusJakartaSans-ExtraBold.ttf */; };
+		DD0686BADD2F797B0DE3EECC /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0D2A8848DF4E94CA3D580E53 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
+		2EEA7CAE46BE1D534D5F5657 /* Savoro.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Savoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3048FBF816B5C27CADBE93BD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		4F7AA5A5879F85F230CA9C70 /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; };
+		5321AA72CBB22E3937CCC43B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroApp.swift; sourceTree = "<group>"; };
+		B0060590BC9F2F185F6EF015 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; };
+		E2FBCF0490BEB23DBB165ED4 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		39628B649357518B095D1915 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2EEA7CAE46BE1D534D5F5657 /* Savoro.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5224781163C21952163432F4 /* Savoro */ = {
+			isa = PBXGroup;
+			children = (
+				5321AA72CBB22E3937CCC43B /* Assets.xcassets */,
+			);
+			path = Savoro;
+			sourceTree = "<group>";
+		};
+		571F1A479333E7F61BC740E2 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				0D2A8848DF4E94CA3D580E53 /* PlusJakartaSans-Bold.ttf */,
+				E2FBCF0490BEB23DBB165ED4 /* PlusJakartaSans-ExtraBold.ttf */,
+				4F7AA5A5879F85F230CA9C70 /* PlusJakartaSans-Medium.ttf */,
+				B0060590BC9F2F185F6EF015 /* PlusJakartaSans-Regular.ttf */,
+				F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		98C2C94009CFECD5DBCBD920 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				3048FBF816B5C27CADBE93BD /* ContentView.swift */,
+				A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */,
+			);
+			name = Sources;
+			path = Savoro/Sources;
+			sourceTree = "<group>";
+		};
+		CE460240E78B4399AC82B379 = {
+			isa = PBXGroup;
+			children = (
+				F462C4B448433ABC6D733861 /* Resources */,
+				5224781163C21952163432F4 /* Savoro */,
+				98C2C94009CFECD5DBCBD920 /* Sources */,
+				39628B649357518B095D1915 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F462C4B448433ABC6D733861 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				571F1A479333E7F61BC740E2 /* Fonts */,
+			);
+			name = Resources;
+			path = Savoro/Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		EB7D07FF1FA0F3A12122DDCC /* Savoro */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9F4BE5D7B83AEE939A1FACB9 /* Build configuration list for PBXNativeTarget "Savoro" */;
+			buildPhases = (
+				FC96A4FAF67B699495002482 /* Sources */,
+				A63A009E424C691CF8AE1963 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Savoro;
+			packageProductDependencies = (
+			);
+			productName = Savoro;
+			productReference = 2EEA7CAE46BE1D534D5F5657 /* Savoro.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8287BB108503BD1071BD3E27 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					EB7D07FF1FA0F3A12122DDCC = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 345BC4CA76163D9CEB61655E /* Build configuration list for PBXProject "Savoro" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = CE460240E78B4399AC82B379;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 39628B649357518B095D1915 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				EB7D07FF1FA0F3A12122DDCC /* Savoro */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A63A009E424C691CF8AE1963 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07753689B8C19C27A5870D6B /* Assets.xcassets in Resources */,
+				79D702D09D1F373A7E8CBD58 /* PlusJakartaSans-Bold.ttf in Resources */,
+				CE4618DE6D13F29E8F79D6E7 /* PlusJakartaSans-ExtraBold.ttf in Resources */,
+				4C0A85017AE0F9C451CA8864 /* PlusJakartaSans-Medium.ttf in Resources */,
+				446B16FDF633056C085E3513 /* PlusJakartaSans-Regular.ttf in Resources */,
+				DD0686BADD2F797B0DE3EECC /* PlusJakartaSans-SemiBold.ttf in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FC96A4FAF67B699495002482 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				98CB877742A28C743DF56F07 /* ContentView.swift in Sources */,
+				B9ECB0379151DF64B1E618C0 /* SavoroApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		6BEB15D6F068D43823A87FB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Savoro/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.savoro.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7909CA45008407F6572ECB20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				INFOPLIST_FILE = Savoro/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.savoro.app;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A577AA9F197C7A8FA9F0815F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		C5196028E3926F00D738A58D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		345BC4CA76163D9CEB61655E /* Build configuration list for PBXProject "Savoro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A577AA9F197C7A8FA9F0815F /* Debug */,
+				C5196028E3926F00D738A58D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9F4BE5D7B83AEE939A1FACB9 /* Build configuration list for PBXNativeTarget "Savoro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7909CA45008407F6572ECB20 /* Debug */,
+				6BEB15D6F068D43823A87FB7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8287BB108503BD1071BD3E27 /* Project object */;
+}
