@@ -30,6 +30,10 @@
 		BB0000000000000000000DAA /* Kitchen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000DAA /* Kitchen.swift */; };
 		BB0000000000000000000EAA /* Grocery.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000EAA /* Grocery.swift */; };
 		BB0000000000000000000FAA /* AnyCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000FAA /* AnyCodable.swift */; };
+		BB00000000000000000010AA /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000010AA /* Constants.swift */; };
+		BB00000000000000000011AA /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000011AA /* APIError.swift */; };
+		BB00000000000000000012AA /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000012AA /* KeychainHelper.swift */; };
+		BB00000000000000000013AA /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000013AA /* APIClient.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +61,10 @@
 		AA0000000000000000000DAA /* Kitchen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kitchen.swift; sourceTree = "<group>"; };
 		AA0000000000000000000EAA /* Grocery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grocery.swift; sourceTree = "<group>"; };
 		AA0000000000000000000FAA /* AnyCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodable.swift; sourceTree = "<group>"; };
+		AA00000000000000000010AA /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		AA00000000000000000011AA /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
+		AA00000000000000000012AA /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		AA00000000000000000013AA /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -94,9 +102,10 @@
 				3048FBF816B5C27CADBE93BD /* ContentView.swift */,
 				A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */,
 				CC00000000000000000001AA /* DesignSystem */,
+				CC00000000000000000005AA /* Models */,
+				CC00000000000000000007AA /* Services */,
 				CC00000000000000000002AA /* Utilities */,
 				CC00000000000000000003AA /* Views */,
-				CC00000000000000000005AA /* Models */,
 			);
 			name = Sources;
 			path = Savoro/Sources;
@@ -135,6 +144,7 @@
 			isa = PBXGroup;
 			children = (
 				AA00000000000000000001AA /* Color+Hex.swift */,
+				AA00000000000000000010AA /* Constants.swift */,
 				AA00000000000000000006AA /* HapticManager.swift */,
 			);
 			path = Utilities;
@@ -178,6 +188,16 @@
 				AA0000000000000000000FAA /* AnyCodable.swift */,
 			);
 			path = Support;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000007AA /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000013AA /* APIClient.swift */,
+				AA00000000000000000011AA /* APIError.swift */,
+				AA00000000000000000012AA /* KeychainHelper.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -272,6 +292,10 @@
 				BB0000000000000000000DAA /* Kitchen.swift in Sources */,
 				BB0000000000000000000EAA /* Grocery.swift in Sources */,
 				BB0000000000000000000FAA /* AnyCodable.swift in Sources */,
+				BB00000000000000000010AA /* Constants.swift in Sources */,
+				BB00000000000000000011AA /* APIError.swift in Sources */,
+				BB00000000000000000012AA /* KeychainHelper.swift in Sources */,
+				BB00000000000000000013AA /* APIClient.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
