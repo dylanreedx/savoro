@@ -15,6 +15,21 @@
 		B9ECB0379151DF64B1E618C0 /* SavoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */; };
 		CE4618DE6D13F29E8F79D6E7 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E2FBCF0490BEB23DBB165ED4 /* PlusJakartaSans-ExtraBold.ttf */; };
 		DD0686BADD2F797B0DE3EECC /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */; };
+		BB00000000000000000001AA /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000001AA /* Color+Hex.swift */; };
+		BB00000000000000000002AA /* SavoroColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000002AA /* SavoroColors.swift */; };
+		BB00000000000000000003AA /* SavoroFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000003AA /* SavoroFonts.swift */; };
+		BB00000000000000000004AA /* AnimationPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000004AA /* AnimationPresets.swift */; };
+		BB00000000000000000005AA /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000005AA /* GlassCard.swift */; };
+		BB00000000000000000006AA /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000006AA /* HapticManager.swift */; };
+		BB00000000000000000007AA /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000007AA /* User.swift */; };
+		BB00000000000000000008AA /* Food.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000008AA /* Food.swift */; };
+		BB00000000000000000009AA /* FoodLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000009AA /* FoodLog.swift */; };
+		BB0000000000000000000AAA /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000AAA /* Recipe.swift */; };
+		BB0000000000000000000BAA /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000BAA /* Chat.swift */; };
+		BB0000000000000000000CAA /* Social.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000CAA /* Social.swift */; };
+		BB0000000000000000000DAA /* Kitchen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000DAA /* Kitchen.swift */; };
+		BB0000000000000000000EAA /* Grocery.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000EAA /* Grocery.swift */; };
+		BB0000000000000000000FAA /* AnyCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000FAA /* AnyCodable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +42,21 @@
 		B0060590BC9F2F185F6EF015 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; };
 		E2FBCF0490BEB23DBB165ED4 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
 		F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
+		AA00000000000000000001AA /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		AA00000000000000000002AA /* SavoroColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroColors.swift; sourceTree = "<group>"; };
+		AA00000000000000000003AA /* SavoroFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroFonts.swift; sourceTree = "<group>"; };
+		AA00000000000000000004AA /* AnimationPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationPresets.swift; sourceTree = "<group>"; };
+		AA00000000000000000005AA /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
+		AA00000000000000000006AA /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+		AA00000000000000000007AA /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		AA00000000000000000008AA /* Food.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Food.swift; sourceTree = "<group>"; };
+		AA00000000000000000009AA /* FoodLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLog.swift; sourceTree = "<group>"; };
+		AA0000000000000000000AAA /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
+		AA0000000000000000000BAA /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
+		AA0000000000000000000CAA /* Social.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Social.swift; sourceTree = "<group>"; };
+		AA0000000000000000000DAA /* Kitchen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kitchen.swift; sourceTree = "<group>"; };
+		AA0000000000000000000EAA /* Grocery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grocery.swift; sourceTree = "<group>"; };
+		AA0000000000000000000FAA /* AnyCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -63,6 +93,10 @@
 			children = (
 				3048FBF816B5C27CADBE93BD /* ContentView.swift */,
 				A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */,
+				CC00000000000000000001AA /* DesignSystem */,
+				CC00000000000000000002AA /* Utilities */,
+				CC00000000000000000003AA /* Views */,
+				CC00000000000000000005AA /* Models */,
 			);
 			name = Sources;
 			path = Savoro/Sources;
@@ -85,6 +119,65 @@
 			);
 			name = Resources;
 			path = Savoro/Resources;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000001AA /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000002AA /* SavoroColors.swift */,
+				AA00000000000000000003AA /* SavoroFonts.swift */,
+				AA00000000000000000004AA /* AnimationPresets.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000002AA /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000001AA /* Color+Hex.swift */,
+				AA00000000000000000006AA /* HapticManager.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000003AA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CC00000000000000000004AA /* Components */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000004AA /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000005AA /* GlassCard.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000005AA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				AA00000000000000000007AA /* User.swift */,
+				AA00000000000000000008AA /* Food.swift */,
+				AA00000000000000000009AA /* FoodLog.swift */,
+				AA0000000000000000000AAA /* Recipe.swift */,
+				AA0000000000000000000BAA /* Chat.swift */,
+				AA0000000000000000000CAA /* Social.swift */,
+				AA0000000000000000000DAA /* Kitchen.swift */,
+				AA0000000000000000000EAA /* Grocery.swift */,
+				CC00000000000000000006AA /* Support */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		CC00000000000000000006AA /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000FAA /* AnyCodable.swift */,
+			);
+			path = Support;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -164,6 +257,21 @@
 			files = (
 				98CB877742A28C743DF56F07 /* ContentView.swift in Sources */,
 				B9ECB0379151DF64B1E618C0 /* SavoroApp.swift in Sources */,
+				BB00000000000000000001AA /* Color+Hex.swift in Sources */,
+				BB00000000000000000002AA /* SavoroColors.swift in Sources */,
+				BB00000000000000000003AA /* SavoroFonts.swift in Sources */,
+				BB00000000000000000004AA /* AnimationPresets.swift in Sources */,
+				BB00000000000000000005AA /* GlassCard.swift in Sources */,
+				BB00000000000000000006AA /* HapticManager.swift in Sources */,
+				BB00000000000000000007AA /* User.swift in Sources */,
+				BB00000000000000000008AA /* Food.swift in Sources */,
+				BB00000000000000000009AA /* FoodLog.swift in Sources */,
+				BB0000000000000000000AAA /* Recipe.swift in Sources */,
+				BB0000000000000000000BAA /* Chat.swift in Sources */,
+				BB0000000000000000000CAA /* Social.swift in Sources */,
+				BB0000000000000000000DAA /* Kitchen.swift in Sources */,
+				BB0000000000000000000EAA /* Grocery.swift in Sources */,
+				BB0000000000000000000FAA /* AnyCodable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
