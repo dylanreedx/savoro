@@ -48,3 +48,25 @@ struct FoodLogEntry: Equatable, Sendable {
     let food: Food
     let serving: Serving
 }
+
+// MARK: - Flat Log Entry (from /log/entries endpoint)
+
+/// A denormalized log entry returned by the API with inline nutrient data.
+struct LogEntry: Codable, Identifiable, Equatable, Sendable {
+    let id: String
+    let foodName: String
+    let meal: MealType
+    let calories: Double
+    let protein: Double
+    let carb: Double
+    let fat: Double
+    let createdAt: String
+}
+
+// MARK: - API Response Wrappers
+
+struct DailyLogResponse: Decodable, Sendable {
+    let totals: DailyTotals
+}
+
+extension DailyTotals: Decodable {}

@@ -24,3 +24,14 @@ targets:
       INFOPLIST_FILE: Savoro/Info.plist
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       CODE_SIGN_STYLE: Automatic
+  SavoroTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: Savoro/Tests
+    dependencies:
+      - target: Savoro
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.savoro.tests
+      CODE_SIGN_STYLE: Automatic
+      GENERATE_INFOPLIST_FILE: true

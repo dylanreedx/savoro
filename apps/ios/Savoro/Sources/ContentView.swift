@@ -5,11 +5,7 @@ struct ContentView: View {
 
     var body: some View {
         if authViewModel.isAuthenticated {
-            Text("Home")
-                .font(SavoroFonts.title)
-                .foregroundStyle(SavoroColors.textPrimary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(SavoroColors.canvas)
+            TodayView()
         } else {
             NavigationStack {
                 LoginView()

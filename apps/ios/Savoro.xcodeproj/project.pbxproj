@@ -7,97 +7,133 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0258CE1D2FA3A4F035FB0908 /* AnyCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E8AD43F51982F5BB9354149 /* AnyCodable.swift */; };
 		07753689B8C19C27A5870D6B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5321AA72CBB22E3937CCC43B /* Assets.xcassets */; };
+		0BE34BB265D909C13AAD4DEE /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D95340D807E3CE209E38673 /* AuthService.swift */; };
+		0BF995EEF12120BDBDFC6C53 /* MacroLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CFB7C15EB9EF64DD9D0EF81 /* MacroLineView.swift */; };
+		161EBEEA1868CA9E04D2F09D /* FoodLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7752224CC097FAA858A7CA90 /* FoodLog.swift */; };
+		19DF80D0FC70EC1B11729AA1 /* ProfileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C45930D122DEB980D3A869 /* ProfileSheet.swift */; };
+		2C3B5DCB39B39BBC649A9612 /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E29CCA1715278872780F085 /* GlassCard.swift */; };
+		2D2BBA8EF32100A8BE3104AD /* Social.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112EB000D2EE361A15D4742D /* Social.swift */; };
+		37F1E1044A86DB1964D9019C /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E30DE08FDDE93B6475AFF70A /* LoginView.swift */; };
+		43BF464ECD0714004ABFE20B /* SavoroFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E2928133C3E41DCA5A73417 /* SavoroFonts.swift */; };
 		446B16FDF633056C085E3513 /* PlusJakartaSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B0060590BC9F2F185F6EF015 /* PlusJakartaSans-Regular.ttf */; };
+		4BB65F377A73387D2F5A6AA9 /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0D141D16DC1C0B2C9072747 /* Chat.swift */; };
 		4C0A85017AE0F9C451CA8864 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F7AA5A5879F85F230CA9C70 /* PlusJakartaSans-Medium.ttf */; };
+		569AE16470D75EE7AB36F23C /* Food.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82AF87E282F4C1AEB6E08F1B /* Food.swift */; };
+		56CE1E5246BFC5F618FBB63A /* AnimationPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE586EF30AC68FE4A24EC31 /* AnimationPresets.swift */; };
+		699CDA2154F82AB32E2F9793 /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2AA0A07547A963F22B4191 /* APIClientTests.swift */; };
+		69DBBD618953952B14463B71 /* SavoroColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C0C222F3F8D6B2FF82019 /* SavoroColors.swift */; };
+		6B5FEFB6652F43DF3A7A18E7 /* DailyNutrition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0680B860C08BC7CE544B53C6 /* DailyNutrition.swift */; };
+		6FA2F7EE792816464AD7C6C7 /* Grocery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B111B9F9F88B03F58BD3483 /* Grocery.swift */; };
 		79D702D09D1F373A7E8CBD58 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D2A8848DF4E94CA3D580E53 /* PlusJakartaSans-Bold.ttf */; };
+		7CF41F9ABE0EBB61A6D5F2A2 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ADB316D0F3A1B4B26F35AE /* TodayView.swift */; };
+		822DD159689E8CB314581F6D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = D76B1EFE094E25506A946362 /* User.swift */; };
+		86B62E4E968CDB1EC09C062A /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B003B37C6CEF2ADCE739FDD /* KeychainHelper.swift */; };
 		98CB877742A28C743DF56F07 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3048FBF816B5C27CADBE93BD /* ContentView.swift */; };
+		9C725B798F92F44BDEC0AA4B /* TodayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9841B8646A5DC68A89960F91 /* TodayViewModel.swift */; };
+		A6757C6F6D46ADBB27745096 /* MealTimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A513761ECA219C427ADD4B3 /* MealTimelineView.swift */; };
+		A68C8092120BCBF0D651CAD9 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3DF88E3A238D4CAA3CB705 /* Color+Hex.swift */; };
+		A747ECF45723DA9AF7F314A1 /* Kitchen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E577C2C0782A632A34E0AA /* Kitchen.swift */; };
+		AB0FD4C35B14F7B98242D96E /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95E9606ED2942B88CD82F66 /* Recipe.swift */; };
+		B0608C7FA06BA4EF42305F30 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 828A043A4EA2AD88F3311D0C /* APIClient.swift */; };
 		B9ECB0379151DF64B1E618C0 /* SavoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */; };
 		CE4618DE6D13F29E8F79D6E7 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E2FBCF0490BEB23DBB165ED4 /* PlusJakartaSans-ExtraBold.ttf */; };
+		D2B609308E5BB229BC0FD9A5 /* DailyCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62587688D7E283A82AA47FD8 /* DailyCardView.swift */; };
+		DB4DA74A27397038960B3EED /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41ADC4AFBACD0A1397509D55 /* HapticManager.swift */; };
 		DD0686BADD2F797B0DE3EECC /* PlusJakartaSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */; };
-		BB00000000000000000001AA /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000001AA /* Color+Hex.swift */; };
-		BB00000000000000000002AA /* SavoroColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000002AA /* SavoroColors.swift */; };
-		BB00000000000000000003AA /* SavoroFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000003AA /* SavoroFonts.swift */; };
-		BB00000000000000000004AA /* AnimationPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000004AA /* AnimationPresets.swift */; };
-		BB00000000000000000005AA /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000005AA /* GlassCard.swift */; };
-		BB00000000000000000006AA /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000006AA /* HapticManager.swift */; };
-		BB00000000000000000007AA /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000007AA /* User.swift */; };
-		BB00000000000000000008AA /* Food.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000008AA /* Food.swift */; };
-		BB00000000000000000009AA /* FoodLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000009AA /* FoodLog.swift */; };
-		BB0000000000000000000AAA /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000AAA /* Recipe.swift */; };
-		BB0000000000000000000BAA /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000BAA /* Chat.swift */; };
-		BB0000000000000000000CAA /* Social.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000CAA /* Social.swift */; };
-		BB0000000000000000000DAA /* Kitchen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000DAA /* Kitchen.swift */; };
-		BB0000000000000000000EAA /* Grocery.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000EAA /* Grocery.swift */; };
-		BB0000000000000000000FAA /* AnyCodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000FAA /* AnyCodable.swift */; };
-		BB00000000000000000010AA /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000010AA /* Constants.swift */; };
-		BB00000000000000000011AA /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000011AA /* APIError.swift */; };
-		BB00000000000000000012AA /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000012AA /* KeychainHelper.swift */; };
-		BB00000000000000000013AA /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000013AA /* APIClient.swift */; };
-		BB00000000000000000014AA /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000014AA /* AuthService.swift */; };
-		BB00000000000000000015AA /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000015AA /* AuthViewModel.swift */; };
-		BB00000000000000000016AA /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000016AA /* LoginView.swift */; };
-		BB00000000000000000017AA /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA00000000000000000017AA /* RegisterView.swift */; };
-		TT00000000000000000001AA /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF00000000000000000001AA /* APIClientTests.swift */; };
-		TT00000000000000000002AA /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF00000000000000000002AA /* AuthTests.swift */; };
+		EA381777F08A3DC27D9D851E /* RegisterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62584FAC8F4D7FBEACE3338D /* RegisterView.swift */; };
+		EE6C4801D113786B3364842A /* APIError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E478DA547EC09CFC5A5A34 /* APIError.swift */; };
+		F22A3F8F6D1D2983F1C1433D /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DD868B5504C2F88CB53E866 /* Constants.swift */; };
+		F39BE13167058460106E7851 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D147F670C28D5CC1EAA197 /* AuthViewModel.swift */; };
+		F8C68FBC0F134CDF25110D3E /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */; };
+		FC8E4CB743BBBBB7414DDF6D /* TodayScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		6BEB0D365FD46BCA5464E6E6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8287BB108503BD1071BD3E27 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EB7D07FF1FA0F3A12122DDCC;
+			remoteInfo = Savoro;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		0680B860C08BC7CE544B53C6 /* DailyNutrition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyNutrition.swift; sourceTree = "<group>"; };
+		09ADB316D0F3A1B4B26F35AE /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		0CFB7C15EB9EF64DD9D0EF81 /* MacroLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacroLineView.swift; sourceTree = "<group>"; };
 		0D2A8848DF4E94CA3D580E53 /* PlusJakartaSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Bold.ttf"; sourceTree = "<group>"; };
+		0DD868B5504C2F88CB53E866 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		112EB000D2EE361A15D4742D /* Social.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Social.swift; sourceTree = "<group>"; };
+		13E577C2C0782A632A34E0AA /* Kitchen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kitchen.swift; sourceTree = "<group>"; };
+		1E8AD43F51982F5BB9354149 /* AnyCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodable.swift; sourceTree = "<group>"; };
+		2E2928133C3E41DCA5A73417 /* SavoroFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroFonts.swift; sourceTree = "<group>"; };
 		2EEA7CAE46BE1D534D5F5657 /* Savoro.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Savoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3048FBF816B5C27CADBE93BD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		3B111B9F9F88B03F58BD3483 /* Grocery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grocery.swift; sourceTree = "<group>"; };
+		41ADC4AFBACD0A1397509D55 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
 		4F7AA5A5879F85F230CA9C70 /* PlusJakartaSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Medium.ttf"; sourceTree = "<group>"; };
+		511DE6F5BE727A2B4024B18D /* SavoroTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SavoroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5321AA72CBB22E3937CCC43B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		53D147F670C28D5CC1EAA197 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
+		61C45930D122DEB980D3A869 /* ProfileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSheet.swift; sourceTree = "<group>"; };
+		62584FAC8F4D7FBEACE3338D /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
+		62587688D7E283A82AA47FD8 /* DailyCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCardView.swift; sourceTree = "<group>"; };
+		68E478DA547EC09CFC5A5A34 /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
+		6B003B37C6CEF2ADCE739FDD /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		7752224CC097FAA858A7CA90 /* FoodLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLog.swift; sourceTree = "<group>"; };
+		7A513761ECA219C427ADD4B3 /* MealTimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealTimelineView.swift; sourceTree = "<group>"; };
+		7B6C0C222F3F8D6B2FF82019 /* SavoroColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroColors.swift; sourceTree = "<group>"; };
+		828A043A4EA2AD88F3311D0C /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		82AF87E282F4C1AEB6E08F1B /* Food.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Food.swift; sourceTree = "<group>"; };
+		8A2AA0A07547A963F22B4191 /* APIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientTests.swift; sourceTree = "<group>"; };
+		9841B8646A5DC68A89960F91 /* TodayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewModel.swift; sourceTree = "<group>"; };
+		9D95340D807E3CE209E38673 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		9E29CCA1715278872780F085 /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
 		A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroApp.swift; sourceTree = "<group>"; };
+		ABE586EF30AC68FE4A24EC31 /* AnimationPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationPresets.swift; sourceTree = "<group>"; };
 		B0060590BC9F2F185F6EF015 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; };
+		CD3DF88E3A238D4CAA3CB705 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
+		D76B1EFE094E25506A946362 /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
+		DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayScreenTests.swift; sourceTree = "<group>"; };
 		E2FBCF0490BEB23DBB165ED4 /* PlusJakartaSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-ExtraBold.ttf"; sourceTree = "<group>"; };
+		E30DE08FDDE93B6475AFF70A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTests.swift; sourceTree = "<group>"; };
+		E95E9606ED2942B88CD82F66 /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
+		F0D141D16DC1C0B2C9072747 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
-		AA00000000000000000001AA /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
-		AA00000000000000000002AA /* SavoroColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroColors.swift; sourceTree = "<group>"; };
-		AA00000000000000000003AA /* SavoroFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroFonts.swift; sourceTree = "<group>"; };
-		AA00000000000000000004AA /* AnimationPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationPresets.swift; sourceTree = "<group>"; };
-		AA00000000000000000005AA /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
-		AA00000000000000000006AA /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
-		AA00000000000000000007AA /* User.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = User.swift; sourceTree = "<group>"; };
-		AA00000000000000000008AA /* Food.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Food.swift; sourceTree = "<group>"; };
-		AA00000000000000000009AA /* FoodLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLog.swift; sourceTree = "<group>"; };
-		AA0000000000000000000AAA /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
-		AA0000000000000000000BAA /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
-		AA0000000000000000000CAA /* Social.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Social.swift; sourceTree = "<group>"; };
-		AA0000000000000000000DAA /* Kitchen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Kitchen.swift; sourceTree = "<group>"; };
-		AA0000000000000000000EAA /* Grocery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grocery.swift; sourceTree = "<group>"; };
-		AA0000000000000000000FAA /* AnyCodable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodable.swift; sourceTree = "<group>"; };
-		AA00000000000000000010AA /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		AA00000000000000000011AA /* APIError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIError.swift; sourceTree = "<group>"; };
-		AA00000000000000000012AA /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
-		AA00000000000000000013AA /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
-		AA00000000000000000014AA /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
-		AA00000000000000000015AA /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
-		AA00000000000000000016AA /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
-		AA00000000000000000017AA /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
-		FF00000000000000000001AA /* APIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientTests.swift; sourceTree = "<group>"; };
-		FF00000000000000000002AA /* AuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTests.swift; sourceTree = "<group>"; };
-		EE00000000000000000001AA /* SavoroTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SavoroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		0C6AED1ACD42546CE220FE14 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				828A043A4EA2AD88F3311D0C /* APIClient.swift */,
+				68E478DA547EC09CFC5A5A34 /* APIError.swift */,
+				9D95340D807E3CE209E38673 /* AuthService.swift */,
+				6B003B37C6CEF2ADCE739FDD /* KeychainHelper.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 		39628B649357518B095D1915 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				2EEA7CAE46BE1D534D5F5657 /* Savoro.app */,
-				EE00000000000000000001AA /* SavoroTests.xctest */,
+				511DE6F5BE727A2B4024B18D /* SavoroTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		DD00000000000000000001AA /* Tests */ = {
+		411E05E0B9D5729EFFCDDA96 /* Auth */ = {
 			isa = PBXGroup;
 			children = (
-				FF00000000000000000001AA /* APIClientTests.swift */,
-				FF00000000000000000002AA /* AuthTests.swift */,
+				E30DE08FDDE93B6475AFF70A /* LoginView.swift */,
+				62584FAC8F4D7FBEACE3338D /* RegisterView.swift */,
 			);
-			name = Tests;
-			path = Savoro/Tests;
+			path = Auth;
 			sourceTree = "<group>";
 		};
 		5224781163C21952163432F4 /* Savoro */ = {
@@ -120,28 +156,87 @@
 			path = Fonts;
 			sourceTree = "<group>";
 		};
+		6FF49BF7221DE3C893C24E89 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				411E05E0B9D5729EFFCDDA96 /* Auth */,
+				7D449BCEE0DAFB23A5AA1FEA /* Components */,
+				BF680BCBC97C624C2F3708DF /* Today */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7D449BCEE0DAFB23A5AA1FEA /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				9E29CCA1715278872780F085 /* GlassCard.swift */,
+				0CFB7C15EB9EF64DD9D0EF81 /* MacroLineView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		8802CDF8F4B38D6F6C541A2D /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				53D147F670C28D5CC1EAA197 /* AuthViewModel.swift */,
+				9841B8646A5DC68A89960F91 /* TodayViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
 		98C2C94009CFECD5DBCBD920 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				3048FBF816B5C27CADBE93BD /* ContentView.swift */,
 				A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */,
-				CC00000000000000000001AA /* DesignSystem */,
-				CC00000000000000000005AA /* Models */,
-				CC00000000000000000007AA /* Services */,
-				CC00000000000000000002AA /* Utilities */,
-				CC00000000000000000009AA /* ViewModels */,
-				CC00000000000000000003AA /* Views */,
+				E0F142CDBF725906F69E1B8C /* DesignSystem */,
+				BD0FE3DBB342A42369AB2E60 /* Models */,
+				0C6AED1ACD42546CE220FE14 /* Services */,
+				E9DA2E937B8B91ECE1F0EEDC /* Utilities */,
+				8802CDF8F4B38D6F6C541A2D /* ViewModels */,
+				6FF49BF7221DE3C893C24E89 /* Views */,
 			);
 			name = Sources;
 			path = Savoro/Sources;
 			sourceTree = "<group>";
 		};
-		CC00000000000000000009AA /* ViewModels */ = {
+		B2ABB1C9507DE704DAB8FF6B /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				AA00000000000000000015AA /* AuthViewModel.swift */,
+				8A2AA0A07547A963F22B4191 /* APIClientTests.swift */,
+				E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */,
+				DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */,
 			);
-			path = ViewModels;
+			name = Tests;
+			path = Savoro/Tests;
+			sourceTree = "<group>";
+		};
+		BD0FE3DBB342A42369AB2E60 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				F0D141D16DC1C0B2C9072747 /* Chat.swift */,
+				0680B860C08BC7CE544B53C6 /* DailyNutrition.swift */,
+				82AF87E282F4C1AEB6E08F1B /* Food.swift */,
+				7752224CC097FAA858A7CA90 /* FoodLog.swift */,
+				3B111B9F9F88B03F58BD3483 /* Grocery.swift */,
+				13E577C2C0782A632A34E0AA /* Kitchen.swift */,
+				E95E9606ED2942B88CD82F66 /* Recipe.swift */,
+				112EB000D2EE361A15D4742D /* Social.swift */,
+				D76B1EFE094E25506A946362 /* User.swift */,
+				D826C1E1099B728CF0D97524 /* Support */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BF680BCBC97C624C2F3708DF /* Today */ = {
+			isa = PBXGroup;
+			children = (
+				62587688D7E283A82AA47FD8 /* DailyCardView.swift */,
+				7A513761ECA219C427ADD4B3 /* MealTimelineView.swift */,
+				61C45930D122DEB980D3A869 /* ProfileSheet.swift */,
+				09ADB316D0F3A1B4B26F35AE /* TodayView.swift */,
+			);
+			path = Today;
 			sourceTree = "<group>";
 		};
 		CE460240E78B4399AC82B379 = {
@@ -150,9 +245,37 @@
 				F462C4B448433ABC6D733861 /* Resources */,
 				5224781163C21952163432F4 /* Savoro */,
 				98C2C94009CFECD5DBCBD920 /* Sources */,
-				DD00000000000000000001AA /* Tests */,
+				B2ABB1C9507DE704DAB8FF6B /* Tests */,
 				39628B649357518B095D1915 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		D826C1E1099B728CF0D97524 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				1E8AD43F51982F5BB9354149 /* AnyCodable.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		E0F142CDBF725906F69E1B8C /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				ABE586EF30AC68FE4A24EC31 /* AnimationPresets.swift */,
+				7B6C0C222F3F8D6B2FF82019 /* SavoroColors.swift */,
+				2E2928133C3E41DCA5A73417 /* SavoroFonts.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
+		E9DA2E937B8B91ECE1F0EEDC /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				CD3DF88E3A238D4CAA3CB705 /* Color+Hex.swift */,
+				0DD868B5504C2F88CB53E866 /* Constants.swift */,
+				41ADC4AFBACD0A1397509D55 /* HapticManager.swift */,
+			);
+			path = Utilities;
 			sourceTree = "<group>";
 		};
 		F462C4B448433ABC6D733861 /* Resources */ = {
@@ -164,90 +287,27 @@
 			path = Savoro/Resources;
 			sourceTree = "<group>";
 		};
-		CC00000000000000000001AA /* DesignSystem */ = {
-			isa = PBXGroup;
-			children = (
-				AA00000000000000000002AA /* SavoroColors.swift */,
-				AA00000000000000000003AA /* SavoroFonts.swift */,
-				AA00000000000000000004AA /* AnimationPresets.swift */,
-			);
-			path = DesignSystem;
-			sourceTree = "<group>";
-		};
-		CC00000000000000000002AA /* Utilities */ = {
-			isa = PBXGroup;
-			children = (
-				AA00000000000000000001AA /* Color+Hex.swift */,
-				AA00000000000000000010AA /* Constants.swift */,
-				AA00000000000000000006AA /* HapticManager.swift */,
-			);
-			path = Utilities;
-			sourceTree = "<group>";
-		};
-		CC00000000000000000003AA /* Views */ = {
-			isa = PBXGroup;
-			children = (
-				CC00000000000000000008AA /* Auth */,
-				CC00000000000000000004AA /* Components */,
-			);
-			path = Views;
-			sourceTree = "<group>";
-		};
-		CC00000000000000000008AA /* Auth */ = {
-			isa = PBXGroup;
-			children = (
-				AA00000000000000000016AA /* LoginView.swift */,
-				AA00000000000000000017AA /* RegisterView.swift */,
-			);
-			path = Auth;
-			sourceTree = "<group>";
-		};
-		CC00000000000000000004AA /* Components */ = {
-			isa = PBXGroup;
-			children = (
-				AA00000000000000000005AA /* GlassCard.swift */,
-			);
-			path = Components;
-			sourceTree = "<group>";
-		};
-		CC00000000000000000005AA /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				AA00000000000000000007AA /* User.swift */,
-				AA00000000000000000008AA /* Food.swift */,
-				AA00000000000000000009AA /* FoodLog.swift */,
-				AA0000000000000000000AAA /* Recipe.swift */,
-				AA0000000000000000000BAA /* Chat.swift */,
-				AA0000000000000000000CAA /* Social.swift */,
-				AA0000000000000000000DAA /* Kitchen.swift */,
-				AA0000000000000000000EAA /* Grocery.swift */,
-				CC00000000000000000006AA /* Support */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		CC00000000000000000006AA /* Support */ = {
-			isa = PBXGroup;
-			children = (
-				AA0000000000000000000FAA /* AnyCodable.swift */,
-			);
-			path = Support;
-			sourceTree = "<group>";
-		};
-		CC00000000000000000007AA /* Services */ = {
-			isa = PBXGroup;
-			children = (
-				AA00000000000000000013AA /* APIClient.swift */,
-				AA00000000000000000011AA /* APIError.swift */,
-				AA00000000000000000014AA /* AuthService.swift */,
-				AA00000000000000000012AA /* KeychainHelper.swift */,
-			);
-			path = Services;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		899FB92F5CABD9D458FA99F5 /* SavoroTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5AF51DD3374160027704DADA /* Build configuration list for PBXNativeTarget "SavoroTests" */;
+			buildPhases = (
+				DD5D4D7F37D222CBBB71363C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				55164E5756527BB783090D97 /* PBXTargetDependency */,
+			);
+			name = SavoroTests;
+			packageProductDependencies = (
+			);
+			productName = SavoroTests;
+			productReference = 511DE6F5BE727A2B4024B18D /* SavoroTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		EB7D07FF1FA0F3A12122DDCC /* Savoro */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 9F4BE5D7B83AEE939A1FACB9 /* Build configuration list for PBXNativeTarget "Savoro" */;
@@ -266,22 +326,6 @@
 			productReference = 2EEA7CAE46BE1D534D5F5657 /* Savoro.app */;
 			productType = "com.apple.product-type.application";
 		};
-		EE00000000000000000002AA /* SavoroTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = EE00000000000000000005AA /* Build configuration list for PBXNativeTarget "SavoroTests" */;
-			buildPhases = (
-				EE00000000000000000003AA /* Sources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				EE00000000000000000006AA /* PBXTargetDependency */,
-			);
-			name = SavoroTests;
-			productName = SavoroTests;
-			productReference = EE00000000000000000001AA /* SavoroTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -291,12 +335,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
-					EB7D07FF1FA0F3A12122DDCC = {
+					899FB92F5CABD9D458FA99F5 = {
 						ProvisioningStyle = Automatic;
 					};
-					EE00000000000000000002AA = {
+					EB7D07FF1FA0F3A12122DDCC = {
 						ProvisioningStyle = Automatic;
-						TestTargetID = EB7D07FF1FA0F3A12122DDCC;
 					};
 				};
 			};
@@ -315,28 +358,10 @@
 			projectRoot = "";
 			targets = (
 				EB7D07FF1FA0F3A12122DDCC /* Savoro */,
-				EE00000000000000000002AA /* SavoroTests */,
+				899FB92F5CABD9D458FA99F5 /* SavoroTests */,
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXContainerItemProxy section */
-		EE00000000000000000007AA /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 8287BB108503BD1071BD3E27 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = EB7D07FF1FA0F3A12122DDCC;
-			remoteInfo = Savoro;
-		};
-/* End PBXContainerItemProxy section */
-
-/* Begin PBXTargetDependency section */
-		EE00000000000000000006AA /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = EB7D07FF1FA0F3A12122DDCC /* Savoro */;
-			targetProxy = EE00000000000000000007AA /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A63A009E424C691CF8AE1963 /* Resources */ = {
@@ -355,48 +380,64 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		DD5D4D7F37D222CBBB71363C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				699CDA2154F82AB32E2F9793 /* APIClientTests.swift in Sources */,
+				F8C68FBC0F134CDF25110D3E /* AuthTests.swift in Sources */,
+				FC8E4CB743BBBBB7414DDF6D /* TodayScreenTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		FC96A4FAF67B699495002482 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B0608C7FA06BA4EF42305F30 /* APIClient.swift in Sources */,
+				EE6C4801D113786B3364842A /* APIError.swift in Sources */,
+				56CE1E5246BFC5F618FBB63A /* AnimationPresets.swift in Sources */,
+				0258CE1D2FA3A4F035FB0908 /* AnyCodable.swift in Sources */,
+				0BE34BB265D909C13AAD4DEE /* AuthService.swift in Sources */,
+				F39BE13167058460106E7851 /* AuthViewModel.swift in Sources */,
+				4BB65F377A73387D2F5A6AA9 /* Chat.swift in Sources */,
+				A68C8092120BCBF0D651CAD9 /* Color+Hex.swift in Sources */,
+				F22A3F8F6D1D2983F1C1433D /* Constants.swift in Sources */,
 				98CB877742A28C743DF56F07 /* ContentView.swift in Sources */,
+				D2B609308E5BB229BC0FD9A5 /* DailyCardView.swift in Sources */,
+				6B5FEFB6652F43DF3A7A18E7 /* DailyNutrition.swift in Sources */,
+				569AE16470D75EE7AB36F23C /* Food.swift in Sources */,
+				161EBEEA1868CA9E04D2F09D /* FoodLog.swift in Sources */,
+				2C3B5DCB39B39BBC649A9612 /* GlassCard.swift in Sources */,
+				6FA2F7EE792816464AD7C6C7 /* Grocery.swift in Sources */,
+				DB4DA74A27397038960B3EED /* HapticManager.swift in Sources */,
+				86B62E4E968CDB1EC09C062A /* KeychainHelper.swift in Sources */,
+				A747ECF45723DA9AF7F314A1 /* Kitchen.swift in Sources */,
+				37F1E1044A86DB1964D9019C /* LoginView.swift in Sources */,
+				0BF995EEF12120BDBDFC6C53 /* MacroLineView.swift in Sources */,
+				A6757C6F6D46ADBB27745096 /* MealTimelineView.swift in Sources */,
+				19DF80D0FC70EC1B11729AA1 /* ProfileSheet.swift in Sources */,
+				AB0FD4C35B14F7B98242D96E /* Recipe.swift in Sources */,
+				EA381777F08A3DC27D9D851E /* RegisterView.swift in Sources */,
 				B9ECB0379151DF64B1E618C0 /* SavoroApp.swift in Sources */,
-				BB00000000000000000001AA /* Color+Hex.swift in Sources */,
-				BB00000000000000000002AA /* SavoroColors.swift in Sources */,
-				BB00000000000000000003AA /* SavoroFonts.swift in Sources */,
-				BB00000000000000000004AA /* AnimationPresets.swift in Sources */,
-				BB00000000000000000005AA /* GlassCard.swift in Sources */,
-				BB00000000000000000006AA /* HapticManager.swift in Sources */,
-				BB00000000000000000007AA /* User.swift in Sources */,
-				BB00000000000000000008AA /* Food.swift in Sources */,
-				BB00000000000000000009AA /* FoodLog.swift in Sources */,
-				BB0000000000000000000AAA /* Recipe.swift in Sources */,
-				BB0000000000000000000BAA /* Chat.swift in Sources */,
-				BB0000000000000000000CAA /* Social.swift in Sources */,
-				BB0000000000000000000DAA /* Kitchen.swift in Sources */,
-				BB0000000000000000000EAA /* Grocery.swift in Sources */,
-				BB0000000000000000000FAA /* AnyCodable.swift in Sources */,
-				BB00000000000000000010AA /* Constants.swift in Sources */,
-				BB00000000000000000011AA /* APIError.swift in Sources */,
-				BB00000000000000000012AA /* KeychainHelper.swift in Sources */,
-				BB00000000000000000013AA /* APIClient.swift in Sources */,
-				BB00000000000000000014AA /* AuthService.swift in Sources */,
-				BB00000000000000000015AA /* AuthViewModel.swift in Sources */,
-				BB00000000000000000016AA /* LoginView.swift in Sources */,
-				BB00000000000000000017AA /* RegisterView.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		EE00000000000000000003AA /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				TT00000000000000000001AA /* APIClientTests.swift in Sources */,
-				TT00000000000000000002AA /* AuthTests.swift in Sources */,
+				69DBBD618953952B14463B71 /* SavoroColors.swift in Sources */,
+				43BF464ECD0714004ABFE20B /* SavoroFonts.swift in Sources */,
+				2D2BBA8EF32100A8BE3104AD /* Social.swift in Sources */,
+				7CF41F9ABE0EBB61A6D5F2A2 /* TodayView.swift in Sources */,
+				9C725B798F92F44BDEC0AA4B /* TodayViewModel.swift in Sources */,
+				822DD159689E8CB314581F6D /* User.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		55164E5756527BB783090D97 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EB7D07FF1FA0F3A12122DDCC /* Savoro */;
+			targetProxy = 6BEB0D365FD46BCA5464E6E6 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		6BEB15D6F068D43823A87FB7 /* Release */ = {
@@ -432,6 +473,24 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
+		};
+		8CB746F259520189C503B4DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.savoro.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savoro.app/Savoro";
+			};
+			name = Release;
 		};
 		A577AA9F197C7A8FA9F0815F /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -558,35 +617,23 @@
 			};
 			name = Release;
 		};
-		EE00000000000000000008AA /* Debug */ = {
+		DD2D6991282E3DA2475DD74C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.savoro.app.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.savoro.tests;
 				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savoro.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Savoro";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savoro.app/Savoro";
 			};
 			name = Debug;
-		};
-		EE00000000000000000009AA /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.savoro.app.tests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				SWIFT_VERSION = 5.9;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savoro.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Savoro";
-			};
-			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
@@ -600,20 +647,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		5AF51DD3374160027704DADA /* Build configuration list for PBXNativeTarget "SavoroTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD2D6991282E3DA2475DD74C /* Debug */,
+				8CB746F259520189C503B4DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		9F4BE5D7B83AEE939A1FACB9 /* Build configuration list for PBXNativeTarget "Savoro" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7909CA45008407F6572ECB20 /* Debug */,
 				6BEB15D6F068D43823A87FB7 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
-		EE00000000000000000005AA /* Build configuration list for PBXNativeTarget "SavoroTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				EE00000000000000000008AA /* Debug */,
-				EE00000000000000000009AA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

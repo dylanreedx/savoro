@@ -18,7 +18,7 @@ final class AuthViewModel {
     // MARK: Dependencies
 
     private let authService = AuthService()
-    nonisolated private var unauthorizedObserver: NSObjectProtocol?
+    nonisolated(unsafe) private var unauthorizedObserver: NSObjectProtocol?
 
     // MARK: Init
 
