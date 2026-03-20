@@ -3,6 +3,7 @@ import SwiftUI
 struct TodayView: View {
     @Environment(AuthViewModel.self) private var authViewModel
     @State private var viewModel = TodayViewModel()
+    @State private var profileViewModel = ProfileViewModel()
     @State private var showProfile = false
 
     var body: some View {
@@ -26,7 +27,11 @@ struct TodayView: View {
             }
         }
         .sheet(isPresented: $showProfile) {
-            ProfileSheet(isPresented: $showProfile, authVM: authViewModel)
+            ProfileView(
+                isPresented: $showProfile,
+                viewModel: profileViewModel,
+                authVM: authViewModel
+            )
         }
     }
 
