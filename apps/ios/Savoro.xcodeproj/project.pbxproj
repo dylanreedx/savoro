@@ -22,6 +22,7 @@
 		4C0A85017AE0F9C451CA8864 /* PlusJakartaSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F7AA5A5879F85F230CA9C70 /* PlusJakartaSans-Medium.ttf */; };
 		569AE16470D75EE7AB36F23C /* Food.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82AF87E282F4C1AEB6E08F1B /* Food.swift */; };
 		56CE1E5246BFC5F618FBB63A /* AnimationPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE586EF30AC68FE4A24EC31 /* AnimationPresets.swift */; };
+		5B74DC25A1B37633DB000E7B /* ChatServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */; };
 		699CDA2154F82AB32E2F9793 /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2AA0A07547A963F22B4191 /* APIClientTests.swift */; };
 		69DBBD618953952B14463B71 /* SavoroColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C0C222F3F8D6B2FF82019 /* SavoroColors.swift */; };
 		6B5FEFB6652F43DF3A7A18E7 /* DailyNutrition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0680B860C08BC7CE544B53C6 /* DailyNutrition.swift */; };
@@ -36,7 +37,9 @@
 		A68C8092120BCBF0D651CAD9 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3DF88E3A238D4CAA3CB705 /* Color+Hex.swift */; };
 		A747ECF45723DA9AF7F314A1 /* Kitchen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13E577C2C0782A632A34E0AA /* Kitchen.swift */; };
 		AB0FD4C35B14F7B98242D96E /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95E9606ED2942B88CD82F66 /* Recipe.swift */; };
+		AED5EC275CE6199456923ECB /* ChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8E85882AAF9C74BFA7951C /* ChatService.swift */; };
 		B0608C7FA06BA4EF42305F30 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 828A043A4EA2AD88F3311D0C /* APIClient.swift */; };
+		B833F066DB6FBB1310092562 /* SSEParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC97359280DA0043E89B19E4 /* SSEParser.swift */; };
 		B9ECB0379151DF64B1E618C0 /* SavoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */; };
 		CE4618DE6D13F29E8F79D6E7 /* PlusJakartaSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E2FBCF0490BEB23DBB165ED4 /* PlusJakartaSans-ExtraBold.ttf */; };
 		D2B609308E5BB229BC0FD9A5 /* DailyCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62587688D7E283A82AA47FD8 /* DailyCardView.swift */; };
@@ -92,6 +95,7 @@
 		9841B8646A5DC68A89960F91 /* TodayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewModel.swift; sourceTree = "<group>"; };
 		9D95340D807E3CE209E38673 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		9E29CCA1715278872780F085 /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
+		9E8E85882AAF9C74BFA7951C /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatService.swift; sourceTree = "<group>"; };
 		A2C3E0DD4332A52A753C9774 /* SavoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavoroApp.swift; sourceTree = "<group>"; };
 		ABE586EF30AC68FE4A24EC31 /* AnimationPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnimationPresets.swift; sourceTree = "<group>"; };
 		B0060590BC9F2F185F6EF015 /* PlusJakartaSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-Regular.ttf"; sourceTree = "<group>"; };
@@ -102,8 +106,10 @@
 		E30DE08FDDE93B6475AFF70A /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTests.swift; sourceTree = "<group>"; };
 		E95E9606ED2942B88CD82F66 /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
+		EC97359280DA0043E89B19E4 /* SSEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEParser.swift; sourceTree = "<group>"; };
 		F0D141D16DC1C0B2C9072747 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
+		F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatServiceTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -113,7 +119,9 @@
 				828A043A4EA2AD88F3311D0C /* APIClient.swift */,
 				68E478DA547EC09CFC5A5A34 /* APIError.swift */,
 				9D95340D807E3CE209E38673 /* AuthService.swift */,
+				9E8E85882AAF9C74BFA7951C /* ChatService.swift */,
 				6B003B37C6CEF2ADCE739FDD /* KeychainHelper.swift */,
+				EC97359280DA0043E89B19E4 /* SSEParser.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -205,6 +213,7 @@
 			children = (
 				8A2AA0A07547A963F22B4191 /* APIClientTests.swift */,
 				E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */,
+				F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */,
 				DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */,
 			);
 			name = Tests;
@@ -386,6 +395,7 @@
 			files = (
 				699CDA2154F82AB32E2F9793 /* APIClientTests.swift in Sources */,
 				F8C68FBC0F134CDF25110D3E /* AuthTests.swift in Sources */,
+				5B74DC25A1B37633DB000E7B /* ChatServiceTests.swift in Sources */,
 				FC8E4CB743BBBBB7414DDF6D /* TodayScreenTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -401,6 +411,7 @@
 				0BE34BB265D909C13AAD4DEE /* AuthService.swift in Sources */,
 				F39BE13167058460106E7851 /* AuthViewModel.swift in Sources */,
 				4BB65F377A73387D2F5A6AA9 /* Chat.swift in Sources */,
+				AED5EC275CE6199456923ECB /* ChatService.swift in Sources */,
 				A68C8092120BCBF0D651CAD9 /* Color+Hex.swift in Sources */,
 				F22A3F8F6D1D2983F1C1433D /* Constants.swift in Sources */,
 				98CB877742A28C743DF56F07 /* ContentView.swift in Sources */,
@@ -419,6 +430,7 @@
 				19DF80D0FC70EC1B11729AA1 /* ProfileSheet.swift in Sources */,
 				AB0FD4C35B14F7B98242D96E /* Recipe.swift in Sources */,
 				EA381777F08A3DC27D9D851E /* RegisterView.swift in Sources */,
+				B833F066DB6FBB1310092562 /* SSEParser.swift in Sources */,
 				B9ECB0379151DF64B1E618C0 /* SavoroApp.swift in Sources */,
 				69DBBD618953952B14463B71 /* SavoroColors.swift in Sources */,
 				43BF464ECD0714004ABFE20B /* SavoroFonts.swift in Sources */,

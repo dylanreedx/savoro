@@ -94,4 +94,66 @@ actor APIClient {
             throw APIError.decodingError(underlying: error)
         }
     }
+
+    // MARK: - Request Builder (for streaming callers)
+
+    /// Build a `URLRequest` with auth headers and JSON body encoding.
+    /// Exposed so `ChatService` can build a request, then pass it to `streamingRequest`.
+    func buildStreamingRequest(
+        _ endpoint: String,
+        method: HTTPMethod = .post,
+        body: (any Encodable)? = nil,
+        timeoutInterval: TimeInterval = 30
+    ) throws -> URLRequest {
+        guard let url = URL(string: Constants.baseURL + endpoint) else {
+            throw APIError.networkError(underlying: URLError(.badURL))
+        }
+
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = method.rawValue
+        urlRequest.timeoutInterval = timeoutInterval
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let token = KeychainHelper.loadToken() {
+            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+
+        if let body {
+            do {
+                urlRequest.httpBody = try encoder.encode(body)
+            } catch {
+                throw APIError.encodingError(underlying: error)
+            }
+        }
+
+        return urlRequest
+    }
+
+    // MARK: - Streaming Request (SSE)
+
+    /// Returns raw `AsyncBytes` + `URLResponse` for SSE consumption.
+    /// Marked `nonisolated` because `URLSession` is thread-safe and callers
+    /// need to iterate bytes without hopping back to the actor.
+    nonisolated func streamingRequest(_ urlRequest: URLRequest) async throws -> (URLResponse, URLSession.AsyncBytes) {
+        let (bytes, response) = try await URLSession.shared.bytes(for: urlRequest)
+
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.networkError(underlying: URLError(.badServerResponse))
+        }
+
+        switch http.statusCode {
+        case 200..<300:
+            break
+        case 401:
+            KeychainHelper.deleteToken()
+            await MainActor.run {
+                NotificationCenter.default.post(name: Self.unauthorizedNotification, object: nil)
+            }
+            throw APIError.unauthorized
+        default:
+            throw APIError.serverError(statusCode: http.statusCode)
+        }
+
+        return (response, bytes)
+    }
 }

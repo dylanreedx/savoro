@@ -283,3 +283,41 @@ struct ChatMessage: Codable, Identifiable, Equatable, Sendable {
         case updatedAt = "updated_at"
     }
 }
+
+// MARK: - ChatEvent (streaming response envelope)
+
+/// Events emitted by `ChatService.sendMessage()` via `AsyncStream`.
+/// Covers both SSE streaming mode and JSON smart-route mode.
+enum ChatEvent: Sendable {
+    case textDelta(String)
+    case toolCalls([String: AnyCodable])
+    case uiComponents([UIComponent])
+    case done
+    case error(Error)
+}
+
+// MARK: - ChatAttachment
+
+struct ChatAttachment: Codable, Sendable {
+    let type: String        // "image", "barcode", etc.
+    let url: String?
+    let data: String?       // base64 for inline
+}
+
+// MARK: - Smart-Route JSON Response
+
+struct SmartRouteResponse: Codable, Sendable {
+    let messages: [ChatMessage]
+    let uiComponents: [UIComponent]?
+
+    enum CodingKeys: String, CodingKey {
+        case messages
+        case uiComponents = "ui_components"
+    }
+}
+
+// MARK: - Chat History Response
+
+struct ChatHistoryResponse: Codable, Sendable {
+    let messages: [ChatMessage]
+}
