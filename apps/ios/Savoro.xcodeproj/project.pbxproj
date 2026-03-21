@@ -12,7 +12,11 @@
 		0BE34BB265D909C13AAD4DEE /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D95340D807E3CE209E38673 /* AuthService.swift */; };
 		0BF995EEF12120BDBDFC6C53 /* MacroLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CFB7C15EB9EF64DD9D0EF81 /* MacroLineView.swift */; };
 		A2B3C4D5E6F7081929304A5B /* FoodCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C4D5E6F7A8091A2B3C4D5F /* FoodCardView.swift */; };
+		AA11BB22CC33DD44EE55FF66 /* FoodCardState.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB22CC33DD44EE55FF6600AA /* FoodCardState.swift */; };
+		CC33DD44EE55FF6600AABB22 /* FoodCardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD44EE55FF6600AABB22CC33 /* FoodCardTests.swift */; };
 		C3D4E5F6A7B8091A2B3C4D60 /* GenerativeUIRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6A7B8C9D0E1F2A3B4C5 /* GenerativeUIRenderer.swift */; };
+		E1F2A3B4C5D6E7F8091A2B3C /* MealPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2A3B4C5D6E7F8091A2B3C4D /* MealPlanView.swift */; };
+		A3B4C5D6E7F8091A2B3C4D5E /* MealPlanViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4C5D6E7F8091A2B3C4D5E6F /* MealPlanViewTests.swift */; };
 		0D2175E08B8DCC4AE20EC191 /* RecipeDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2B8E824C867BC34D907CD9F /* RecipeDetailView.swift */; };
 		161EBEEA1868CA9E04D2F09D /* FoodLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7752224CC097FAA858A7CA90 /* FoodLog.swift */; };
 		1B61ACADB0A038B743C75A7B /* CookbookViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF06781AB36F70BA8DD5B75 /* CookbookViewModel.swift */; };
@@ -153,8 +157,12 @@
 		E95E9606ED2942B88CD82F66 /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
 		EC97359280DA0043E89B19E4 /* SSEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEParser.swift; sourceTree = "<group>"; };
 		F0D141D16DC1C0B2C9072747 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
+		BB22CC33DD44EE55FF6600AA /* FoodCardState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodCardState.swift; sourceTree = "<group>"; };
+		DD44EE55FF6600AABB22CC33 /* FoodCardTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodCardTests.swift; sourceTree = "<group>"; };
 		B1C2D3E4F5A6071829304050 /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
 		B3C4D5E6F7A8091A2B3C4D5F /* FoodCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodCardView.swift; sourceTree = "<group>"; };
+		F2A3B4C5D6E7F8091A2B3C4D /* MealPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlanView.swift; sourceTree = "<group>"; };
+		B4C5D6E7F8091A2B3C4D5E6F /* MealPlanViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealPlanViewTests.swift; sourceTree = "<group>"; };
 		D4E5F6A7B8C9D0E1F2A3B4C5 /* GenerativeUIRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenerativeUIRenderer.swift; sourceTree = "<group>"; };
 		F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatServiceTests.swift; sourceTree = "<group>"; };
@@ -267,6 +275,7 @@
 			isa = PBXGroup;
 			children = (
 				B3C4D5E6F7A8091A2B3C4D5F /* FoodCardView.swift */,
+				F2A3B4C5D6E7F8091A2B3C4D /* MealPlanView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -322,7 +331,9 @@
 				B7F5E8A0008D9FE2BD6D4E37 /* ProfileTests.swift */,
 				B4D238D7F0E245B4C6011FAF /* SavoroColorsTests.swift */,
 				4B5C6D7E8F9A0B1C2D3E4F5A /* FoodCardViewTests.swift */,
+				DD44EE55FF6600AABB22CC33 /* FoodCardTests.swift */,
 				DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */,
+				B4C5D6E7F8091A2B3C4D5E6F /* MealPlanViewTests.swift */,
 			);
 			name = Tests;
 			path = Savoro/Tests;
@@ -334,6 +345,7 @@
 				F0D141D16DC1C0B2C9072747 /* Chat.swift */,
 				0680B860C08BC7CE544B53C6 /* DailyNutrition.swift */,
 				82AF87E282F4C1AEB6E08F1B /* Food.swift */,
+				BB22CC33DD44EE55FF6600AA /* FoodCardState.swift */,
 				7752224CC097FAA858A7CA90 /* FoodLog.swift */,
 				E95E9606ED2942B88CD82F66 /* Recipe.swift */,
 				D76B1EFE094E25506A946362 /* User.swift */,
@@ -519,7 +531,9 @@
 				D0DB4E52BD72B8EA94E540FA /* ProfileTests.swift in Sources */,
 				282591F7977341282B2250A8 /* SavoroColorsTests.swift in Sources */,
 				3A4B5C6D7E8F9A0B1C2D3E4F /* FoodCardViewTests.swift in Sources */,
+				CC33DD44EE55FF6600AABB22 /* FoodCardTests.swift in Sources */,
 				FC8E4CB743BBBBB7414DDF6D /* TodayScreenTests.swift in Sources */,
+				A3B4C5D6E7F8091A2B3C4D5E /* MealPlanViewTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -547,6 +561,7 @@
 				6B5FEFB6652F43DF3A7A18E7 /* DailyNutrition.swift in Sources */,
 				569AE16470D75EE7AB36F23C /* Food.swift in Sources */,
 				A2B3C4D5E6F7081929304A5B /* FoodCardView.swift in Sources */,
+				AA11BB22CC33DD44EE55FF66 /* FoodCardState.swift in Sources */,
 				161EBEEA1868CA9E04D2F09D /* FoodLog.swift in Sources */,
 				C3D4E5F6A7B8091A2B3C4D60 /* GenerativeUIRenderer.swift in Sources */,
 				2C3B5DCB39B39BBC649A9612 /* GlassCard.swift in Sources */,
@@ -559,6 +574,7 @@
 				95D7B9E8D1160A246210097F /* LogService.swift in Sources */,
 				37F1E1044A86DB1964D9019C /* LoginView.swift in Sources */,
 				0BF995EEF12120BDBDFC6C53 /* MacroLineView.swift in Sources */,
+				E1F2A3B4C5D6E7F8091A2B3C /* MealPlanView.swift in Sources */,
 				A6757C6F6D46ADBB27745096 /* MealTimelineView.swift in Sources */,
 				A52A8CD6B569DAEAD5C66F12 /* ProfileView.swift in Sources */,
 				77ED1BEFA34AC61EBF55C886 /* ProfileViewModel.swift in Sources */,

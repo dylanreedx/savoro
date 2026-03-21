@@ -10,8 +10,7 @@ struct FoodCardView: View {
     let onLog: (String, String, Double, MealType) -> Void
     let onDismiss: () -> Void
 
-    @State private var selectedServingId: String
-    @State private var quantity: Double
+    @State private var state: FoodCardState
     @State private var appeared = false
 
     init(
@@ -22,35 +21,15 @@ struct FoodCardView: View {
         self.props = props
         self.onLog = onLog
         self.onDismiss = onDismiss
-        _selectedServingId = State(initialValue: props.selectedServingId.isEmpty ? (props.servings.first?.id ?? props.servingId) : props.selectedServingId)
-        _quantity = State(initialValue: props.quantity > 0 ? props.quantity : 1.0)
+        _state = State(initialValue: FoodCardState(props: props))
     }
 
-    // MARK: - Computed
+    // MARK: - Computed (delegated to FoodCardState)
 
-    private var selectedServing: FoodCardServing? {
-        props.servings.first { $0.id == selectedServingId } ?? props.servings.first
-    }
-
-    private var displayedCalories: Double {
-        let base = selectedServing?.calories ?? props.calories ?? 0
-        return base * quantity
-    }
-
-    private var displayedProtein: Double {
-        let base = selectedServing?.protein ?? props.protein ?? 0
-        return base * quantity
-    }
-
-    private var displayedCarb: Double {
-        let base = selectedServing?.carb ?? props.carb ?? 0
-        return base * quantity
-    }
-
-    private var displayedFat: Double {
-        let base = selectedServing?.fat ?? props.fat ?? 0
-        return base * quantity
-    }
+    private var displayedCalories: Double { state.displayedCalories }
+    private var displayedProtein: Double  { state.displayedProtein }
+    private var displayedCarb: Double     { state.displayedCarbs }
+    private var displayedFat: Double      { state.displayedFat }
 
     private var sourceColor: Color {
         switch props.source {
@@ -71,9 +50,9 @@ struct FoodCardView: View {
     }
 
     private var quantityFormatted: String {
-        quantity.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(quantity))
-            : String(format: "%.1f", quantity)
+        state.quantity.truncatingRemainder(dividingBy: 1) == 0
+            ? String(Int(state.quantity))
+            : String(format: "%.1f", state.quantity)
     }
 
     // MARK: - Body
@@ -82,7 +61,7 @@ struct FoodCardView: View {
         VStack(alignment: .leading, spacing: 16) {
             headerSection
             macroSection
-            if props.servings.count > 1 {
+            if state.servings.count > 1 {
                 servingPickerSection
             }
             quantityStepperSection
@@ -159,8 +138,11 @@ struct FoodCardView: View {
                 .font(SavoroFonts.caption)
                 .foregroundStyle(SavoroColors.textSecondary)
 
-            Picker("Serving", selection: $selectedServingId) {
-                ForEach(props.servings, id: \.id) { serving in
+            Picker("Serving", selection: Binding(
+                get: { state.selectedServingId },
+                set: { state.selectServing(id: $0) }
+            )) {
+                ForEach(state.servings, id: \.id) { serving in
                     Text(serving.description).tag(serving.id)
                 }
             }
@@ -182,27 +164,27 @@ struct FoodCardView: View {
             HStack(spacing: 12) {
                 Button {
                     withAnimation(AnimationPresets.snappy) {
-                        quantity = max(0.5, quantity - 0.5)
+                        state.decrementQuantity()
                     }
                 } label: {
                     Image(systemName: "minus")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(quantity <= 0.5 ? SavoroColors.Stone.s300 : SavoroColors.textPrimary)
+                        .foregroundStyle(state.quantity <= FoodCardState.quantityMin ? SavoroColors.Stone.s300 : SavoroColors.textPrimary)
                         .frame(width: 28, height: 28)
                         .background(SavoroColors.Stone.s100)
                         .clipShape(Circle())
                 }
-                .disabled(quantity <= 0.5)
+                .disabled(state.quantity <= FoodCardState.quantityMin)
 
                 Text(quantityFormatted)
                     .font(SavoroFonts.subheadline)
                     .foregroundStyle(SavoroColors.textPrimary)
                     .frame(minWidth: 32, alignment: .center)
-                    .animation(nil, value: quantity)
+                    .animation(nil, value: state.quantity)
 
                 Button {
                     withAnimation(AnimationPresets.snappy) {
-                        quantity += 0.5
+                        state.incrementQuantity()
                     }
                 } label: {
                     Image(systemName: "plus")
@@ -238,7 +220,8 @@ struct FoodCardView: View {
 
             // Log This — rose filled
             Button {
-                onLog(props.foodId, selectedServingId, quantity, .snack)
+                let payload = state.logPayload()
+                onLog(payload.foodId, payload.servingId, payload.quantity, payload.mealType)
             } label: {
                 Text("Log This")
                     .font(SavoroFonts.callout)
