@@ -12,23 +12,29 @@ struct ContentView: View {
             TabView(selection: $selectedTab) {
                 TodayView()
                     .tabItem {
-                        Label("Today", systemImage: "sun.max")
+                        Label("Today", systemImage: "house.fill")
                     }
                     .tag(0)
 
                 ChatView(onSend: { _ in })
                     .tabItem {
-                        Label("Chat", systemImage: "bubble.left.and.bubble.right")
+                        Label("Chat", systemImage: "bubble.left.and.bubble.right.fill")
                     }
                     .tag(1)
 
                 CookbookView()
                     .tabItem {
-                        Label("Cookbook", systemImage: "book")
+                        Label("Cookbook", systemImage: "book.fill")
                     }
                     .tag(2)
+
+                DiscoverView()
+                    .tabItem {
+                        Label("Discover", systemImage: "safari.fill")
+                    }
+                    .tag(3)
             }
-            .tint(SavoroColors.rose)
+            .tint(SavoroColors.Blush.b400)
             .fullScreenCover(isPresented: $showBarcodeScanner) {
                 BarcodeScannerView(
                     onScan: { barcode in
