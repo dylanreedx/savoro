@@ -11,7 +11,8 @@ export type UIComponentType =
   | "quick_log_chips"
   | "daily_snapshot"
   | "recipe_card"
-  | "meal_plan";
+  | "meal_plan"
+  | "suggestion_card";
 
 export type UIComponent = {
   type: UIComponentType;
@@ -95,6 +96,31 @@ export type MealPlanProps = {
     fat: number | null;
   } | null;
 };
+
+export type MacroShortfall = {
+  macro: "protein" | "carbs" | "fat";
+  amount: number;
+  unit: "g";
+};
+
+export type SuggestionItem = {
+  id: string;
+  label: string;
+  subtitle?: string;
+  calories?: number | null;
+  protein?: number | null;
+  food_id?: string | null;
+  recipe_id?: string | null;
+};
+
+export type SuggestionCardProps = {
+  suggestions: SuggestionItem[];
+  shortfall?: MacroShortfall | null;
+};
+
+export type SuggestFoodsResult =
+  | { found: false; reason: "no_goals" | "goals_met" }
+  | { found: true; shortfall: MacroShortfall; suggestions: SuggestionItem[] };
 
 /** Tool call result types */
 export type SearchFoodResult = {

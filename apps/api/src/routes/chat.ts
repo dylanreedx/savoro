@@ -330,6 +330,15 @@ function buildTools(userId: string, today: string) {
       }),
       execute: async ({ query, quantity }) => planMealExecutor(userId, today, query, quantity),
     }),
+
+    suggest_foods: tool({
+      description:
+        "Suggest foods to help the user meet their macro goals. Use when the user says things like 'need 40g protein', 'what should I eat', or 'what can I have'. Calculates the biggest macro shortfall and returns top food suggestions.",
+      inputSchema: z.object({
+        query: z.string().optional().describe("Optional user query for context (e.g. 'high protein snack')"),
+      }),
+      execute: async () => suggestFoodsExecutor(userId, today),
+    }),
   };
 }
 
@@ -864,6 +873,134 @@ async function planMealExecutor(userId: string, today: string, query: string, qu
   };
 }
 
+async function suggestFoodsExecutor(userId: string, today: string) {
+  const summary = await getDailySummaryExecutor(userId, today);
+
+  if (!summary.goals) {
+    return { found: false as const, reason: "no_goals" as const };
+  }
+
+  const { totals, goals } = summary;
+
+  // Calculate shortfalls (goal - actual), clamped to 0 minimum
+  const proteinShortfall = Math.max(0, (goals.protein ?? 0) - totals.protein);
+  const carbShortfall = Math.max(0, (goals.carb ?? 0) - totals.carb);
+  const fatShortfall = Math.max(0, (goals.fat ?? 0) - totals.fat);
+
+  if (proteinShortfall === 0 && carbShortfall === 0 && fatShortfall === 0) {
+    return { found: false as const, reason: "goals_met" as const };
+  }
+
+  // Determine dominant-deficit macro
+  let dominantMacro: "protein" | "carbs" | "fat";
+  let shortfallAmount: number;
+
+  if (proteinShortfall >= carbShortfall && proteinShortfall >= fatShortfall) {
+    dominantMacro = "protein";
+    shortfallAmount = proteinShortfall;
+  } else if (carbShortfall >= fatShortfall) {
+    dominantMacro = "carbs";
+    shortfallAmount = carbShortfall;
+  } else {
+    dominantMacro = "fat";
+    shortfallAmount = fatShortfall;
+  }
+
+  // Map macro to serving column name for efficiency scoring
+  const macroCol = dominantMacro === "carbs" ? "carb" : dominantMacro;
+
+  // Query favorites (previously logged foods) ordered by macro efficiency
+  const favRows = await db
+    .select({
+      foodId: food.id,
+      name: food.name,
+      servingId: serving.id,
+      description: serving.description,
+      calories: serving.calories,
+      protein: serving.protein,
+      carb: serving.carb,
+      fat: serving.fat,
+    })
+    .from(favorite)
+    .innerJoin(food, eq(favorite.foodId, food.id))
+    .innerJoin(serving, and(eq(serving.foodId, food.id), sql`${serving.calories} > 0`))
+    .where(eq(favorite.userId, userId))
+    .orderBy(
+      desc(
+        sql`CAST(${macroCol === "protein" ? serving.protein : macroCol === "carb" ? serving.carb : serving.fat} AS REAL) / CAST(${serving.calories} AS REAL)`
+      )
+    )
+    .limit(6)
+    .all();
+
+  // USDA fallback: query high-value USDA/verified foods if fewer than 3 favorites
+  let usdaRows: typeof favRows = [];
+  if (favRows.length < 3) {
+    usdaRows = await db
+      .select({
+        foodId: food.id,
+        name: food.name,
+        servingId: serving.id,
+        description: serving.description,
+        calories: serving.calories,
+        protein: serving.protein,
+        carb: serving.carb,
+        fat: serving.fat,
+      })
+      .from(food)
+      .innerJoin(serving, and(eq(serving.foodId, food.id), sql`${serving.calories} > 0`))
+      .where(eq(food.isVerified, true))
+      .orderBy(
+        desc(
+          sql`CAST(${macroCol === "protein" ? serving.protein : macroCol === "carb" ? serving.carb : serving.fat} AS REAL) / CAST(${serving.calories} AS REAL)`
+        )
+      )
+      .limit(6)
+      .all();
+  }
+
+  // Deduplicate by foodId, favorites take priority
+  const seen = new Set<string>();
+  const combined: typeof favRows = [];
+  for (const row of [...favRows, ...usdaRows]) {
+    if (!seen.has(row.foodId)) {
+      seen.add(row.foodId);
+      combined.push(row);
+    }
+  }
+
+  const top3 = combined.slice(0, 3);
+
+  const suggestions = top3.map((row, idx) => {
+    const macroG = macroCol === "protein"
+      ? (row.protein ?? 0)
+      : macroCol === "carb"
+      ? (row.carb ?? 0)
+      : (row.fat ?? 0);
+    const matchScore = row.calories && row.calories > 0 ? macroG / row.calories : 0;
+
+    return {
+      id: row.servingId ?? `${row.foodId}-${idx}`,
+      label: row.name,
+      subtitle: row.description ?? undefined,
+      calories: row.calories ?? undefined,
+      protein: row.protein ?? undefined,
+      food_id: row.foodId,
+      recipe_id: null as string | null,
+      matchScore,
+    };
+  });
+
+  // Sort by matchScore desc, break ties by name asc for determinism
+  suggestions.sort((a, b) => b.matchScore - a.matchScore || a.label.localeCompare(b.label));
+
+  return {
+    found: true as const,
+    shortfall: { macro: dominantMacro, amount: Math.round(shortfallAmount), unit: "g" as const },
+    suggestions: suggestions.map(({ matchScore: _ms, ...s }) => s),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Smart route handlers
 // ---------------------------------------------------------------------------
@@ -1039,6 +1176,19 @@ function buildUIComponents(
               currentMacros: r.currentMacros,
               projectedMacros: r.projectedMacros,
               goals: r.goals,
+            },
+          });
+        }
+        break;
+      }
+      case "suggest_foods": {
+        const r = result as { found: boolean; reason?: string; shortfall?: { macro: string; amount: number; unit: string }; suggestions?: unknown[] };
+        if (r.found && r.suggestions?.length) {
+          components.push({
+            type: "suggestion_card",
+            props: {
+              suggestions: r.suggestions,
+              shortfall: r.shortfall ?? null,
             },
           });
         }
