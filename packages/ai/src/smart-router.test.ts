@@ -123,3 +123,33 @@ describe("smartRoute", () => {
     expect(smartRoute("1 cup oats")).toEqual({ routed: false });
   });
 });
+
+// Downstream mapping reference:
+// - type:"recent"   → quick_log_chips UI component (renders recent food chips)
+// - routed:false with plan language → LLM may invoke plan_meal tool
+
+describe("task spec scenarios and downstream concept mapping", () => {
+  it("does NOT route 'if I eat salmon for dinner' (6 words) — LLM handles, may call plan_meal tool", () => {
+    expect(smartRoute("if I eat salmon for dinner")).toEqual({ routed: false });
+  });
+
+  it("routes 'if I eat pasta' (4 words) — word count, not 'if', is the deciding factor", () => {
+    expect(smartRoute("if I eat pasta")).toEqual({ routed: true, type: "search", query: "if I eat pasta" });
+  });
+
+  it(
+    // TODO: QUESTION_INDICATORS should detect plan intent so 'help me plan my meals' routes to LLM instead of search
+    "routes 'help me plan my meals' (5 words) — currently hits word-count path, not plan-intent path",
+    () => {
+      expect(smartRoute("help me plan my meals")).toEqual({
+        routed: true,
+        type: "search",
+        query: "help me plan my meals",
+      });
+    }
+  );
+
+  it("does NOT route question with '?' — question mark path via QUESTION_INDICATORS", () => {
+    expect(smartRoute("what has more protein eggs or chicken?")).toEqual({ routed: false });
+  });
+});
