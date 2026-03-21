@@ -945,3 +945,100 @@ struct RecipeTagDisplayTests {
         #expect(mapped.contains(.vegan))
     }
 }
+
+// MARK: - RecipeIngredientDraft Macro Tests
+
+@Suite("RecipeIngredientDraft macro calculation")
+struct RecipeIngredientDraftMacroTests {
+
+    /// Helper: create a draft with cached macros and a quantity.
+    private func linkedDraft(
+        label: String = "Chicken",
+        quantity: Double,
+        protein: Double,
+        carb: Double,
+        fat: Double
+    ) -> RecipeIngredientDraft {
+        var d = RecipeIngredientDraft(label: label, quantity: quantity, foodId: "food-1")
+        d.cachedProtein = protein
+        d.cachedCarb = carb
+        d.cachedFat = fat
+        return d
+    }
+
+    /// Helper: create a free-text draft (no foodId, no cached macros).
+    private func freeDraft(label: String = "Salt", quantity: Double? = nil) -> RecipeIngredientDraft {
+        RecipeIngredientDraft(label: label, quantity: quantity)
+    }
+
+    @Test("all linked ingredients calculate correct per-serving totals")
+    func allLinked() {
+        // Two servings of 30g protein each = 60 total / 2 servings = 30 per serving
+        let drafts = [
+            linkedDraft(quantity: 1, protein: 30, carb: 10, fat: 5),
+            linkedDraft(quantity: 2, protein: 10, carb: 5, fat: 2)
+        ]
+        let result = RecipeIngredientDraft.calculatePerServingMacros(ingredients: drafts, servings: 2)
+        #expect(result != nil)
+        // totalProtein = 30*1 + 10*2 = 50; per serving = 25
+        #expect(result!.protein == 25)
+        // totalCarb = 10*1 + 5*2 = 20; per serving = 10
+        #expect(result!.carb == 10)
+        // totalFat = 5*1 + 2*2 = 9; per serving = 4.5
+        #expect(result!.fat == 4.5)
+    }
+
+    @Test("mixed linked and free-text ingredients ignore free-text for macro sum")
+    func mixedLinkedAndFreeText() {
+        let drafts = [
+            linkedDraft(quantity: 1, protein: 20, carb: 8, fat: 3),
+            freeDraft()
+        ]
+        let result = RecipeIngredientDraft.calculatePerServingMacros(ingredients: drafts, servings: 1)
+        #expect(result != nil)
+        #expect(result!.protein == 20)
+        #expect(result!.carb == 8)
+        #expect(result!.fat == 3)
+    }
+
+    @Test("all free-text ingredients produce zero totals")
+    func allFreeText() {
+        let drafts = [freeDraft(), freeDraft(label: "Pepper")]
+        let result = RecipeIngredientDraft.calculatePerServingMacros(ingredients: drafts, servings: 2)
+        #expect(result != nil)
+        #expect(result!.protein == 0)
+        #expect(result!.carb == 0)
+        #expect(result!.fat == 0)
+    }
+
+    @Test("linked ingredient with nil quantity is excluded from sum")
+    func nilQuantityExcluded() {
+        var d = RecipeIngredientDraft(label: "Egg", quantity: nil, foodId: "food-2")
+        d.cachedProtein = 6; d.cachedCarb = 1; d.cachedFat = 4
+        let result = RecipeIngredientDraft.calculatePerServingMacros(ingredients: [d], servings: 1)
+        #expect(result != nil)
+        #expect(result!.protein == 0)
+    }
+
+    @Test("servings zero returns nil")
+    func servingsZeroReturnsNil() {
+        let drafts = [linkedDraft(quantity: 1, protein: 10, carb: 5, fat: 2)]
+        let result = RecipeIngredientDraft.calculatePerServingMacros(ingredients: drafts, servings: 0)
+        #expect(result == nil)
+    }
+
+    @Test("cachedProtein/cachedCarb/cachedFat are excluded from JSON encoding")
+    func cachedMacroFieldsExcludedFromEncoding() throws {
+        var d = RecipeIngredientDraft(label: "Tofu", quantity: 1.5, foodId: "food-3")
+        d.cachedProtein = 8; d.cachedCarb = 2; d.cachedFat = 4
+        let data = try JSONEncoder().encode(d)
+        let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] ?? [:]
+        #expect(json["cachedProtein"] == nil)
+        #expect(json["cachedCarb"] == nil)
+        #expect(json["cachedFat"] == nil)
+        // Verify standard fields are still present
+        #expect(json["label"] as? String == "Tofu")
+        #expect(json["quantity"] as? Double == 1.5)
+        #expect(json["food_id"] as? String == "food-3")
+    }
+}

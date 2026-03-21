@@ -25,6 +25,9 @@ struct RecipeEditorView: View {
     @State private var isLoadingIngredients = false
     @State private var errorMessage: String?
 
+    // foodId -> [ServingSummary] cache used to hydrate ingredient macros
+    @State private var macroServingsCache: [String: [ServingSummary]] = [:]
+
     init(mode: EditorMode, viewModel: CookbookViewModel) {
         self.mode = mode
         self.viewModel = viewModel
@@ -60,10 +63,28 @@ struct RecipeEditorView: View {
         }
     }
 
+    /// Per-serving macros summed from ingredients with cached macro data, or nil when servings==0.
+    private var livePerServingMacros: (protein: Double, carb: Double, fat: Double)? {
+        RecipeIngredientDraft.calculatePerServingMacros(
+            ingredients: ingredientDrafts,
+            servings: servings
+        )
+    }
+
+    /// True when at least one linked ingredient is missing cached macros (free-text or failed fetch).
+    private var hasMacroGaps: Bool {
+        ingredientDrafts.contains { draft in
+            guard !draft.label.trimmingCharacters(in: .whitespaces).isEmpty,
+                  draft.foodId != nil else { return false }
+            return draft.cachedProtein == nil
+        }
+    }
+
     var body: some View {
         Form {
             detailsSection
             ingredientsSection
+            macroPreviewSection
             instructionsSection
             settingsSection
 
@@ -111,6 +132,10 @@ struct RecipeEditorView: View {
                 ingredientDrafts = [RecipeIngredientDraft(label: "")]
             }
             isLoadingIngredients = false
+            await hydrateIngredientMacros()
+        }
+        .onChange(of: ingredientDrafts) { _, _ in
+            Task { await hydrateIngredientMacros() }
         }
     }
 
@@ -219,6 +244,75 @@ struct RecipeEditorView: View {
         Section("Settings") {
             Toggle("Public recipe", isOn: $isPublic)
                 .font(SavoroFonts.body)
+        }
+    }
+
+    @ViewBuilder
+    private var macroPreviewSection: some View {
+        let linkedIngredients = ingredientDrafts.filter {
+            !$0.label.trimmingCharacters(in: .whitespaces).isEmpty && $0.foodId != nil
+        }
+        if !linkedIngredients.isEmpty {
+            Section("Nutrition (per serving)") {
+                if let macros = livePerServingMacros {
+                    HStack {
+                        MacroLineView(protein: macros.protein, carb: macros.carb, fat: macros.fat)
+                        Spacer()
+                        if hasMacroGaps {
+                            Text("Some macros unknown")
+                                .font(SavoroFonts.caption)
+                                .foregroundStyle(SavoroColors.textSecondary)
+                        }
+                    }
+                } else {
+                    Text("Macros unavailable")
+                        .font(SavoroFonts.caption)
+                        .foregroundStyle(SavoroColors.textSecondary)
+                }
+            }
+        }
+    }
+
+    // MARK: - Macro Hydration
+
+    private func hydrateIngredientMacros() async {
+        let foodService = FoodService()
+        // Collect unique foodIds that need fetching
+        let uniqueFoodIds = Set(ingredientDrafts.compactMap(\.foodId))
+            .filter { macroServingsCache[$0] == nil }
+
+        if !uniqueFoodIds.isEmpty {
+            await withTaskGroup(of: (String, [ServingSummary])?.self) { group in
+                for foodId in uniqueFoodIds {
+                    group.addTask {
+                        guard let servings = try? await foodService.getServings(foodId: foodId) else {
+                            return nil
+                        }
+                        return (foodId, servings)
+                    }
+                }
+                for await result in group {
+                    if let (foodId, servings) = result {
+                        macroServingsCache[foodId] = servings
+                    }
+                }
+            }
+        }
+
+        // Apply cached servings to each ingredient draft
+        for index in ingredientDrafts.indices {
+            let draft = ingredientDrafts[index]
+            guard let foodId = draft.foodId,
+                  let servings = macroServingsCache[foodId] else {
+                continue
+            }
+            // Prefer matching servingId, then isDefault, then first
+            let serving = servings.first { $0.id == draft.servingId }
+                ?? servings.first { $0.isDefault == true }
+                ?? servings.first
+            ingredientDrafts[index].cachedProtein = serving?.protein
+            ingredientDrafts[index].cachedCarb = serving?.carb
+            ingredientDrafts[index].cachedFat = serving?.fat
         }
     }
 

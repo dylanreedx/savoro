@@ -247,12 +247,51 @@ struct RecipeIngredientDraft: Encodable, Sendable, Identifiable {
     var foodId: String?
     var servingId: String?
 
+    // Cached macro values populated by hydrateIngredientMacros(); excluded from encoding.
+    var cachedProtein: Double? = nil
+    var cachedCarb: Double? = nil
+    var cachedFat: Double? = nil
+
     enum CodingKeys: String, CodingKey {
         case label
         case quantity
         case unit
         case foodId = "food_id"
         case servingId = "serving_id"
+        // cachedProtein/cachedCarb/cachedFat are intentionally omitted
+    }
+}
+
+// MARK: - Macro Calculation
+
+extension RecipeIngredientDraft {
+    /// Returns per-serving (protein, carb, fat) given a list of ingredient drafts and a servings count.
+    /// Ingredients without cached macros (free-text) are ignored.
+    /// Returns nil if servings == 0. Returns (0, 0, 0) when ingredients list is empty.
+    static func calculatePerServingMacros(
+        ingredients: [RecipeIngredientDraft],
+        servings: Int
+    ) -> (protein: Double, carb: Double, fat: Double)? {
+        guard servings > 0 else { return nil }
+
+        var totalProtein: Double = 0
+        var totalCarb: Double = 0
+        var totalFat: Double = 0
+
+        for ingredient in ingredients {
+            guard
+                let protein = ingredient.cachedProtein,
+                let carb = ingredient.cachedCarb,
+                let fat = ingredient.cachedFat,
+                let quantity = ingredient.quantity
+            else { continue }
+            totalProtein += protein * quantity
+            totalCarb += carb * quantity
+            totalFat += fat * quantity
+        }
+
+        let s = Double(servings)
+        return (totalProtein / s, totalCarb / s, totalFat / s)
     }
 }
 
