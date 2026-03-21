@@ -16,7 +16,7 @@ struct ContentView: View {
                     }
                     .tag(0)
 
-                Text("Chat")
+                ChatView(onSend: { _ in })
                     .tabItem {
                         Label("Chat", systemImage: "bubble.left.and.bubble.right")
                     }
