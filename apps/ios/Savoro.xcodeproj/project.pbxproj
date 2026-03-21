@@ -82,6 +82,9 @@
 		F39BE13167058460106E7851 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D147F670C28D5CC1EAA197 /* AuthViewModel.swift */; };
 		F8C68FBC0F134CDF25110D3E /* AuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */; };
 		FC8E4CB743BBBBB7414DDF6D /* TodayScreenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */; };
+		C2D3E4F5A6B707182930AABB /* KitchenGroup.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F607182930AAAA /* KitchenGroup.swift */; };
+		D3E4F5A6B7C807182930BBCC /* GroupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F607182930AABB11 /* GroupView.swift */; };
+		E4F5A6B7C8091A2B3C4D5E6A /* KitchenGroupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A6B7C8091A2B3C4D5E6A7B /* KitchenGroupTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -172,6 +175,9 @@
 		B3C4D5E6F7A8091A2B3C4D5E /* ChatViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModelTests.swift; sourceTree = "<group>"; };
 		FF1335A3F9B23BE07A13492A /* CookbookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookbookTests.swift; sourceTree = "<group>"; };
 		FF22003344556677889EE11 /* RecipeTagTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeTagTests.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F607182930AAAA /* KitchenGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KitchenGroup.swift; sourceTree = "<group>"; };
+		B2C3D4E5F607182930AABB11 /* GroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupView.swift; sourceTree = "<group>"; };
+		F5A6B7C8091A2B3C4D5E6A7B /* KitchenGroupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KitchenGroupTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -258,11 +264,20 @@
 				C3D4E5F6A7B8091A2B3C4D5E /* Chat */,
 				7D449BCEE0DAFB23A5AA1FEA /* Components */,
 				D638CD3CD39674AB7360B3C7 /* Cookbook */,
+				E4F5A6B7C8D9E0F1A2B3CCDD /* Discover */,
 				54EC5F0D9F181AC868B509EB /* Profile */,
 				4FFE232DF2B1D8F9850EB4E6 /* Scanner */,
 				BF680BCBC97C624C2F3708DF /* Today */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		E4F5A6B7C8D9E0F1A2B3CCDD /* Discover */ = {
+			isa = PBXGroup;
+			children = (
+				B2C3D4E5F607182930AABB11 /* GroupView.swift */,
+			);
+			path = Discover;
 			sourceTree = "<group>";
 		};
 		C3D4E5F6A7B8091A2B3C4D5E /* Chat */ = {
@@ -339,6 +354,7 @@
 				DD44EE55FF6600AABB22CC33 /* FoodCardTests.swift */,
 				DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */,
 				B4C5D6E7F8091A2B3C4D5E6F /* MealPlanViewTests.swift */,
+				F5A6B7C8091A2B3C4D5E6A7B /* KitchenGroupTests.swift */,
 			);
 			name = Tests;
 			path = Savoro/Tests;
@@ -352,6 +368,7 @@
 				82AF87E282F4C1AEB6E08F1B /* Food.swift */,
 				BB22CC33DD44EE55FF6600AA /* FoodCardState.swift */,
 				7752224CC097FAA858A7CA90 /* FoodLog.swift */,
+				A1B2C3D4E5F607182930AAAA /* KitchenGroup.swift */,
 				E95E9606ED2942B88CD82F66 /* Recipe.swift */,
 				DD22EE33FF4400112233CC11 /* RecipeTag.swift */,
 				D76B1EFE094E25506A946362 /* User.swift */,
@@ -541,6 +558,7 @@
 				CC33DD44EE55FF6600AABB22 /* FoodCardTests.swift in Sources */,
 				FC8E4CB743BBBBB7414DDF6D /* TodayScreenTests.swift in Sources */,
 				A3B4C5D6E7F8091A2B3C4D5E /* MealPlanViewTests.swift in Sources */,
+				E4F5A6B7C8091A2B3C4D5E6A /* KitchenGroupTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -602,6 +620,8 @@
 				822DD159689E8CB314581F6D /* User.swift in Sources */,
 				9DC887290B955EA2926C1C28 /* ViewfinderOverlay.swift in Sources */,
 				375CD9F8E56AC75C0670EF9E /* WeeklyTrendsView.swift in Sources */,
+				C2D3E4F5A6B707182930AABB /* KitchenGroup.swift in Sources */,
+				D3E4F5A6B7C807182930BBCC /* GroupView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
