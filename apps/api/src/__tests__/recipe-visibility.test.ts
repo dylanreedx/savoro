@@ -442,6 +442,105 @@ describe("recipe share — POST /:id/share", () => {
 });
 
 // ---------------------------------------------------------------------------
+// Tests — POST /:id/fork via kitchen share
+// ---------------------------------------------------------------------------
+
+/** Replicates the POST /:id/fork logic from recipe.ts (fixed version). */
+async function forkRecipeExecutor(
+  originalId: string,
+  callerId: string,
+): Promise<{ status: number; body: Record<string, unknown> }> {
+  const { recipe, recipeShare, kitchenMember } = schema;
+
+  const original = await testDb
+    .select()
+    .from(recipe)
+    .where(eq(recipe.id, originalId))
+    .get();
+
+  if (!original) return { status: 404, body: { error: "Recipe not found" } };
+
+  if (original.userId === callerId) {
+    return { status: 400, body: { error: "Cannot fork your own recipe" } };
+  }
+
+  if (!original.isPublic) {
+    const sharedRow = await testDb
+      .select({ one: sql<number>`1` })
+      .from(recipeShare)
+      .innerJoin(
+        kitchenMember,
+        and(
+          eq(kitchenMember.kitchenId, recipeShare.sharedToKitchenId),
+          eq(kitchenMember.userId, callerId),
+        ),
+      )
+      .where(eq(recipeShare.recipeId, originalId))
+      .get();
+
+    if (!sharedRow) {
+      return { status: 403, body: { error: "You do not have permission to fork this recipe" } };
+    }
+  }
+
+  // Insert the fork
+  const now = new Date().toISOString();
+  const forkedId = createId();
+  await testDb.insert(recipe).values({
+    id: forkedId,
+    userId: callerId,
+    slug: `forked-${forkedId}`,
+    title: original.title,
+    description: original.description,
+    instructions: original.instructions,
+    servings: original.servings,
+    prepTime: original.prepTime,
+    cookTime: original.cookTime,
+    imageUrl: original.imageUrl,
+    isPublic: false,
+    tags: original.tags ?? [],
+    caloriesPerServing: original.caloriesPerServing,
+    proteinPerServing: original.proteinPerServing,
+    carbPerServing: original.carbPerServing,
+    fatPerServing: original.fatPerServing,
+    forkCount: 0,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return { status: 201, body: { recipe: { id: forkedId } } };
+}
+
+describe("fork via kitchen share", () => {
+  // 16. Kitchen member can fork a recipe shared to their kitchen
+  it("kitchen member can fork a recipe shared to their kitchen — 201", async () => {
+    const ownerId = await insertUser();
+    const memberId = await insertUser();
+    const recipeId = await insertRecipe(ownerId, { isPublic: false });
+    const kitchenId = await insertKitchen(ownerId);
+    await addKitchenMember(kitchenId, memberId);
+    await shareRecipeToKitchen(recipeId, ownerId, kitchenId);
+
+    const result = await forkRecipeExecutor(recipeId, memberId);
+    expect(result.status).toBe(201);
+    expect((result.body.recipe as { id: string }).id).toBeTruthy();
+  });
+
+  // 17. Non-member gets 403 when trying to fork a non-public, non-owned recipe shared to another kitchen
+  it("non-member gets 403 when forking a recipe shared to a kitchen they are not in", async () => {
+    const ownerId = await insertUser();
+    const nonMemberId = await insertUser();
+    const recipeId = await insertRecipe(ownerId, { isPublic: false });
+    const kitchenId = await insertKitchen(ownerId);
+    // recipe is shared to ownerId's kitchen, but nonMemberId is not in it
+    await shareRecipeToKitchen(recipeId, ownerId, kitchenId);
+
+    const result = await forkRecipeExecutor(recipeId, nonMemberId);
+    expect(result.status).toBe(403);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Regression: route ordering — /feed and /public/* not captured by /:id
 // ---------------------------------------------------------------------------
 describe("route ordering regression", () => {

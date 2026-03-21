@@ -10,6 +10,24 @@ const recipeRoutes = new Hono<AuthEnv>();
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Returns a subquery that evaluates to 1 if `recipe.id` is shared to a kitchen
+ * that `userId` belongs to. Reused by GET /:id and POST /:id/fork.
+ */
+function kitchenShareSubquery(userId: string) {
+  return db
+    .select({ one: sql<number>`1` })
+    .from(recipeShare)
+    .innerJoin(
+      kitchenMember,
+      and(
+        eq(kitchenMember.kitchenId, recipeShare.sharedToKitchenId),
+        eq(kitchenMember.userId, userId),
+      ),
+    )
+    .where(eq(recipeShare.recipeId, recipe.id));
+}
+
 /** Generate a URL-safe slug from a title */
 function slugify(title: string): string {
   return title
@@ -601,24 +619,12 @@ recipeRoutes.get("/:id", optionalAuth, async (c) => {
   // Build visibility condition: owner OR public OR kitchen-shared to a kitchen the caller belongs to
   let visibilityCondition;
   if (userId) {
-    const kitchenSharedSubquery = db
-      .select({ one: sql<number>`1` })
-      .from(recipeShare)
-      .innerJoin(
-        kitchenMember,
-        and(
-          eq(kitchenMember.kitchenId, recipeShare.sharedToKitchenId),
-          eq(kitchenMember.userId, userId),
-        ),
-      )
-      .where(eq(recipeShare.recipeId, recipe.id));
-
     visibilityCondition = and(
       eq(recipe.id, recipeId),
       or(
         eq(recipe.userId, userId),
         eq(recipe.isPublic, true),
-        exists(kitchenSharedSubquery),
+        exists(kitchenShareSubquery(userId)),
       ),
     );
   } else {
@@ -868,13 +874,29 @@ recipeRoutes.post("/:id/fork", requireAuth, async (c) => {
     return c.json({ error: "Recipe not found" }, 404);
   }
 
-  if (!original.isPublic && original.userId !== userId) {
-    return c.json({ error: "Recipe not found" }, 404);
-  }
-
-  // Cannot fork your own recipe
+  // Cannot fork your own recipe (check before permission so we return 400, not 403)
   if (original.userId === userId) {
     return c.json({ error: "Cannot fork your own recipe" }, 400);
+  }
+
+  // Check access: public OR shared to a kitchen the caller belongs to
+  if (!original.isPublic) {
+    const sharedRow = await db
+      .select({ one: sql<number>`1` })
+      .from(recipeShare)
+      .innerJoin(
+        kitchenMember,
+        and(
+          eq(kitchenMember.kitchenId, recipeShare.sharedToKitchenId),
+          eq(kitchenMember.userId, userId),
+        ),
+      )
+      .where(eq(recipeShare.recipeId, originalId))
+      .get();
+
+    if (!sharedRow) {
+      return c.json({ error: "You do not have permission to fork this recipe" }, 403);
+    }
   }
 
   const now = new Date().toISOString();
