@@ -29,6 +29,7 @@ private func makeUserGoal(
 // MARK: - intensityOpacity Tests
 
 @Suite("ProfileViewModel.intensityOpacity")
+@MainActor
 struct IntensityOpacityTests {
 
     @Test("count 0 returns 0.0")

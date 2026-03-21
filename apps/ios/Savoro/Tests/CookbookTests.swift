@@ -263,6 +263,7 @@ struct RecipeDecodingTests {
 // MARK: - CookbookViewModel Filtering Tests
 
 @Suite("CookbookViewModel filtering")
+@MainActor
 struct CookbookViewModelFilteringTests {
 
     private func makeVM(recipes: [Recipe]) -> CookbookViewModel {
