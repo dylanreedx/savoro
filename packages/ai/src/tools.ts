@@ -111,6 +111,15 @@ export const logRecipe = tool({
   }),
 });
 
+export const planMeal = tool({
+  description:
+    "Project macros for a hypothetical meal — use when the user asks 'if I eat X' or 'what if I have X for dinner'. Searches for the food and calculates current + projected macro totals without logging anything.",
+  inputSchema: z.object({
+    query: z.string().describe("Food name or description to project"),
+    quantity: z.number().positive().default(1).describe("Number of servings"),
+  }),
+});
+
 export const agentTools = {
   search_food: searchFood,
   lookup_barcode: lookupBarcode,
@@ -121,4 +130,5 @@ export const agentTools = {
   get_date_log: getDateLog,
   search_recipes: searchRecipes,
   log_recipe: logRecipe,
+  plan_meal: planMeal,
 };

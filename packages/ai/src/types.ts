@@ -10,7 +10,8 @@ export type UIComponentType =
   | "food_list"
   | "quick_log_chips"
   | "daily_snapshot"
-  | "recipe_card";
+  | "recipe_card"
+  | "meal_plan";
 
 export type UIComponent = {
   type: UIComponentType;
@@ -73,6 +74,26 @@ export type ConfirmButtonProps = {
   quantity: number;
   meal: "breakfast" | "lunch" | "dinner" | "snack";
   label: string;
+};
+
+export type MealPlanProps = {
+  suggestedFood: {
+    name: string;
+    calories: number | null;
+    protein: number | null;
+    carb: number | null;
+    fat: number | null;
+    servingDescription: string;
+    quantity: number;
+  };
+  currentMacros: { calories: number; protein: number; carb: number; fat: number };
+  projectedMacros: { calories: number; protein: number; carb: number; fat: number };
+  goals: {
+    calories: number | null;
+    protein: number | null;
+    carb: number | null;
+    fat: number | null;
+  } | null;
 };
 
 /** Tool call result types */

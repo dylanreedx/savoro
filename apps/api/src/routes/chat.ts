@@ -320,6 +320,16 @@ function buildTools(userId: string, today: string) {
       execute: async ({ recipeId, quantity, meal }) =>
         logRecipeExecutor(userId, today, recipeId, quantity, meal),
     }),
+
+    plan_meal: tool({
+      description:
+        "Project macros for a hypothetical meal — use when the user asks 'if I eat X' or 'what if I have X for dinner'. Searches for the food and calculates current + projected macro totals without logging anything.",
+      inputSchema: z.object({
+        query: z.string().describe("Food name or description to project"),
+        quantity: z.number().positive().default(1).describe("Number of servings"),
+      }),
+      execute: async ({ query, quantity }) => planMealExecutor(userId, today, query, quantity),
+    }),
   };
 }
 
@@ -818,6 +828,42 @@ async function logRecipeExecutor(
   return getDailySummaryExecutor(userId, today);
 }
 
+async function planMealExecutor(userId: string, today: string, query: string, quantity: number) {
+  const [searchResult, summaryResult] = await Promise.all([
+    searchFoodExecutor(query, 1),
+    getDailySummaryExecutor(userId, today),
+  ]);
+
+  if (!searchResult.foods.length) {
+    return { found: false, error: `No food found for "${query}"` };
+  }
+
+  const f = searchResult.foods[0]!;
+  const current = summaryResult.totals;
+  const goals = summaryResult.goals;
+
+  return {
+    found: true,
+    suggestedFood: {
+      name: f.name,
+      calories: f.calories,
+      protein: f.protein,
+      carb: f.carb,
+      fat: f.fat,
+      servingDescription: f.servingDescription,
+      quantity,
+    },
+    currentMacros: current,
+    projectedMacros: {
+      calories: Math.round(current.calories + (f.calories ?? 0) * quantity),
+      protein: Math.round(current.protein + (f.protein ?? 0) * quantity),
+      carb: Math.round(current.carb + (f.carb ?? 0) * quantity),
+      fat: Math.round(current.fat + (f.fat ?? 0) * quantity),
+    },
+    goals,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Smart route handlers
 // ---------------------------------------------------------------------------
@@ -980,6 +1026,21 @@ function buildUIComponents(
         const r = result as { totals: unknown; goals: unknown; logged?: boolean; error?: string };
         if (r.totals) {
           components.push({ type: "macro_summary", props: r });
+        }
+        break;
+      }
+      case "plan_meal": {
+        const r = result as { found: boolean; suggestedFood?: unknown; currentMacros?: unknown; projectedMacros?: unknown; goals?: unknown };
+        if (r.found) {
+          components.push({
+            type: "meal_plan",
+            props: {
+              suggestedFood: r.suggestedFood,
+              currentMacros: r.currentMacros,
+              projectedMacros: r.projectedMacros,
+              goals: r.goals,
+            },
+          });
         }
         break;
       }
