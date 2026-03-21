@@ -6,6 +6,9 @@ struct RecipeDetailView: View {
 
     @State private var servings: Int
     @State private var showEditor = false
+    @State private var ingredients: [RecipeIngredient] = []
+    @State private var isLoadingIngredients = false
+    @State private var ingredientsError: String?
 
     init(recipe: Recipe, viewModel: CookbookViewModel) {
         self.recipe = recipe
@@ -29,6 +32,16 @@ struct RecipeDetailView: View {
         .background(SavoroColors.canvas)
         .navigationTitle(recipe.title)
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            isLoadingIngredients = true
+            ingredientsError = nil
+            do {
+                ingredients = try await viewModel.loadIngredients(for: recipe.id)
+            } catch {
+                ingredientsError = "Unable to load ingredients."
+            }
+            isLoadingIngredients = false
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Edit") {
@@ -128,10 +141,41 @@ struct RecipeDetailView: View {
                 .font(SavoroFonts.headline)
                 .foregroundStyle(SavoroColors.textPrimary)
 
-            Text("Ingredient details available in edit mode.")
-                .font(SavoroFonts.body)
-                .foregroundStyle(SavoroColors.textSecondary)
+            if isLoadingIngredients {
+                ProgressView()
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 8)
+            } else if let error = ingredientsError {
+                Text(error)
+                    .font(SavoroFonts.body)
+                    .foregroundStyle(SavoroColors.textSecondary)
+            } else if ingredients.isEmpty {
+                Text("No ingredients listed.")
+                    .font(SavoroFonts.body)
+                    .foregroundStyle(SavoroColors.textSecondary)
+            } else {
+                ForEach(ingredients) { ingredient in
+                    Text(ingredientDisplayString(ingredient))
+                        .font(SavoroFonts.body)
+                        .foregroundStyle(SavoroColors.textPrimary)
+                }
+            }
         }
+    }
+
+    private func ingredientDisplayString(_ ingredient: RecipeIngredient) -> String {
+        var parts: [String] = []
+        if let qty = ingredient.quantity {
+            let formatted = qty.truncatingRemainder(dividingBy: 1) == 0
+                ? String(Int(qty))
+                : String(qty)
+            parts.append(formatted)
+        }
+        if let unit = ingredient.unit, !unit.isEmpty {
+            parts.append(unit)
+        }
+        parts.append(ingredient.label)
+        return parts.joined(separator: " ")
     }
 
     // MARK: - Instructions

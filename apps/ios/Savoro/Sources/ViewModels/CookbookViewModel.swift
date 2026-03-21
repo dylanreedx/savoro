@@ -82,6 +82,13 @@ final class CookbookViewModel {
         isLoadingDiscover = false
     }
 
+    // MARK: Ingredient Loading
+
+    func loadIngredients(for id: String) async throws -> [RecipeIngredient] {
+        let detail = try await recipeService.getDetail(id)
+        return detail.ingredients
+    }
+
     // MARK: Mutations
 
     func createRecipe(_ draft: RecipeDraft) async throws -> Recipe {

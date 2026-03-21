@@ -489,3 +489,138 @@ struct RecipeIngredientDraftIdentityTests {
         #expect(quantityValue == nil || quantityValue is NSNull)
     }
 }
+
+// MARK: - RecipeDetail Decoding Tests
+
+@Suite("RecipeDetail JSON decoding")
+struct RecipeDetailDecodingTests {
+
+    private func makeIngredientJSON(
+        id: String = "ing1",
+        recipeId: String = "r1",
+        label: String = "Chicken breast",
+        quantity: Double? = 200,
+        unit: String? = "g",
+        sortOrder: Int = 0
+    ) -> String {
+        var fields = [
+            #""id": "\#(id)""#,
+            #""recipe_id": "\#(recipeId)""#,
+            #""label": "\#(label)""#,
+            #""sort_order": \#(sortOrder)"#
+        ]
+        if let q = quantity { fields.append(#""quantity": \#(q)"#) }
+        if let u = unit     { fields.append(#""unit": "\#(u)""#) }
+        return "{\(fields.joined(separator: ", "))}"
+    }
+
+    private func makeDetailJSON(
+        recipeId: String = "r1",
+        ingredientsJSON: String = "[]"
+    ) -> Data {
+        let recipeJSON = """
+        {
+            "id": "\(recipeId)", "user_id": "u1", "slug": "slug", "title": "Title",
+            "is_public": true, "fork_count": 0, "servings": 2,
+            "created_at": "2025-01-01T00:00:00Z", "updated_at": "2025-01-01T00:00:00Z",
+            "tags": []
+        }
+        """
+        return """
+        { "recipe": \(recipeJSON), "ingredients": \(ingredientsJSON) }
+        """.data(using: .utf8)!
+    }
+
+    @Test("decodes RecipeDetail with empty ingredients")
+    func decodesEmptyIngredients() throws {
+        let data = makeDetailJSON()
+        let detail = try JSONDecoder().decode(RecipeDetail.self, from: data)
+        #expect(detail.recipe.id == "r1")
+        #expect(detail.ingredients.isEmpty)
+    }
+
+    @Test("decodes RecipeDetail with one ingredient")
+    func decodesOneIngredient() throws {
+        let ingJSON = makeIngredientJSON(id: "i1", label: "Tofu", quantity: 300, unit: "g")
+        let data = makeDetailJSON(ingredientsJSON: "[\(ingJSON)]")
+        let detail = try JSONDecoder().decode(RecipeDetail.self, from: data)
+        #expect(detail.ingredients.count == 1)
+        let ing = detail.ingredients[0]
+        #expect(ing.id == "i1")
+        #expect(ing.label == "Tofu")
+        #expect(ing.quantity == 300)
+        #expect(ing.unit == "g")
+    }
+
+    @Test("decodes ingredient with nil quantity and unit")
+    func decodesIngredientNilOptionals() throws {
+        let ingJSON = makeIngredientJSON(id: "i2", label: "Salt", quantity: nil, unit: nil)
+        let data = makeDetailJSON(ingredientsJSON: "[\(ingJSON)]")
+        let detail = try JSONDecoder().decode(RecipeDetail.self, from: data)
+        let ing = detail.ingredients[0]
+        #expect(ing.quantity == nil)
+        #expect(ing.unit == nil)
+    }
+
+    @Test("decodes multiple ingredients preserving order")
+    func decodesMultipleIngredients() throws {
+        let ing1 = makeIngredientJSON(id: "i1", label: "A", sortOrder: 0)
+        let ing2 = makeIngredientJSON(id: "i2", label: "B", sortOrder: 1)
+        let data = makeDetailJSON(ingredientsJSON: "[\(ing1), \(ing2)]")
+        let detail = try JSONDecoder().decode(RecipeDetail.self, from: data)
+        #expect(detail.ingredients.count == 2)
+        #expect(detail.ingredients[0].id == "i1")
+        #expect(detail.ingredients[1].id == "i2")
+    }
+}
+
+// MARK: - ingredientDisplayString Tests
+
+@Suite("ingredientDisplayString formatting")
+struct IngredientDisplayStringTests {
+
+    private func displayString(quantity: Double?, unit: String?, label: String) -> String {
+        var parts: [String] = []
+        if let qty = quantity {
+            let formatted = qty.truncatingRemainder(dividingBy: 1) == 0
+                ? String(Int(qty))
+                : String(qty)
+            parts.append(formatted)
+        }
+        if let u = unit, !u.isEmpty {
+            parts.append(u)
+        }
+        parts.append(label)
+        return parts.joined(separator: " ")
+    }
+
+    @Test("formats whole number quantity without decimal")
+    func wholeQuantity() {
+        #expect(displayString(quantity: 200, unit: "g", label: "chicken breast") == "200 g chicken breast")
+    }
+
+    @Test("formats fractional quantity with decimal")
+    func fractionalQuantity() {
+        #expect(displayString(quantity: 1.5, unit: "cups", label: "flour") == "1.5 cups flour")
+    }
+
+    @Test("formats nil quantity — omits quantity")
+    func nilQuantity() {
+        #expect(displayString(quantity: nil, unit: "pinch", label: "salt") == "pinch salt")
+    }
+
+    @Test("formats nil unit — omits unit")
+    func nilUnit() {
+        #expect(displayString(quantity: 2, unit: nil, label: "eggs") == "2 eggs")
+    }
+
+    @Test("formats nil quantity and unit — label only")
+    func nilBoth() {
+        #expect(displayString(quantity: nil, unit: nil, label: "salt") == "salt")
+    }
+
+    @Test("formats empty unit string — omits unit")
+    func emptyUnit() {
+        #expect(displayString(quantity: 3, unit: "", label: "cloves garlic") == "3 cloves garlic")
+    }
+}

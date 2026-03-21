@@ -252,6 +252,18 @@ struct RecipeIngredientDraft: Encodable, Sendable, Identifiable {
     }
 }
 
+// MARK: - Recipe Detail (with ingredients)
+
+struct RecipeDetail: Decodable, Sendable {
+    let recipe: Recipe
+    let ingredients: [RecipeIngredient]
+
+    enum CodingKeys: String, CodingKey {
+        case recipe
+        case ingredients
+    }
+}
+
 // MARK: - Feed Page
 
 struct FeedPage: Decodable, Sendable {

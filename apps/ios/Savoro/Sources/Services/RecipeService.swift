@@ -18,6 +18,10 @@ struct RecipeService {
         try await apiClient.request("/recipes/\(id)")
     }
 
+    func getDetail(_ id: String) async throws -> RecipeDetail {
+        try await apiClient.request("/recipe/\(id)")
+    }
+
     func create(_ draft: RecipeDraft) async throws -> Recipe {
         try await apiClient.request("/recipes", method: .post, body: draft)
     }
