@@ -22,6 +22,7 @@ struct RecipeEditorView: View {
     @State private var ingredientDrafts: [RecipeIngredientDraft]
 
     @State private var isSaving = false
+    @State private var isLoadingIngredients = false
     @State private var errorMessage: String?
 
     init(mode: EditorMode, viewModel: CookbookViewModel) {
@@ -48,7 +49,7 @@ struct RecipeEditorView: View {
             _cookTime = State(initialValue: recipe.cookTime.map(String.init) ?? "")
             _isPublic = State(initialValue: recipe.isPublic)
             _tags = State(initialValue: recipe.tags.joined(separator: ", "))
-            _ingredientDrafts = State(initialValue: [RecipeIngredientDraft(label: "")])
+            _ingredientDrafts = State(initialValue: [])
         }
     }
 
@@ -89,6 +90,28 @@ struct RecipeEditorView: View {
             }
         }
         .interactiveDismissDisabled(isSaving)
+        .task {
+            guard case .edit(let recipe) = mode else { return }
+            isLoadingIngredients = true
+            do {
+                let loaded = try await viewModel.loadIngredients(for: recipe.id)
+                let drafts = loaded
+                    .sorted { $0.sortOrder < $1.sortOrder }
+                    .map { ing in
+                        RecipeIngredientDraft(
+                            label: ing.label,
+                            quantity: ing.quantity,
+                            unit: ing.unit,
+                            foodId: ing.foodId,
+                            servingId: ing.servingId
+                        )
+                    }
+                ingredientDrafts = drafts + [RecipeIngredientDraft(label: "")]
+            } catch {
+                ingredientDrafts = [RecipeIngredientDraft(label: "")]
+            }
+            isLoadingIngredients = false
+        }
     }
 
     // MARK: - Sections
@@ -122,6 +145,10 @@ struct RecipeEditorView: View {
 
     private var ingredientsSection: some View {
         Section("Ingredients") {
+            if isLoadingIngredients {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+            }
             ForEach($ingredientDrafts) { $ingredient in
                 HStack {
                     TextField("Ingredient", text: $ingredient.label)

@@ -244,11 +244,15 @@ struct RecipeIngredientDraft: Encodable, Sendable, Identifiable {
     var label: String
     var quantity: Double?
     var unit: String?
+    var foodId: String?
+    var servingId: String?
 
     enum CodingKeys: String, CodingKey {
         case label
         case quantity
         case unit
+        case foodId = "food_id"
+        case servingId = "serving_id"
     }
 }
 

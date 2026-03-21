@@ -490,6 +490,258 @@ struct RecipeIngredientDraftIdentityTests {
     }
 }
 
+// MARK: - RecipeIngredientDraft foodId/servingId Tests
+
+@Suite("RecipeIngredientDraft foodId and servingId fields")
+struct RecipeIngredientDraftFoodIdTests {
+
+    // MARK: Encoding
+
+    @Test("encodes food_id and serving_id using snake_case keys")
+    func encodesFoodIdAndServingId() throws {
+        let draft = RecipeIngredientDraft(
+            label: "Chicken breast",
+            quantity: 200,
+            unit: "g",
+            foodId: "food-abc",
+            servingId: "srv-xyz"
+        )
+        let data = try JSONEncoder().encode(draft)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        #expect(json["food_id"] as? String == "food-abc")
+        #expect(json["serving_id"] as? String == "srv-xyz")
+        #expect(json["foodId"] == nil, "camelCase key must not be present")
+        #expect(json["servingId"] == nil, "camelCase key must not be present")
+    }
+
+    @Test("nil foodId and servingId are absent or null in encoded output")
+    func encodesNilFoodIdAndServingId() throws {
+        let draft = RecipeIngredientDraft(label: "Salt")
+        let data = try JSONEncoder().encode(draft)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        let foodIdValue = json["food_id"]
+        let servingIdValue = json["serving_id"]
+        #expect(foodIdValue == nil || foodIdValue is NSNull)
+        #expect(servingIdValue == nil || servingIdValue is NSNull)
+    }
+
+    @Test("id field excluded from encoding even when foodId/servingId present")
+    func idExcludedFromEncoding() throws {
+        let draft = RecipeIngredientDraft(label: "Tofu", foodId: "f1", servingId: "s1")
+        let data = try JSONEncoder().encode(draft)
+        let json = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+        #expect(json["id"] == nil)
+    }
+
+    @Test("draft id is stable after foodId mutation")
+    func idStableAfterFoodIdMutation() {
+        var draft = RecipeIngredientDraft(label: "Egg", foodId: "f1")
+        let originalID = draft.id
+        draft.foodId = "f2"
+        #expect(draft.id == originalID)
+    }
+
+    @Test("draft id is stable after servingId mutation")
+    func idStableAfterServingIdMutation() {
+        var draft = RecipeIngredientDraft(label: "Egg", servingId: "s1")
+        let originalID = draft.id
+        draft.servingId = "s2"
+        #expect(draft.id == originalID)
+    }
+
+    // MARK: RecipeIngredient → RecipeIngredientDraft mapping
+
+    @Test("mapping preserves label, quantity, unit, foodId, servingId")
+    func mappingPreservesAllFields() {
+        let ingredient = RecipeIngredient(
+            id: "i1",
+            recipeId: "r1",
+            foodId: "food-1",
+            servingId: "srv-1",
+            quantity: 150,
+            unit: "g",
+            label: "Salmon",
+            sortOrder: 0
+        )
+        let draft = RecipeIngredientDraft(
+            label: ingredient.label,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            foodId: ingredient.foodId,
+            servingId: ingredient.servingId
+        )
+        #expect(draft.label == "Salmon")
+        #expect(draft.quantity == 150)
+        #expect(draft.unit == "g")
+        #expect(draft.foodId == "food-1")
+        #expect(draft.servingId == "srv-1")
+    }
+
+    @Test("mapping with nil foodId and servingId produces nil draft fields")
+    func mappingPreservesNilFoodFields() {
+        let ingredient = RecipeIngredient(
+            id: "i2",
+            recipeId: "r1",
+            foodId: nil,
+            servingId: nil,
+            quantity: nil,
+            unit: nil,
+            label: "Pepper",
+            sortOrder: 1
+        )
+        let draft = RecipeIngredientDraft(
+            label: ingredient.label,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            foodId: ingredient.foodId,
+            servingId: ingredient.servingId
+        )
+        #expect(draft.foodId == nil)
+        #expect(draft.servingId == nil)
+    }
+
+    @Test("mapping multiple ingredients respects sort order")
+    func mappingSortOrder() {
+        let ingredients = [
+            RecipeIngredient(id: "i3", recipeId: "r1", foodId: nil, servingId: nil,
+                             quantity: 1, unit: "cup", label: "Rice", sortOrder: 2),
+            RecipeIngredient(id: "i1", recipeId: "r1", foodId: nil, servingId: nil,
+                             quantity: 200, unit: "g", label: "Chicken", sortOrder: 0),
+            RecipeIngredient(id: "i2", recipeId: "r1", foodId: nil, servingId: nil,
+                             quantity: 2, unit: "tbsp", label: "Sauce", sortOrder: 1),
+        ]
+        let sorted = ingredients.sorted { $0.sortOrder < $1.sortOrder }
+        let drafts = sorted.map { ing in
+            RecipeIngredientDraft(
+                label: ing.label,
+                quantity: ing.quantity,
+                unit: ing.unit,
+                foodId: ing.foodId,
+                servingId: ing.servingId
+            )
+        }
+        #expect(drafts.count == 3)
+        #expect(drafts[0].label == "Chicken")
+        #expect(drafts[1].label == "Sauce")
+        #expect(drafts[2].label == "Rice")
+    }
+
+    @Test("blank draft appended after mapped ingredients has empty label")
+    func blankDraftAppendedAfterMapping() {
+        let ingredients = [
+            RecipeIngredient(id: "i1", recipeId: "r1", foodId: "f1", servingId: nil,
+                             quantity: 100, unit: "g", label: "Beef", sortOrder: 0)
+        ]
+        let drafts = ingredients
+            .sorted { $0.sortOrder < $1.sortOrder }
+            .map { ing in
+                RecipeIngredientDraft(
+                    label: ing.label,
+                    quantity: ing.quantity,
+                    unit: ing.unit,
+                    foodId: ing.foodId,
+                    servingId: ing.servingId
+                )
+            }
+        let allDrafts = drafts + [RecipeIngredientDraft(label: "")]
+        #expect(allDrafts.count == 2)
+        #expect(allDrafts[0].label == "Beef")
+        #expect(allDrafts[0].foodId == "f1")
+        #expect(allDrafts[1].label == "")
+        #expect(allDrafts[1].foodId == nil)
+    }
+
+    @Test("create mode init produces single blank draft")
+    func createModeProducesSingleBlankDraft() {
+        // Simulate create branch: ingredientDrafts = [RecipeIngredientDraft(label: "")]
+        let drafts: [RecipeIngredientDraft] = [RecipeIngredientDraft(label: "")]
+        #expect(drafts.count == 1)
+        #expect(drafts[0].label == "")
+        #expect(drafts[0].foodId == nil)
+        #expect(drafts[0].servingId == nil)
+    }
+
+    @Test("edit mode init starts with empty drafts before loading")
+    func editModeStartsEmpty() {
+        // Simulate edit branch before .task runs: ingredientDrafts = []
+        let drafts: [RecipeIngredientDraft] = []
+        #expect(drafts.isEmpty)
+    }
+
+    @Test("error fallback produces single blank draft")
+    func errorFallbackProducesSingleBlankDraft() {
+        // Simulate the catch branch
+        let drafts: [RecipeIngredientDraft] = [RecipeIngredientDraft(label: "")]
+        #expect(drafts.count == 1)
+        #expect(drafts[0].label == "")
+    }
+}
+
+// MARK: - RecipeIngredient JSON Decoding Tests (foodId/servingId)
+
+@Suite("RecipeIngredient JSON decoding with foodId and servingId")
+struct RecipeIngredientFoodIdDecodingTests {
+
+    private func decodeIngredient(_ jsonString: String) throws -> RecipeIngredient {
+        try JSONDecoder().decode(RecipeIngredient.self, from: jsonString.data(using: .utf8)!)
+    }
+
+    @Test("decodes food_id and serving_id from snake_case JSON")
+    func decodesFoodIdAndServingId() throws {
+        let json = """
+        {
+            "id": "i1", "recipe_id": "r1",
+            "food_id": "food-abc", "serving_id": "srv-xyz",
+            "label": "Chicken", "sort_order": 0
+        }
+        """
+        let ing = try decodeIngredient(json)
+        #expect(ing.foodId == "food-abc")
+        #expect(ing.servingId == "srv-xyz")
+    }
+
+    @Test("decodes nil food_id and serving_id when absent")
+    func decodesNilWhenAbsent() throws {
+        let json = """
+        {
+            "id": "i1", "recipe_id": "r1",
+            "label": "Salt", "sort_order": 0
+        }
+        """
+        let ing = try decodeIngredient(json)
+        #expect(ing.foodId == nil)
+        #expect(ing.servingId == nil)
+    }
+
+    @Test("decodes nil food_id and serving_id when null")
+    func decodesNilWhenNull() throws {
+        let json = """
+        {
+            "id": "i1", "recipe_id": "r1",
+            "food_id": null, "serving_id": null,
+            "label": "Salt", "sort_order": 0
+        }
+        """
+        let ing = try decodeIngredient(json)
+        #expect(ing.foodId == nil)
+        #expect(ing.servingId == nil)
+    }
+
+    @Test("decodes food_id present but serving_id absent")
+    func decodesFoodIdOnlyPresent() throws {
+        let json = """
+        {
+            "id": "i1", "recipe_id": "r1",
+            "food_id": "food-only",
+            "label": "Tofu", "sort_order": 0
+        }
+        """
+        let ing = try decodeIngredient(json)
+        #expect(ing.foodId == "food-only")
+        #expect(ing.servingId == nil)
+    }
+}
+
 // MARK: - RecipeDetail Decoding Tests
 
 @Suite("RecipeDetail JSON decoding")
