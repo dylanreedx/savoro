@@ -120,6 +120,24 @@ export const planMeal = tool({
   }),
 });
 
+export const createRecipe = tool({
+  description:
+    "Create and save a new recipe from the conversation. Use when the user describes a recipe they want to save — with a title, list of ingredients, and number of servings. Searches for each ingredient's nutrition, calculates per-serving macros, and saves the recipe.",
+  inputSchema: z.object({
+    title: z.string().describe("Recipe name"),
+    servings: z.number().int().positive().describe("Number of servings the recipe makes"),
+    ingredients: z
+      .array(
+        z.object({
+          name: z.string().describe("Ingredient name (e.g. 'chicken breast', 'olive oil')"),
+          quantity: z.number().positive().describe("Amount of this ingredient"),
+          unit: z.string().optional().describe("Unit (e.g. 'g', 'oz', 'tbsp') — omit if just a count"),
+        }),
+      )
+      .describe("List of ingredients"),
+  }),
+});
+
 export const agentTools = {
   search_food: searchFood,
   lookup_barcode: lookupBarcode,
@@ -131,4 +149,5 @@ export const agentTools = {
   search_recipes: searchRecipes,
   log_recipe: logRecipe,
   plan_meal: planMeal,
+  create_recipe: createRecipe,
 };

@@ -42,5 +42,6 @@ Rules:
 - Respond in the same language as the user.
 - When the user asks "what did I eat yesterday" or similar, use get_date_log with the correct date.
 - When the user says "same as yesterday breakfast" or "log what I had yesterday for lunch", use get_date_log with a meal filter to retrieve those entries, then present them as food cards so the user can confirm and re-log.
-- Resolve relative dates (yesterday, last Monday, etc.) to YYYY-MM-DD before calling get_date_log.`.trim();
+- Resolve relative dates (yesterday, last Monday, etc.) to YYYY-MM-DD before calling get_date_log.
+- When the user describes a recipe they want to save (with ingredients and servings), use create_recipe to save it. Confirm the title, ingredients, and servings before calling.`.trim();
 }

@@ -13,6 +13,7 @@ import {
   userGoal,
   favorite,
   recipe,
+  recipeIngredient,
 } from "@savoro/db";
 import { searchOFF, normalizeOFFProduct, getOFFProduct } from "@savoro/food-data";
 import { buildSystemPrompt, smartRoute } from "@savoro/ai";
@@ -338,6 +339,24 @@ function buildTools(userId: string, today: string) {
         query: z.string().optional().describe("Optional user query for context (e.g. 'high protein snack')"),
       }),
       execute: async () => suggestFoodsExecutor(userId, today),
+    }),
+
+    create_recipe: tool({
+      description:
+        "Create and save a new recipe from the conversation. Use when the user describes a recipe they want to save — with a title, list of ingredients, and number of servings. Searches for each ingredient's nutrition, calculates per-serving macros, and saves the recipe.",
+      inputSchema: z.object({
+        title: z.string().describe("Recipe name"),
+        servings: z.number().int().positive().describe("Number of servings the recipe makes"),
+        ingredients: z.array(
+          z.object({
+            name: z.string().describe("Ingredient name"),
+            quantity: z.number().positive().describe("Amount of this ingredient"),
+            unit: z.string().optional().describe("Unit (e.g. 'g', 'oz', 'tbsp')"),
+          }),
+        ).describe("List of ingredients"),
+      }),
+      execute: async ({ title, servings, ingredients }) =>
+        createRecipeExecutor(userId, title, servings, ingredients),
     }),
   };
 }
@@ -1001,6 +1020,149 @@ async function suggestFoodsExecutor(userId: string, today: string) {
   };
 }
 
+async function createRecipeExecutor(
+  userId: string,
+  title: string,
+  servings: number,
+  ingredients: Array<{ name: string; quantity: number; unit?: string }>,
+) {
+  const now = new Date().toISOString();
+
+  // Resolve each ingredient by searching for best-matching food
+  type ResolvedIngredient = {
+    name: string;
+    quantity: number;
+    unit?: string;
+    foodId: string | null;
+    servingId: string | null;
+    calories: number;
+    protein: number;
+    carb: number;
+    fat: number;
+  };
+
+  const resolved: ResolvedIngredient[] = [];
+
+  for (const ing of ingredients) {
+    const searchResult = await searchFoodExecutor(ing.name, 1);
+    const match = searchResult.foods[0];
+    if (match) {
+      resolved.push({
+        name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit,
+        foodId: match.foodId,
+        servingId: match.servingId ?? null,
+        calories: (match.calories ?? 0) * ing.quantity,
+        protein: (match.protein ?? 0) * ing.quantity,
+        carb: (match.carb ?? 0) * ing.quantity,
+        fat: (match.fat ?? 0) * ing.quantity,
+      });
+    } else {
+      resolved.push({
+        name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit,
+        foodId: null,
+        servingId: null,
+        calories: 0,
+        protein: 0,
+        carb: 0,
+        fat: 0,
+      });
+    }
+  }
+
+  // Accumulate total macros (null-safe, following getDailySummaryExecutor pattern)
+  let totalCalories = 0;
+  let totalProtein = 0;
+  let totalCarb = 0;
+  let totalFat = 0;
+  for (const r of resolved) {
+    totalCalories += r.calories;
+    totalProtein += r.protein;
+    totalCarb += r.carb;
+    totalFat += r.fat;
+  }
+
+  const caloriesPerServing = totalCalories / servings;
+  const proteinPerServing = totalProtein / servings;
+  const carbPerServing = totalCarb / servings;
+  const fatPerServing = totalFat / servings;
+
+  // Generate unique slug (handle collisions with numeric suffix)
+  const baseSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  const existingSlugs = await db
+    .select({ slug: recipe.slug })
+    .from(recipe)
+    .where(and(eq(recipe.userId, userId), sql`${recipe.slug} LIKE ${`${baseSlug}%`}`))
+    .all();
+
+  let slug = baseSlug;
+  if (existingSlugs.some((r) => r.slug === slug)) {
+    let suffix = 2;
+    while (existingSlugs.some((r) => r.slug === `${baseSlug}-${suffix}`)) {
+      suffix++;
+    }
+    slug = `${baseSlug}-${suffix}`;
+  }
+
+  // Insert recipe
+  const recipeId = createId();
+  await db.insert(recipe).values({
+    id: recipeId,
+    userId,
+    slug,
+    title,
+    description: null,
+    instructions: null,
+    servings,
+    prepTime: null,
+    cookTime: null,
+    imageUrl: null,
+    isPublic: false,
+    tags: [],
+    caloriesPerServing,
+    proteinPerServing,
+    carbPerServing,
+    fatPerServing,
+    forkCount: 0,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  // Insert recipe ingredients
+  for (let i = 0; i < resolved.length; i++) {
+    const r = resolved[i]!;
+    await db.insert(recipeIngredient).values({
+      id: createId(),
+      recipeId,
+      foodId: r.foodId,
+      servingId: r.servingId,
+      quantity: r.quantity,
+      unit: r.unit ?? null,
+      label: r.name,
+      sortOrder: i,
+    });
+  }
+
+  return {
+    created: true,
+    recipeId,
+    title,
+    slug,
+    servings,
+    calories: Math.round(caloriesPerServing),
+    protein: Math.round(proteinPerServing),
+    carb: Math.round(carbPerServing),
+    fat: Math.round(fatPerServing),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Smart route handlers
 // ---------------------------------------------------------------------------
@@ -1189,6 +1351,25 @@ function buildUIComponents(
             props: {
               suggestions: r.suggestions,
               shortfall: r.shortfall ?? null,
+            },
+          });
+        }
+        break;
+      }
+      case "create_recipe": {
+        const r = result as { created: boolean; recipeId?: string; title?: string; slug?: string; servings?: number; calories?: number; protein?: number; carb?: number; fat?: number };
+        if (r.created) {
+          components.push({
+            type: "recipe_card",
+            props: {
+              recipeId: r.recipeId,
+              title: r.title,
+              slug: r.slug,
+              servings: r.servings,
+              calories: r.calories,
+              protein: r.protein,
+              carb: r.carb,
+              fat: r.fat,
             },
           });
         }
