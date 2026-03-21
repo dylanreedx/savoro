@@ -11,6 +11,8 @@ export type UIComponentType =
   | "quick_log_chips"
   | "daily_snapshot"
   | "recipe_card"
+  | "recipe_detail"
+  | "recipe_create"
   | "meal_plan"
   | "suggestion_card";
 

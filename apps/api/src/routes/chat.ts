@@ -358,6 +358,16 @@ function buildTools(userId: string, today: string) {
       execute: async ({ title, servings, ingredients }) =>
         createRecipeExecutor(userId, title, servings, ingredients),
     }),
+
+    manage_recipe: tool({
+      description:
+        "View or edit one of the user's existing recipes by name. Use when the user says 'show me my X recipe', 'what's in my Y recipe', or 'edit my Z recipe'. Performs exact then fuzzy title match. Single match returns full recipe detail; multiple matches returns a list for the user to pick from.",
+      inputSchema: z.object({
+        query: z.string().describe("Recipe name or keyword to look up"),
+        mode: z.enum(["view", "edit"]).default("view").describe("'view' to display recipe detail, 'edit' to open the recipe editor"),
+      }),
+      execute: async ({ query, mode }) => manageRecipeExecutor(userId, query, mode),
+    }),
   };
 }
 
@@ -1163,6 +1173,92 @@ async function createRecipeExecutor(
   };
 }
 
+async function manageRecipeExecutor(userId: string, query: string, mode: "view" | "edit") {
+  // Exact case-insensitive match first
+  const exactRows = await db
+    .select({
+      id: recipe.id,
+      title: recipe.title,
+      servings: recipe.servings,
+      caloriesPerServing: recipe.caloriesPerServing,
+      proteinPerServing: recipe.proteinPerServing,
+      carbPerServing: recipe.carbPerServing,
+      fatPerServing: recipe.fatPerServing,
+      instructions: recipe.instructions,
+    })
+    .from(recipe)
+    .where(and(eq(recipe.userId, userId), sql`lower(${recipe.title}) = lower(${query})`))
+    .all();
+
+  // Fuzzy fallback if no exact match
+  const rows =
+    exactRows.length > 0
+      ? exactRows
+      : await db
+          .select({
+            id: recipe.id,
+            title: recipe.title,
+            servings: recipe.servings,
+            caloriesPerServing: recipe.caloriesPerServing,
+            proteinPerServing: recipe.proteinPerServing,
+            carbPerServing: recipe.carbPerServing,
+            fatPerServing: recipe.fatPerServing,
+            instructions: recipe.instructions,
+          })
+          .from(recipe)
+          .where(and(eq(recipe.userId, userId), sql`lower(${recipe.title}) LIKE lower(${"%" + query + "%"})`))
+          .all();
+
+  if (rows.length === 0) {
+    return { found: false, matches: [] };
+  }
+
+  if (rows.length > 1) {
+    return {
+      found: false,
+      matches: rows.map((r) => ({
+        recipe_id: r.id,
+        name: r.title,
+        servings: r.servings,
+        calories: r.caloriesPerServing,
+        protein: r.proteinPerServing,
+        carb: r.carbPerServing,
+        fat: r.fatPerServing,
+      })),
+    };
+  }
+
+  // Single match — fetch ingredients
+  const row = rows[0]!;
+  const ingredientRows = await db
+    .select({ label: recipeIngredient.label, quantity: recipeIngredient.quantity, unit: recipeIngredient.unit, sortOrder: recipeIngredient.sortOrder })
+    .from(recipeIngredient)
+    .where(eq(recipeIngredient.recipeId, row.id))
+    .orderBy(asc(recipeIngredient.sortOrder))
+    .all();
+
+  const ingredients = ingredientRows.map((i) =>
+    i.unit ? `${i.quantity} ${i.unit} ${i.label}` : `${i.quantity} ${i.label}`,
+  );
+
+  return {
+    found: true,
+    mode,
+    recipe: {
+      recipe_id: row.id,
+      name: row.title,
+      servings: row.servings,
+      calories: row.caloriesPerServing,
+      protein: row.proteinPerServing,
+      carb: row.carbPerServing,
+      fat: row.fatPerServing,
+      ingredients,
+      instructions: row.instructions ?? null,
+      is_owned: true,
+    },
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Smart route handlers
 // ---------------------------------------------------------------------------
@@ -1372,6 +1468,67 @@ function buildUIComponents(
               fat: r.fat,
             },
           });
+        }
+        break;
+      }
+      case "manage_recipe": {
+        const r = result as {
+          found: boolean;
+          mode?: "view" | "edit";
+          recipe?: {
+            recipe_id: string;
+            name: string;
+            servings: number;
+            calories: number | null;
+            protein: number | null;
+            carb: number | null;
+            fat: number | null;
+            ingredients: string[];
+            instructions: string | null;
+            is_owned: boolean;
+          };
+          matches?: Array<{
+            recipe_id: string;
+            name: string;
+            servings: number;
+            calories: number | null;
+            protein: number | null;
+            carb: number | null;
+            fat: number | null;
+          }>;
+        };
+        if (r.found && r.recipe) {
+          components.push({
+            type: "recipe_detail",
+            props: {
+              recipe_id: r.recipe.recipe_id,
+              name: r.recipe.name,
+              servings: r.recipe.servings,
+              calories: r.recipe.calories,
+              protein: r.recipe.protein,
+              carb: r.recipe.carb,
+              fat: r.recipe.fat,
+              ingredients: r.recipe.ingredients,
+              instructions: r.recipe.instructions,
+              is_owned: r.recipe.is_owned,
+              edit_mode: r.mode === "edit",
+            },
+          });
+        } else if (!r.found && r.matches?.length) {
+          for (const match of r.matches) {
+            components.push({
+              type: "recipe_card",
+              props: {
+                recipe_id: match.recipe_id,
+                name: match.name,
+                servings: match.servings,
+                calories: match.calories,
+                protein: match.protein,
+                carb: match.carb,
+                fat: match.fat,
+              },
+            });
+          }
         }
         break;
       }
