@@ -40,7 +40,7 @@ enum SavoroColors {
         static let b200 = Color(hex: "#FECDD3")
         static let b300 = Color(hex: "#FDA4AF")
         static let b400 = Color(hex: "#FB7185")
-        static let b500 = Color(hex: "#E11D48")
+        static let b500 = Color(hex: "#F43F5E")
     }
 
     // MARK: - Macro (nutritional accent colors)
