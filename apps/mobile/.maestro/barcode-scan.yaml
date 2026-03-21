@@ -1,0 +1,35 @@
+appId: app.savoro.mobile
+---
+- launchApp
+
+# Navigate to Chat
+- tapOn:
+    text: "Chat"
+
+# Tap barcode button (mock env bypasses camera, fires handleScan directly)
+- tapOn:
+    id: "barcode-button"
+
+# Wait for AI response
+- assertVisible:
+    id: "ai-bubble"
+    timeout: 20000
+- waitForAnimationToEnd
+
+# FoodCard should show Log button (qty=1, trailing space)
+- assertVisible:
+    text: "Log "
+
+# Tap Log
+- tapOn:
+    text: "Log "
+
+# Confirm logged state
+- assertVisible:
+    text: "Logged!"
+    timeout: 8000
+
+# Wait for FoodCard auto-dismiss then navigate
+- pause: 2000
+- tapOn:
+    text: "Dashboard"

@@ -1,0 +1,48 @@
+appId: app.savoro.mobile
+---
+- launchApp
+
+# Navigate to Chat
+- tapOn:
+    text: "Chat"
+
+# Send /recent command to get quick log chips
+- tapOn:
+    id: "chat-input"
+- inputText: "/recent"
+- tapOn:
+    id: "send-button"
+
+# Wait for AI response
+- assertVisible:
+    id: "ai-bubble"
+    timeout: 20000
+- waitForAnimationToEnd
+
+# QuickLogChips should be rendered
+- assertVisible:
+    id: "quick-log-chip-0"
+    timeout: 5000
+
+# Tap first chip to send food name as message
+- tapOn:
+    id: "quick-log-chip-0"
+
+# Wait for second AI response with FoodCard
+- assertVisible:
+    id: "ai-bubble"
+    timeout: 20000
+- waitForAnimationToEnd
+
+# FoodCard should show Log button (qty=1, trailing space)
+- assertVisible:
+    text: "Log "
+
+# Tap Log
+- tapOn:
+    text: "Log "
+
+# Confirm logged state
+- assertVisible:
+    text: "Logged!"
+    timeout: 8000

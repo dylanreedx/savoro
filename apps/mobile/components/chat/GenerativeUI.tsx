@@ -581,9 +581,10 @@ function QuickLogChips({ foods }: { foods: QuickLogChipFood[] }) {
   const sendMessage = useChatStore((s) => s.sendMessage);
   return (
     <View className="flex-row flex-wrap gap-2">
-      {foods.map((f) => (
+      {foods.map((f, index) => (
         <Pressable
           key={f.foodId}
+          testID={`quick-log-chip-${index}`}
           onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); sendMessage(f.name); }}
           style={styles.chip}
         >

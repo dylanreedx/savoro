@@ -26,7 +26,11 @@ export function ChatInput() {
 
   const handleBarcode = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setScannerOpen(true);
+    if (process.env.EXPO_PUBLIC_BARCODE_MOCK === "1") {
+      handleScan("0123456789012");
+    } else {
+      setScannerOpen(true);
+    }
   };
 
   const handleScan = (barcode: string) => {
@@ -42,7 +46,7 @@ export function ChatInput() {
         style={styles.blurBar}
       >
         <View style={styles.row}>
-          <Pressable onPress={handleBarcode} style={styles.barcodeButton}>
+          <Pressable testID="barcode-button" onPress={handleBarcode} style={styles.barcodeButton}>
             <SymbolView
               name={{ ios: "barcode.viewfinder" }}
               tintColor={colors.stone[400]}
