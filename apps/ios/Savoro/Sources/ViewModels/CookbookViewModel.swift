@@ -15,6 +15,7 @@ final class CookbookViewModel {
     var discoverRecipes: [Recipe] = []
     var discoverCursor: String?
     var isLoadingDiscover = false
+    var discoverTagFilter: Set<RecipeTag> = []
 
     // MARK: Dependencies
 
@@ -57,7 +58,8 @@ final class CookbookViewModel {
         isLoadingDiscover = true
 
         do {
-            let page = try await recipeService.feed()
+            let tags = discoverTagFilter.map(\.rawValue)
+            let page = try await recipeService.feed(tags: tags)
             discoverRecipes = page.recipes
             discoverCursor = page.nextCursor
         } catch {
@@ -65,6 +67,13 @@ final class CookbookViewModel {
         }
 
         isLoadingDiscover = false
+    }
+
+    func setDiscoverFilter(_ tags: Set<RecipeTag>) async {
+        discoverTagFilter = tags
+        discoverRecipes = []
+        discoverCursor = nil
+        await loadDiscover()
     }
 
     func loadMoreDiscover() async {
@@ -85,7 +94,7 @@ final class CookbookViewModel {
     // MARK: Ingredient Loading
 
     func loadIngredients(for id: String) async throws -> [RecipeIngredient] {
-        let detail = try await recipeService.getDetail(id)
+        let detail = try await recipeService.get(id)
         return detail.ingredients
     }
 

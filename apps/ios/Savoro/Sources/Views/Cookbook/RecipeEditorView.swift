@@ -18,7 +18,7 @@ struct RecipeEditorView: View {
     @State private var prepTime: String
     @State private var cookTime: String
     @State private var isPublic: Bool
-    @State private var tags: String
+    @State private var selectedTags: Set<RecipeTag>
     @State private var ingredientDrafts: [RecipeIngredientDraft]
 
     @State private var isSaving = false
@@ -38,7 +38,7 @@ struct RecipeEditorView: View {
             _prepTime = State(initialValue: "")
             _cookTime = State(initialValue: "")
             _isPublic = State(initialValue: true)
-            _tags = State(initialValue: "")
+            _selectedTags = State(initialValue: [])
             _ingredientDrafts = State(initialValue: [RecipeIngredientDraft(label: "")])
         case .edit(let recipe):
             _title = State(initialValue: recipe.title)
@@ -48,7 +48,7 @@ struct RecipeEditorView: View {
             _prepTime = State(initialValue: recipe.prepTime.map(String.init) ?? "")
             _cookTime = State(initialValue: recipe.cookTime.map(String.init) ?? "")
             _isPublic = State(initialValue: recipe.isPublic)
-            _tags = State(initialValue: recipe.tags.joined(separator: ", "))
+            _selectedTags = State(initialValue: Set(recipe.tags.compactMap { RecipeTag(rawValue: $0) }))
             _ingredientDrafts = State(initialValue: [])
         }
     }
@@ -138,8 +138,35 @@ struct RecipeEditorView: View {
                     .font(SavoroFonts.body)
             }
 
-            TextField("Tags (comma-separated)", text: $tags)
-                .font(SavoroFonts.body)
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Tags")
+                    .font(SavoroFonts.caption)
+                    .foregroundStyle(SavoroColors.textSecondary)
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(RecipeTag.allCases, id: \.rawValue) { tag in
+                            Button {
+                                if selectedTags.contains(tag) {
+                                    selectedTags.remove(tag)
+                                } else {
+                                    selectedTags.insert(tag)
+                                }
+                            } label: {
+                                Label(tag.displayName, systemImage: tag.icon)
+                                    .font(SavoroFonts.caption)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 6)
+                                    .background(selectedTags.contains(tag) ? SavoroColors.rose : SavoroColors.Stone.s100)
+                                    .foregroundStyle(selectedTags.contains(tag) ? Color.white : SavoroColors.textSecondary)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
         }
     }
 
@@ -209,10 +236,7 @@ struct RecipeEditorView: View {
         isSaving = true
         errorMessage = nil
 
-        let parsedTags = tags
-            .split(separator: ",")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
+        let parsedTags = selectedTags.map(\.rawValue)
 
         let validIngredients = ingredientDrafts.filter {
             !$0.label.trimmingCharacters(in: .whitespaces).isEmpty

@@ -39,13 +39,17 @@ struct RecipeCardView: View {
                 Spacer()
 
                 if !recipe.tags.isEmpty {
-                    Text(recipe.tags.first ?? "")
-                        .font(SavoroFonts.caption2)
-                        .foregroundStyle(SavoroColors.Stone.s500)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(SavoroColors.Stone.s100)
-                        .clipShape(Capsule())
+                    HStack(spacing: 4) {
+                        ForEach(recipe.tags, id: \.self) { tag in
+                            Text(RecipeTag(rawValue: tag)?.displayName ?? tag)
+                                .font(SavoroFonts.caption2)
+                                .foregroundStyle(SavoroColors.Stone.s500)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(SavoroColors.Stone.s100)
+                                .clipShape(Capsule())
+                        }
+                    }
                 }
             }
         }

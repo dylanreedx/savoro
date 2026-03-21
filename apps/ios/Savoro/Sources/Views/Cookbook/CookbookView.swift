@@ -91,12 +91,43 @@ struct CookbookView: View {
 
     @ViewBuilder
     private var discoverSection: some View {
-        if !viewModel.discoverRecipes.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Discover")
-                    .font(SavoroFonts.headline)
-                    .foregroundStyle(SavoroColors.textPrimary)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Discover")
+                .font(SavoroFonts.headline)
+                .foregroundStyle(SavoroColors.textPrimary)
 
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(RecipeTag.allCases, id: \.rawValue) { tag in
+                        Button {
+                            Task {
+                                var updated = viewModel.discoverTagFilter
+                                if updated.contains(tag) {
+                                    updated.remove(tag)
+                                } else {
+                                    updated.insert(tag)
+                                }
+                                await viewModel.setDiscoverFilter(updated)
+                            }
+                        } label: {
+                            Label(tag.displayName, systemImage: tag.icon)
+                                .font(SavoroFonts.caption)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(viewModel.discoverTagFilter.contains(tag) ? SavoroColors.rose : SavoroColors.Stone.s100)
+                                .foregroundStyle(viewModel.discoverTagFilter.contains(tag) ? Color.white : SavoroColors.textSecondary)
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+
+            if viewModel.isLoadingDiscover && viewModel.discoverRecipes.isEmpty {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 20)
+            } else if !viewModel.discoverRecipes.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 12) {
                         ForEach(viewModel.discoverRecipes) { recipe in

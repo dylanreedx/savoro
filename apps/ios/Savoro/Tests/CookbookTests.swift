@@ -876,3 +876,72 @@ struct IngredientDisplayStringTests {
         #expect(displayString(quantity: 3, unit: "", label: "cloves garlic") == "3 cloves garlic")
     }
 }
+
+// MARK: - RecipeTag Integration Tests (CookbookViewModel)
+
+@Suite("CookbookViewModel tag filter state")
+@MainActor
+struct CookbookViewModelTagFilterTests {
+
+    @Test("discoverTagFilter starts empty")
+    func defaultFilterEmpty() {
+        let vm = CookbookViewModel()
+        #expect(vm.discoverTagFilter.isEmpty)
+    }
+
+    @Test("discoverTagFilter can be set directly")
+    func setFilterDirectly() {
+        let vm = CookbookViewModel()
+        vm.discoverTagFilter = [.vegan, .quick]
+        #expect(vm.discoverTagFilter.contains(.vegan))
+        #expect(vm.discoverTagFilter.contains(.quick))
+        #expect(!vm.discoverTagFilter.contains(.breakfast))
+    }
+
+    @Test("discoverTagFilter is a Set — duplicate insertions are no-ops")
+    func filterSetSemantics() {
+        let vm = CookbookViewModel()
+        vm.discoverTagFilter.insert(.dinner)
+        vm.discoverTagFilter.insert(.dinner)
+        #expect(vm.discoverTagFilter.count == 1)
+    }
+
+    @Test("removing a tag from discoverTagFilter leaves others intact")
+    func removeOneTagLeavesOthers() {
+        let vm = CookbookViewModel()
+        vm.discoverTagFilter = [.breakfast, .highProtein, .vegan]
+        vm.discoverTagFilter.remove(.highProtein)
+        #expect(!vm.discoverTagFilter.contains(.highProtein))
+        #expect(vm.discoverTagFilter.contains(.breakfast))
+        #expect(vm.discoverTagFilter.contains(.vegan))
+    }
+}
+
+// MARK: - RecipeTag raw value → displayName mapping via recipe.tags
+
+@Suite("RecipeTag display name lookup from recipe tags")
+struct RecipeTagDisplayTests {
+
+    @Test("known raw value resolves to displayName")
+    func knownRawValue() {
+        let tag = RecipeTag(rawValue: "high-protein")
+        #expect(tag?.displayName == "High Protein")
+    }
+
+    @Test("unknown raw value returns nil from RecipeTag init")
+    func unknownRawValue() {
+        #expect(RecipeTag(rawValue: "gluten-free") == nil)
+    }
+
+    @Test("recipe tags containing known raw values map to RecipeTag cases")
+    func recipeTagsMapToEnum() {
+        let recipe = Recipe(
+            id: "r1", userId: "u1", slug: "s", title: "T",
+            tags: ["breakfast", "vegan", "unknown-tag"]
+        )
+        let mapped = recipe.tags.compactMap { RecipeTag(rawValue: $0) }
+        #expect(mapped.count == 2)
+        #expect(mapped.contains(.breakfast))
+        #expect(mapped.contains(.vegan))
+    }
+}

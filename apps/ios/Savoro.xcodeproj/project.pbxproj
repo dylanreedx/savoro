@@ -50,6 +50,7 @@
 		79D702D09D1F373A7E8CBD58 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D2A8848DF4E94CA3D580E53 /* PlusJakartaSans-Bold.ttf */; };
 		7CF41F9ABE0EBB61A6D5F2A2 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09ADB316D0F3A1B4B26F35AE /* TodayView.swift */; };
 		7D5E773EB15C7686D124F6FE /* CookbookTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF1335A3F9B23BE07A13492A /* CookbookTests.swift */; };
+		EE11FF22003344556677889 /* RecipeTagTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF22003344556677889EE11 /* RecipeTagTests.swift */; };
 		822DD159689E8CB314581F6D /* User.swift in Sources */ = {isa = PBXBuildFile; fileRef = D76B1EFE094E25506A946362 /* User.swift */; };
 		86B62E4E968CDB1EC09C062A /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B003B37C6CEF2ADCE739FDD /* KeychainHelper.swift */; };
 		8D1B971477679AACFEAD4444 /* GoalEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F2319ED9F9161401E9F8E9B /* GoalEditorView.swift */; };
@@ -64,6 +65,7 @@
 		A68C8092120BCBF0D651CAD9 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD3DF88E3A238D4CAA3CB705 /* Color+Hex.swift */; };
 		AB0E6536238713882D610A71 /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F55A32F3CC876F3AC422340 /* BarcodeScannerView.swift */; };
 		AB0FD4C35B14F7B98242D96E /* Recipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = E95E9606ED2942B88CD82F66 /* Recipe.swift */; };
+		CC11DD22EE33FF4400112233 /* RecipeTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD22EE33FF4400112233CC11 /* RecipeTag.swift */; };
 		AED5EC275CE6199456923ECB /* ChatService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8E85882AAF9C74BFA7951C /* ChatService.swift */; };
 		B0608C7FA06BA4EF42305F30 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 828A043A4EA2AD88F3311D0C /* APIClient.swift */; };
 		B833F066DB6FBB1310092562 /* SSEParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC97359280DA0043E89B19E4 /* SSEParser.swift */; };
@@ -155,6 +157,7 @@
 		E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthTests.swift; sourceTree = "<group>"; };
 		E8C69BCF5F13CE3D07FAD536 /* RecipeEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeEditorView.swift; sourceTree = "<group>"; };
 		E95E9606ED2942B88CD82F66 /* Recipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recipe.swift; sourceTree = "<group>"; };
+		DD22EE33FF4400112233CC11 /* RecipeTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeTag.swift; sourceTree = "<group>"; };
 		EC97359280DA0043E89B19E4 /* SSEParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SSEParser.swift; sourceTree = "<group>"; };
 		F0D141D16DC1C0B2C9072747 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		BB22CC33DD44EE55FF6600AA /* FoodCardState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodCardState.swift; sourceTree = "<group>"; };
@@ -168,6 +171,7 @@
 		F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatServiceTests.swift; sourceTree = "<group>"; };
 		B3C4D5E6F7A8091A2B3C4D5E /* ChatViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModelTests.swift; sourceTree = "<group>"; };
 		FF1335A3F9B23BE07A13492A /* CookbookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookbookTests.swift; sourceTree = "<group>"; };
+		FF22003344556677889EE11 /* RecipeTagTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeTagTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -326,6 +330,7 @@
 				F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */,
 				B3C4D5E6F7A8091A2B3C4D5E /* ChatViewModelTests.swift */,
 				FF1335A3F9B23BE07A13492A /* CookbookTests.swift */,
+				FF22003344556677889EE11 /* RecipeTagTests.swift */,
 				B2C3D4E5F6A7B8C9D0E1F2A3 /* FoodServiceTests.swift */,
 				F5A6B7C8D9E0F1A2B3C4D5E6 /* FavoriteServiceTests.swift */,
 				B7F5E8A0008D9FE2BD6D4E37 /* ProfileTests.swift */,
@@ -348,6 +353,7 @@
 				BB22CC33DD44EE55FF6600AA /* FoodCardState.swift */,
 				7752224CC097FAA858A7CA90 /* FoodLog.swift */,
 				E95E9606ED2942B88CD82F66 /* Recipe.swift */,
+				DD22EE33FF4400112233CC11 /* RecipeTag.swift */,
 				D76B1EFE094E25506A946362 /* User.swift */,
 				D826C1E1099B728CF0D97524 /* Support */,
 			);
@@ -526,6 +532,7 @@
 				5B74DC25A1B37633DB000E7B /* ChatServiceTests.swift in Sources */,
 				C9D0E1F2A3B4C5D6E7F8091A /* ChatViewModelTests.swift in Sources */,
 				7D5E773EB15C7686D124F6FE /* CookbookTests.swift in Sources */,
+				EE11FF22003344556677889 /* RecipeTagTests.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* FoodServiceTests.swift in Sources */,
 				E4F5A6B7C8D9E0F1A2B3C4D5 /* FavoriteServiceTests.swift in Sources */,
 				D0DB4E52BD72B8EA94E540FA /* ProfileTests.swift in Sources */,
@@ -579,6 +586,7 @@
 				A52A8CD6B569DAEAD5C66F12 /* ProfileView.swift in Sources */,
 				77ED1BEFA34AC61EBF55C886 /* ProfileViewModel.swift in Sources */,
 				AB0FD4C35B14F7B98242D96E /* Recipe.swift in Sources */,
+				CC11DD22EE33FF4400112233 /* RecipeTag.swift in Sources */,
 				60CA3C08B1342F5ADA6C1151 /* RecipeCardView.swift in Sources */,
 				0D2175E08B8DCC4AE20EC191 /* RecipeDetailView.swift in Sources */,
 				CBE5A4171570846433747683 /* RecipeEditorView.swift in Sources */,
