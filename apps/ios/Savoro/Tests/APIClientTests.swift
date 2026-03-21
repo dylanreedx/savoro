@@ -136,7 +136,7 @@ struct APIErrorTests {
 
 // MARK: - APIClient Request Tests
 
-@Suite("APIClient requests via MockURLProtocol")
+@Suite("APIClient requests via MockURLProtocol", .serialized)
 struct APIClientRequestTests {
 
     @Test("successful 200 response decodes to expected model")
