@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { like, eq, or } from "drizzle-orm";
+import { like, eq, or, desc, asc } from "drizzle-orm";
 import { db, food, serving } from "@savoro/db";
 import { searchOFF, getOFFProduct, normalizeOFFProduct, type NormalizedResult } from "@savoro/food-data";
 import { requireAuth, type AuthEnv } from "../middleware/auth";
@@ -40,6 +40,7 @@ foodRoutes.get("/search", requireAuth, async (c) => {
     .from(food)
     .leftJoin(serving, eq(serving.foodId, food.id))
     .where(or(like(food.name, pattern), like(food.brandName, pattern)))
+    .orderBy(desc(serving.isDefault), asc(serving.id))
     .limit(limit)
     .all();
 
@@ -230,6 +231,34 @@ foodRoutes.get("/barcode/:code", requireAuth, async (c) => {
     console.error("OFF barcode lookup error:", err);
     return c.json({ error: "Failed to look up barcode" }, 500);
   }
+});
+
+// ---------------------------------------------------------------------------
+// GET /food/:id/servings — all servings for a food
+// ---------------------------------------------------------------------------
+foodRoutes.get("/:id/servings", requireAuth, async (c) => {
+  const foodId = c.req.param("id")?.trim();
+
+  if (!foodId) {
+    return c.json({ error: "Food ID is required" }, 400);
+  }
+
+  const servings = await db
+    .select({
+      id: serving.id,
+      description: serving.description,
+      amountGrams: serving.amountGrams,
+      isDefault: serving.isDefault,
+      calories: serving.calories,
+      protein: serving.protein,
+      carb: serving.carb,
+      fat: serving.fat,
+    })
+    .from(serving)
+    .where(eq(serving.foodId, foodId))
+    .all();
+
+  return c.json({ servings });
 });
 
 // ---------------------------------------------------------------------------

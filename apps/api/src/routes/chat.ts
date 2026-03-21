@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { createId } from "@paralleldrive/cuid2";
-import { eq, and, desc, sql, isNull } from "drizzle-orm";
+import { eq, and, desc, asc, sql, isNull } from "drizzle-orm";
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { streamText, stepCountIs, tool, type ModelMessage } from "ai";
 import { z } from "zod";
@@ -343,6 +343,7 @@ async function searchFoodExecutor(query: string, limit: number = 5) {
     .from(food)
     .leftJoin(serving, eq(serving.foodId, food.id))
     .where(sql`${food.name} LIKE ${pattern} OR ${food.brandName} LIKE ${pattern}`)
+    .orderBy(desc(serving.isDefault), asc(serving.id))
     .limit(limit)
     .all();
 
@@ -400,7 +401,7 @@ async function lookupBarcodeExecutor(barcode: string) {
   const cached = await db.select().from(food).where(eq(food.barcode, barcode)).get();
 
   if (cached) {
-    const servings = await db.select().from(serving).where(eq(serving.foodId, cached.id)).all();
+    const servings = await db.select().from(serving).where(eq(serving.foodId, cached.id)).orderBy(desc(serving.isDefault), asc(serving.id)).all();
     const s = servings[0];
     return {
       found: true,
