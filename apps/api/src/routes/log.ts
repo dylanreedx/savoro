@@ -319,7 +319,7 @@ logRoutes.post("/recipe", requireAuth, async (c) => {
   const existingFav = await db
     .select()
     .from(favorite)
-    .where(and(eq(favorite.userId, userId), eq(favorite.foodId, foodId)))
+    .where(and(eq(favorite.userId, userId), eq(favorite.recipeId, recipeId)))
     .get();
 
   if (existingFav) {
@@ -331,7 +331,7 @@ logRoutes.post("/recipe", requireAuth, async (c) => {
     await db.insert(favorite).values({
       id: createId(),
       userId,
-      foodId,
+      foodId: null,
       recipeId,
       useCount: 1,
       lastUsedAt: new Date().toISOString(),
