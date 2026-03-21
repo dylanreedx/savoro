@@ -402,6 +402,7 @@ async function lookupBarcodeExecutor(barcode: string) {
 
   if (cached) {
     const servings = await db.select().from(serving).where(eq(serving.foodId, cached.id)).orderBy(desc(serving.isDefault), asc(serving.id)).all();
+    if (!servings.length) return { found: false, error: 'No nutrition data available' };
     const s = servings[0];
     return {
       found: true,
