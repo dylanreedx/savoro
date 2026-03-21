@@ -30,6 +30,7 @@ export function ChatBubble({ message, index }: Props) {
         stiffness: 280,
         delay: Math.min(index * 60, 300),
       }}
+      testID={isUser ? "user-bubble" : "ai-bubble"}
       style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleAssistant]}
     >
       {hasText ? (

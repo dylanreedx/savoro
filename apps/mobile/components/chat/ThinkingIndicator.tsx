@@ -9,7 +9,7 @@ import { colors, glass } from "../../constants/Colors";
  */
 export function ThinkingIndicator() {
   return (
-    <View style={styles.wrapper}>
+    <View testID="thinking-indicator" style={styles.wrapper}>
       <View style={styles.container}>
         {[0, 1, 2].map((i) => (
           <MotiView

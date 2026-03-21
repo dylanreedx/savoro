@@ -1,0 +1,17 @@
+appId: app.savoro.mobile
+---
+- launchApp
+- tapOn:
+    text: "Chat"
+- tapOn:
+    id: "chat-input"
+- inputText: "hello"
+- tapOn:
+    id: "send-button"
+- assertVisible:
+    id: "thinking-indicator"
+    timeout: 5000
+  optional: true
+- assertVisible:
+    id: "ai-bubble"
+    timeout: 15000
