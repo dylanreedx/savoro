@@ -112,16 +112,17 @@ logRoutes.post("/", requireAuth, async (c) => {
     quantity?: number;
     meal?: "breakfast" | "lunch" | "dinner" | "snack";
     date?: string;
+    utcOffset?: number;
   }>();
 
-  const { foodId, servingId, quantity = 1, meal, date } = body;
+  const { foodId, servingId, quantity = 1, meal, date, utcOffset } = body;
 
   if (!foodId || !servingId) {
     return c.json({ error: "foodId and servingId are required" }, 400);
   }
 
   // Infer meal from time of day if not provided
-  const mealValue = meal ?? inferMeal();
+  const mealValue = meal ?? inferMeal(utcOffset);
   const dateValue = date ?? new Date().toISOString().slice(0, 10);
 
   const logEntry = {
@@ -201,9 +202,10 @@ logRoutes.post("/recipe", requireAuth, async (c) => {
     quantity?: number;
     meal?: "breakfast" | "lunch" | "dinner" | "snack";
     date?: string;
+    utcOffset?: number;
   }>();
 
-  const { recipeId, quantity = 1, meal, date } = body;
+  const { recipeId, quantity = 1, meal, date, utcOffset } = body;
 
   if (!recipeId) {
     return c.json({ error: "recipeId is required" }, 400);
@@ -299,7 +301,7 @@ logRoutes.post("/recipe", requireAuth, async (c) => {
     });
   }
 
-  const mealValue = meal ?? inferMeal();
+  const mealValue = meal ?? inferMeal(utcOffset);
   const dateValue = date ?? new Date().toISOString().slice(0, 10);
 
   const logEntry = {
@@ -378,8 +380,16 @@ logRoutes.delete("/:id", requireAuth, async (c) => {
   return c.json({ deleted: true });
 });
 
-function inferMeal(): "breakfast" | "lunch" | "dinner" | "snack" {
-  const hour = new Date().getHours();
+function inferMeal(utcOffset?: number): "breakfast" | "lunch" | "dinner" | "snack" {
+  let hour: number;
+  if (utcOffset !== undefined && Math.abs(utcOffset) <= 840) {
+    const now = new Date();
+    const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+    const localMinutes = ((utcMinutes + utcOffset) % 1440 + 1440) % 1440;
+    hour = localMinutes / 60;
+  } else {
+    hour = new Date().getUTCHours();
+  }
   if (hour < 11) return "breakfast";
   if (hour < 15) return "lunch";
   if (hour < 21) return "dinner";
