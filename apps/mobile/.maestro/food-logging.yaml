@@ -1,0 +1,57 @@
+appId: app.savoro.mobile
+---
+- launchApp
+
+# Navigate to Chat and send food query
+- tapOn:
+    text: "Chat"
+- tapOn:
+    id: "chat-input"
+- inputText: "chicken breast"
+- tapOn:
+    id: "send-button"
+
+# Wait for thinking indicator (optional, may not appear)
+- assertVisible:
+    id: "thinking-indicator"
+    timeout: 5000
+  optional: true
+
+# Wait for AI response bubble
+- assertVisible:
+    id: "ai-bubble"
+    timeout: 20000
+- waitForAnimationToEnd
+
+# FoodCard should show Log button (qty=1, button text has trailing space)
+- assertVisible:
+    text: "Log "
+
+# Adjust serving: tap + twice to increment qty from 1 to 2 (each tap adds 0.5)
+- tapOn:
+    text: "+"
+- tapOn:
+    text: "+"
+
+# Log button should now read "Log 2x"
+- assertVisible:
+    text: "Log 2x"
+
+# Tap Log button
+- tapOn:
+    text: "Log 2x"
+
+# Confirm logged state
+- assertVisible:
+    text: "Logged!"
+    timeout: 8000
+
+# Wait for FoodCard auto-dismiss (1800ms) then navigate
+- pause: 2000
+- tapOn:
+    text: "Dashboard"
+
+# Verify entry appears in timeline (title-cased from API)
+- assertVisible:
+    text: "Chicken"
+    timeout: 5000
