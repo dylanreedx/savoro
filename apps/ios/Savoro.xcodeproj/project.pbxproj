@@ -27,6 +27,7 @@
 		56CE1E5246BFC5F618FBB63A /* AnimationPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE586EF30AC68FE4A24EC31 /* AnimationPresets.swift */; };
 		57346A7596F7A415E53AB61E /* BarcodeScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6D1ED4508A399E600E7E92 /* BarcodeScannerTests.swift */; };
 		5B74DC25A1B37633DB000E7B /* ChatServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */; };
+		C9D0E1F2A3B4C5D6E7F8091A /* ChatViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C4D5E6F7A8091A2B3C4D5E /* ChatViewModelTests.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* FoodServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* FoodServiceTests.swift */; };
 		E4F5A6B7C8D9E0F1A2B3C4D5 /* FavoriteServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A6B7C8D9E0F1A2B3C4D5E6 /* FavoriteServiceTests.swift */; };
 		60CA3C08B1342F5ADA6C1151 /* RecipeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF2E57F0CA5DD13859A52C1 /* RecipeCardView.swift */; };
@@ -47,6 +48,7 @@
 		95D7B9E8D1160A246210097F /* LogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EE6FD5456A8DF053D0DAE96 /* LogService.swift */; };
 		98CB877742A28C743DF56F07 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3048FBF816B5C27CADBE93BD /* ContentView.swift */; };
 		9C725B798F92F44BDEC0AA4B /* TodayViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9841B8646A5DC68A89960F91 /* TodayViewModel.swift */; };
+		C1A2B3D4E5F60718293A4B5C /* ChatViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6E7F8091A2B3C4D5E6F7081 /* ChatViewModel.swift */; };
 		9DC887290B955EA2926C1C28 /* ViewfinderOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF3217F43036A24323E11AFE /* ViewfinderOverlay.swift */; };
 		A52A8CD6B569DAEAD5C66F12 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9581DF0B7ADEA525E4255867 /* ProfileView.swift */; };
 		A5CC110D3560BCDD19104432 /* ConsistencyGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D99BFBE5557C870B3336A1B3 /* ConsistencyGridView.swift */; };
@@ -121,6 +123,7 @@
 		8A2AA0A07547A963F22B4191 /* APIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientTests.swift; sourceTree = "<group>"; };
 		9581DF0B7ADEA525E4255867 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		9841B8646A5DC68A89960F91 /* TodayViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayViewModel.swift; sourceTree = "<group>"; };
+		D6E7F8091A2B3C4D5E6F7081 /* ChatViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModel.swift; sourceTree = "<group>"; };
 		9D95340D807E3CE209E38673 /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		9E29CCA1715278872780F085 /* GlassCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassCard.swift; sourceTree = "<group>"; };
 		9E8E85882AAF9C74BFA7951C /* ChatService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatService.swift; sourceTree = "<group>"; };
@@ -147,6 +150,7 @@
 		F0D141D16DC1C0B2C9072747 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
 		F5332D428A8923271CB1E920 /* PlusJakartaSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlusJakartaSans-SemiBold.ttf"; sourceTree = "<group>"; };
 		F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatServiceTests.swift; sourceTree = "<group>"; };
+		B3C4D5E6F7A8091A2B3C4D5E /* ChatViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewModelTests.swift; sourceTree = "<group>"; };
 		FF1335A3F9B23BE07A13492A /* CookbookTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CookbookTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -253,6 +257,7 @@
 			isa = PBXGroup;
 			children = (
 				53D147F670C28D5CC1EAA197 /* AuthViewModel.swift */,
+				D6E7F8091A2B3C4D5E6F7081 /* ChatViewModel.swift */,
 				1AF06781AB36F70BA8DD5B75 /* CookbookViewModel.swift */,
 				3BC108543AFA9612CE0E02E2 /* ProfileViewModel.swift */,
 				9841B8646A5DC68A89960F91 /* TodayViewModel.swift */,
@@ -283,6 +288,7 @@
 				E4CC6B78E5FD5551D5373B1A /* AuthTests.swift */,
 				AB6D1ED4508A399E600E7E92 /* BarcodeScannerTests.swift */,
 				F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */,
+				B3C4D5E6F7A8091A2B3C4D5E /* ChatViewModelTests.swift */,
 				FF1335A3F9B23BE07A13492A /* CookbookTests.swift */,
 				B2C3D4E5F6A7B8C9D0E1F2A3 /* FoodServiceTests.swift */,
 				F5A6B7C8D9E0F1A2B3C4D5E6 /* FavoriteServiceTests.swift */,
@@ -478,6 +484,7 @@
 				F8C68FBC0F134CDF25110D3E /* AuthTests.swift in Sources */,
 				57346A7596F7A415E53AB61E /* BarcodeScannerTests.swift in Sources */,
 				5B74DC25A1B37633DB000E7B /* ChatServiceTests.swift in Sources */,
+				C9D0E1F2A3B4C5D6E7F8091A /* ChatViewModelTests.swift in Sources */,
 				7D5E773EB15C7686D124F6FE /* CookbookTests.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* FoodServiceTests.swift in Sources */,
 				E4F5A6B7C8D9E0F1A2B3C4D5 /* FavoriteServiceTests.swift in Sources */,
@@ -534,6 +541,7 @@
 				69DBBD618953952B14463B71 /* SavoroColors.swift in Sources */,
 				43BF464ECD0714004ABFE20B /* SavoroFonts.swift in Sources */,
 				7CF41F9ABE0EBB61A6D5F2A2 /* TodayView.swift in Sources */,
+				C1A2B3D4E5F60718293A4B5C /* ChatViewModel.swift in Sources */,
 				9C725B798F92F44BDEC0AA4B /* TodayViewModel.swift in Sources */,
 				822DD159689E8CB314581F6D /* User.swift in Sources */,
 				9DC887290B955EA2926C1C28 /* ViewfinderOverlay.swift in Sources */,

@@ -1,10 +1,17 @@
 import Foundation
 
+// MARK: - ChatServiceProtocol
+
+protocol ChatServiceProtocol: Sendable {
+    func sendMessage(content: String, attachments: [ChatAttachment]?) -> AsyncStream<ChatEvent>
+    func loadMessages(date: Date) async throws -> [ChatMessage]
+}
+
 // MARK: - ChatService
 
 /// Handles chat messaging (SSE streaming + JSON smart-route) and history loading.
 /// Stateless struct — each call is self-contained. The `AsyncStream` manages its own lifetime.
-struct ChatService: Sendable {
+struct ChatService: ChatServiceProtocol {
     let apiClient: APIClient
 
     private static let timeoutSeconds: TimeInterval = 30
