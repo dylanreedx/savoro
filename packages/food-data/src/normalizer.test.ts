@@ -79,3 +79,134 @@ describe("normalizeOFFProduct", () => {
     expect(result!.serving.amountGrams).toBe(100);
   });
 });
+
+describe("data quality validation", () => {
+  const base = validProduct.nutriments!;
+
+  it("rejects NaN calories", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, "energy-kcal_100g": NaN },
+    };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+
+  it("rejects Infinity fat", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, fat_100g: Infinity },
+    };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+
+  it("rejects calories > 1000", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, "energy-kcal_100g": 1001 },
+    };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+
+  it("rejects fat > 100", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, fat_100g: 101 },
+    };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+
+  it("rejects protein > 100", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, proteins_100g: 101 },
+    };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+
+  it("rejects carb > 100", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, carbohydrates_100g: 101 },
+    };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+
+  it("accepts exact bound calories=1000", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, "energy-kcal_100g": 1000 },
+    };
+    expect(normalizeOFFProduct(p)).not.toBeNull();
+  });
+
+  it("accepts exact bound fat=100", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, fat_100g: 100 },
+    };
+    expect(normalizeOFFProduct(p)).not.toBeNull();
+  });
+
+  it("rejects negative calories", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, "energy-kcal_100g": -1 },
+    };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+
+  it("accepts exact bound protein=100", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, proteins_100g: 100 },
+    };
+    expect(normalizeOFFProduct(p)).not.toBeNull();
+  });
+
+  it("accepts exact bound carb=100", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, carbohydrates_100g: 100 },
+    };
+    expect(normalizeOFFProduct(p)).not.toBeNull();
+  });
+
+  it("accepts calories=0 (e.g. water)", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, "energy-kcal_100g": 0 },
+    };
+    expect(normalizeOFFProduct(p)).not.toBeNull();
+  });
+
+  it("accepts -0 as equivalent to 0", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, "energy-kcal_100g": -0 },
+    };
+    expect(normalizeOFFProduct(p)).not.toBeNull();
+  });
+
+  it("rejects -Infinity fat", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, fat_100g: -Infinity },
+    };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+
+  it("optional nutriments field with NaN is stored as null, not rejected", () => {
+    const p: OFFProduct = {
+      ...validProduct,
+      nutriments: { ...base, sodium_100g: NaN },
+    };
+    const result = normalizeOFFProduct(p);
+    expect(result).not.toBeNull();
+    expect(result!.serving.sodium).toBeNull();
+  });
+
+  it("rejects product missing code", () => {
+    const p: OFFProduct = { ...validProduct, code: undefined };
+    expect(normalizeOFFProduct(p)).toBeNull();
+  });
+});

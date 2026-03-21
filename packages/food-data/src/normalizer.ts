@@ -61,7 +61,11 @@ export function hasValidNutrition(product: OFFProduct): boolean {
 }
 
 function num(val: number | undefined): number | null {
-  return val != null ? val : null;
+  return val != null && Number.isFinite(val) ? val : null;
+}
+
+function isFinitePositive(v: number): boolean {
+  return Number.isFinite(v) && v >= 0;
 }
 
 export function normalizeOFFProduct(product: OFFProduct): NormalizedResult | null {
@@ -69,6 +73,16 @@ export function normalizeOFFProduct(product: OFFProduct): NormalizedResult | nul
   if (!hasValidNutrition(product)) return null;
 
   const n = product.nutriments!;
+
+  const calories = n["energy-kcal_100g"]!;
+  const protein = n.proteins_100g!;
+  const carb = n.carbohydrates_100g!;
+  const fat = n.fat_100g!;
+
+  if (!isFinitePositive(calories) || calories > 1000) return null;
+  if (!isFinitePositive(protein) || protein > 100) return null;
+  if (!isFinitePositive(carb) || carb > 100) return null;
+  if (!isFinitePositive(fat) || fat > 100) return null;
   const foodId = createId();
 
   const food: NormalizedFood = {
