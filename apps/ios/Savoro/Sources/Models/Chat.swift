@@ -22,6 +22,15 @@ enum MessageRole: String, Codable, Sendable {
 
 // MARK: - Props
 
+struct FoodCardServing: Codable, Equatable, Sendable {
+    let id: String
+    let description: String
+    let calories: Double?
+    let protein: Double?
+    let carb: Double?
+    let fat: Double?
+}
+
 struct FoodCardProps: Codable, Equatable, Sendable {
     let foodId: String
     let name: String
@@ -33,6 +42,10 @@ struct FoodCardProps: Codable, Equatable, Sendable {
     let carb: Double?
     let fat: Double?
     let quantity: Double
+    // v2 verification card fields
+    let source: FoodSource
+    let servings: [FoodCardServing]
+    let selectedServingId: String
 
     enum CodingKeys: String, CodingKey {
         case foodId = "food_id"
@@ -45,6 +58,56 @@ struct FoodCardProps: Codable, Equatable, Sendable {
         case carb
         case fat
         case quantity
+        case source
+        case servings
+        case selectedServingId = "selected_serving_id"
+    }
+
+    init(
+        foodId: String,
+        name: String,
+        brandName: String? = nil,
+        servingId: String,
+        servingDescription: String,
+        calories: Double? = nil,
+        protein: Double? = nil,
+        carb: Double? = nil,
+        fat: Double? = nil,
+        quantity: Double = 1.0,
+        source: FoodSource = .usda,
+        servings: [FoodCardServing] = [],
+        selectedServingId: String = ""
+    ) {
+        self.foodId = foodId
+        self.name = name
+        self.brandName = brandName
+        self.servingId = servingId
+        self.servingDescription = servingDescription
+        self.calories = calories
+        self.protein = protein
+        self.carb = carb
+        self.fat = fat
+        self.quantity = quantity
+        self.source = source
+        self.servings = servings
+        self.selectedServingId = selectedServingId
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        foodId = try container.decode(String.self, forKey: .foodId)
+        name = try container.decode(String.self, forKey: .name)
+        brandName = try container.decodeIfPresent(String.self, forKey: .brandName)
+        servingId = try container.decode(String.self, forKey: .servingId)
+        servingDescription = try container.decode(String.self, forKey: .servingDescription)
+        calories = try container.decodeIfPresent(Double.self, forKey: .calories)
+        protein = try container.decodeIfPresent(Double.self, forKey: .protein)
+        carb = try container.decodeIfPresent(Double.self, forKey: .carb)
+        fat = try container.decodeIfPresent(Double.self, forKey: .fat)
+        quantity = try container.decodeIfPresent(Double.self, forKey: .quantity) ?? 1.0
+        source = try container.decodeIfPresent(FoodSource.self, forKey: .source) ?? .usda
+        servings = try container.decodeIfPresent([FoodCardServing].self, forKey: .servings) ?? []
+        selectedServingId = try container.decodeIfPresent(String.self, forKey: .selectedServingId) ?? ""
     }
 }
 
