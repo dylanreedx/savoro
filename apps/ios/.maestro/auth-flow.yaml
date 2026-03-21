@@ -1,0 +1,29 @@
+appId: com.savoro.app
+---
+- launchApp:
+    clearState: true
+
+# Login screen is visible
+- assertVisible: "Welcome back"
+
+# Type into email field
+- tapOn: "Email"
+- inputText: "test@example.com"
+
+# Type into password field
+- tapOn: "Password"
+- inputText: "password123"
+
+# Navigate to register screen
+- tapOn: "Don't have an account? Sign up"
+- waitForAnimationToEnd
+
+# Register screen is visible
+- assertVisible: "Create Account"
+
+# Navigate back to login screen
+- tapOn: "Already have an account? Log in"
+- waitForAnimationToEnd
+
+# Login screen is visible again
+- assertVisible: "Welcome back"
