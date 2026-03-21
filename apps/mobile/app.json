@@ -4,6 +4,13 @@
     "slug": "savoro",
     "version": "1.0.0",
     "orientation": "portrait",
+    "owner": "savoro",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/savoro"
+    },
     "icon": "./assets/images/icon.png",
     "scheme": "savoro",
     "userInterfaceStyle": "light",
@@ -14,14 +21,46 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.savoro.mobile"
+      "bundleIdentifier": "app.savoro.mobile",
+      "associatedDomains": ["applinks:savoro.app"]
+    },
+    "android": {
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "savoro.app",
+              "pathPattern": "/.*/.*"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Savoro needs camera access to scan food barcodes."
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
+    "extra": {
+      "eas": {
+        "projectId": ""
+      },
+      "router": {
+        "origin": false
+      }
+    },
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": false
     }
   }
 }

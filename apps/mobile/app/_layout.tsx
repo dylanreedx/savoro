@@ -1,4 +1,5 @@
 import { useFonts } from "expo-font";
+import * as Linking from "expo-linking";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -29,13 +30,32 @@ function useAuthGuard() {
     if (isLoading) return;
 
     const inAuth = segments[0] === "(auth)";
+    const inRecipe = segments[0] === "recipe";
 
-    if (!isAuthenticated && !inAuth) {
+    if (!isAuthenticated && !inAuth && !inRecipe) {
       router.replace("/(auth)/login");
     } else if (isAuthenticated && inAuth) {
       router.replace("/(tabs)/chat");
     }
   }, [isAuthenticated, isLoading, segments]);
+}
+
+/** Navigate to recipe deep link when app is opened via universal link or custom scheme */
+function useDeepLink() {
+  const router = useRouter();
+  const url = Linking.useURL();
+
+  useEffect(() => {
+    if (!url) return;
+
+    const parsed = Linking.parse(url);
+    // Matches both savoro://username/recipe-slug and https://savoro.app/username/recipe-slug
+    const pathParts = parsed.path?.split("/").filter(Boolean) ?? [];
+    if (pathParts.length === 2) {
+      const [username, slug] = pathParts;
+      router.push(`/recipe/${username}/${slug}`);
+    }
+  }, [url]);
 }
 
 /** Listen for 401s from the API client and auto-redirect to login */
@@ -91,6 +111,7 @@ export default function RootLayout() {
   useAuthGuard();
   useAuthExpiredRedirect();
   useNetworkListener();
+  useDeepLink();
 
   if (!fontsLoaded || isLoading) {
     return null;
@@ -104,6 +125,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="modal" options={{ presentation: "modal" }} />
           <Stack.Screen name="goal" options={{ presentation: "modal", headerShown: false }} />
+          <Stack.Screen name="recipe/[username]/[slug]" options={{ presentation: "modal", headerShown: false }} />
         </Stack>
         <OfflineBanner />
       </View>

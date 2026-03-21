@@ -72,6 +72,33 @@ export async function api<T = unknown>(
   return data as T;
 }
 
+// ---------------------------------------------------------------------------
+// Public API client — no auth header, no 401 listener
+// ---------------------------------------------------------------------------
+export async function publicApi<T = unknown>(
+  path: string,
+  options: Omit<RequestInit, "body"> & { body?: unknown } = {},
+): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string>),
+  };
+
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new ApiError(data.error ?? "Request failed", res.status);
+  }
+
+  return data as T;
+}
+
 export class ApiError extends Error {
   status: number;
   constructor(message: string, status: number) {
