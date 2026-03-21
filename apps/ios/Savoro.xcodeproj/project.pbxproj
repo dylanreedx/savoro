@@ -28,12 +28,14 @@
 		57346A7596F7A415E53AB61E /* BarcodeScannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6D1ED4508A399E600E7E92 /* BarcodeScannerTests.swift */; };
 		5B74DC25A1B37633DB000E7B /* ChatServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* FoodServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6A7B8C9D0E1F2A3 /* FoodServiceTests.swift */; };
+		E4F5A6B7C8D9E0F1A2B3C4D5 /* FavoriteServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A6B7C8D9E0F1A2B3C4D5E6 /* FavoriteServiceTests.swift */; };
 		60CA3C08B1342F5ADA6C1151 /* RecipeCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBF2E57F0CA5DD13859A52C1 /* RecipeCardView.swift */; };
 		68EB68F871B48BCEF06FFBA9 /* RecipeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79C4B7F0A51146CB3D3DB2B1 /* RecipeService.swift */; };
 		699CDA2154F82AB32E2F9793 /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A2AA0A07547A963F22B4191 /* APIClientTests.swift */; };
 		69DBBD618953952B14463B71 /* SavoroColors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B6C0C222F3F8D6B2FF82019 /* SavoroColors.swift */; };
 		6B5FEFB6652F43DF3A7A18E7 /* DailyNutrition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0680B860C08BC7CE544B53C6 /* DailyNutrition.swift */; };
 		5E110B12F6D8029A2B52933C /* FoodService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283B04EAA6DAD5D75893CE71 /* FoodService.swift */; };
+		C1D2E3F4A5B6C7D8E9F0A1B2 /* FavoriteService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3E4F5A6B7C8D9E0F1A2B3C4 /* FavoriteService.swift */; };
 		75AF1A47F87088BD0080264E /* GoalService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F9DB41A2D36129C536A9757 /* GoalService.swift */; };
 		77ED1BEFA34AC61EBF55C886 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC108543AFA9612CE0E02E2 /* ProfileViewModel.swift */; };
 		79D702D09D1F373A7E8CBD58 /* PlusJakartaSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0D2A8848DF4E94CA3D580E53 /* PlusJakartaSans-Bold.ttf */; };
@@ -101,7 +103,9 @@
 		5321AA72CBB22E3937CCC43B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		53D147F670C28D5CC1EAA197 /* AuthViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthViewModel.swift; sourceTree = "<group>"; };
 		283B04EAA6DAD5D75893CE71 /* FoodService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodService.swift; sourceTree = "<group>"; };
+		D3E4F5A6B7C8D9E0F1A2B3C4 /* FavoriteService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteService.swift; sourceTree = "<group>"; };
 		B2C3D4E5F6A7B8C9D0E1F2A3 /* FoodServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodServiceTests.swift; sourceTree = "<group>"; };
+		F5A6B7C8D9E0F1A2B3C4D5E6 /* FavoriteServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoriteServiceTests.swift; sourceTree = "<group>"; };
 		5F9DB41A2D36129C536A9757 /* GoalService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalService.swift; sourceTree = "<group>"; };
 		62584FAC8F4D7FBEACE3338D /* RegisterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterView.swift; sourceTree = "<group>"; };
 		62587688D7E283A82AA47FD8 /* DailyCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyCardView.swift; sourceTree = "<group>"; };
@@ -155,6 +159,7 @@
 				9D95340D807E3CE209E38673 /* AuthService.swift */,
 				9E8E85882AAF9C74BFA7951C /* ChatService.swift */,
 				283B04EAA6DAD5D75893CE71 /* FoodService.swift */,
+				D3E4F5A6B7C8D9E0F1A2B3C4 /* FavoriteService.swift */,
 				5F9DB41A2D36129C536A9757 /* GoalService.swift */,
 				6B003B37C6CEF2ADCE739FDD /* KeychainHelper.swift */,
 				3EE6FD5456A8DF053D0DAE96 /* LogService.swift */,
@@ -280,6 +285,7 @@
 				F9A279D9B6D296C531E3E6B5 /* ChatServiceTests.swift */,
 				FF1335A3F9B23BE07A13492A /* CookbookTests.swift */,
 				B2C3D4E5F6A7B8C9D0E1F2A3 /* FoodServiceTests.swift */,
+				F5A6B7C8D9E0F1A2B3C4D5E6 /* FavoriteServiceTests.swift */,
 				B7F5E8A0008D9FE2BD6D4E37 /* ProfileTests.swift */,
 				B4D238D7F0E245B4C6011FAF /* SavoroColorsTests.swift */,
 				DA99A12E69D931E59CC38630 /* TodayScreenTests.swift */,
@@ -474,6 +480,7 @@
 				5B74DC25A1B37633DB000E7B /* ChatServiceTests.swift in Sources */,
 				7D5E773EB15C7686D124F6FE /* CookbookTests.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* FoodServiceTests.swift in Sources */,
+				E4F5A6B7C8D9E0F1A2B3C4D5 /* FavoriteServiceTests.swift in Sources */,
 				D0DB4E52BD72B8EA94E540FA /* ProfileTests.swift in Sources */,
 				282591F7977341282B2250A8 /* SavoroColorsTests.swift in Sources */,
 				FC8E4CB743BBBBB7414DDF6D /* TodayScreenTests.swift in Sources */,
@@ -506,6 +513,7 @@
 				2C3B5DCB39B39BBC649A9612 /* GlassCard.swift in Sources */,
 				8D1B971477679AACFEAD4444 /* GoalEditorView.swift in Sources */,
 				5E110B12F6D8029A2B52933C /* FoodService.swift in Sources */,
+				C1D2E3F4A5B6C7D8E9F0A1B2 /* FavoriteService.swift in Sources */,
 				75AF1A47F87088BD0080264E /* GoalService.swift in Sources */,
 				DB4DA74A27397038960B3EED /* HapticManager.swift in Sources */,
 				86B62E4E968CDB1EC09C062A /* KeychainHelper.swift in Sources */,
