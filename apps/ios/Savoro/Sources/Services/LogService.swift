@@ -1,8 +1,14 @@
 import Foundation
 
+// MARK: - Protocol
+
+protocol LogServiceProtocol {
+    func logFood(_ request: LogFoodRequest) async throws -> LogFoodResponse
+}
+
 // MARK: - Request Structs
 
-struct LogFoodRequest: Encodable {
+struct LogFoodRequest: Codable {
     let foodId: String
     let servingId: String
     let quantity: Double
@@ -63,7 +69,7 @@ struct LoggedEntry: Decodable, Sendable {
 
 // MARK: - Service
 
-struct LogService {
+struct LogService: LogServiceProtocol {
 
     private let apiClient: APIClient
 
