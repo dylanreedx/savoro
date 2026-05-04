@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#2f3aa3",
+              "on-error": "#ffffff",
+              "on-background": "#1a1c1c",
+              "surface-container-high": "#f1f1f0",
+              "primary-fixed-dim": "#ffb2b9",
+              "on-surface": "#1a1c1c",
+              "on-secondary-fixed": "#1f1b17",
+              "surface-bright": "#fcfcfc",
+              "tertiary-container": "#8a95ff",
+              "inverse-on-surface": "#f1f1f0",
+              "inverse-primary": "#ffb2b9",
+              "inverse-surface": "#2f3130",
+              "on-primary-container": "#6f0122",
+              "surface-variant": "#f4f4f4",
+              "secondary-fixed-dim": "#cec5bf",
+              "on-tertiary": "#ffffff",
+              "outline": "#e5e5e5",
+              "surface": "#fcfcfc",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#6a635e",
+              "error-container": "#ffdad6",
+              "primary-container": "#FDA4AF",
+              "secondary-container": "#eae1da",
+              "surface-tint": "#FDA4AF",
+              "surface-container": "#f8f8f8",
+              "tertiary": "#4953bc",
+              "surface-dim": "#f1f1f1",
+              "on-tertiary-container": "#1a2591",
+              "on-error-container": "#93000a",
+              "background": "#fcfcfc",
+              "on-primary": "#ffffff",
+              "on-primary-fixed": "#400010",
+              "on-primary-fixed-variant": "#891933",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#bdc2ff",
+              "on-tertiary-fixed": "#000767",
+              "surface-container-low": "#fafafa",
+              "tertiary-fixed": "#e0e0ff",
+              "primary-fixed": "#ffdadc",
+              "secondary-fixed": "#eae1da",
+              "on-secondary-fixed-variant": "#4b4641",
+              "outline-variant": "#f1f1f1",
+              "error": "#ba1a1a",
+              "secondary": "#71717a",
+              "primary": "#FDA4AF",
+              "surface-container-highest": "#f4f4f4",
+              "on-surface-variant": "#52525b"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .masonry-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+        .gradient-aura {
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(253,164,175,0.05) 0%, rgba(255,255,255,0) 70%);
+            top: -300px;
+            right: -300px;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen pb-32 overflow-x-hidden font-light">
+<!-- Gradient Aura Background Effect -->
+<div class="gradient-aura"></div>
+<!-- Top Navigation Shell -->
+<header class="bg-transparent text-on-surface font-headline docked full-width top-0 flex justify-between items-center w-full px-8 py-8 max-w-7xl mx-auto z-50">
+<div class="flex items-center gap-6">
+<span class="material-symbols-outlined text-on-surface-variant text-3xl">menu</span>
+<h1 class="text-2xl font-bold tracking-tight text-on-surface">Savoro</h1>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container border-[0.5px] border-outline/30 shadow-sm">
+<img alt="User profile" data-alt="Close up portrait of a smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTMreiyBLjoIklm56faS8MS5LHo4jcwW2fIOs4oHckqXyi-EJ4BmM8qYtYDGG8MOg3qkDfVsRwg4kZyil7C1E90eWd-LQh6mT4LcXpj163yeZyL_Giok0HDOK4Hyfx2w_MjJrx-6PguNaFBt2imYGYiNitXaybtlFh5obXFVWBLqP_Cal9yj0o3jx0na1qcdPxXYlhOFCSN9LM1e0bGUFUVnge04w2bPltHrcZRImascCjC8VGqnFJ0Bk2i_R8CHft0UK7e6EvjP8"/>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="max-w-7xl mx-auto px-8 pt-2">
+<!-- Search Bar: Ethereal Glass Pill -->
+<div class="relative w-full mb-14">
+<div class="bg-white/40 backdrop-blur-2xl rounded-full px-7 py-5 flex items-center gap-4 shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-white/50">
+<span class="material-symbols-outlined text-secondary/60 text-2xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-lg font-light text-on-surface placeholder:text-secondary/40" placeholder="Search your digital cellar..." type="text"/>
+</div>
+</div>
+<!-- Section Title: Quiet Luxury Typography -->
+<div class="mb-10">
+<h2 class="text-on-surface text-4xl font-extrabold tracking-tight mb-2">Cookbook</h2>
+<p class="text-secondary/70 text-lg font-light">Your curated culinary anthology.</p>
+</div>
+<!-- Masonry Grid: Translucent Recipe Cards -->
+<div class="masonry-grid mb-20">
+<!-- Card 1 -->
+<div class="bg-white/30 backdrop-blur-xl rounded-[2rem] p-7 shadow-[0_8px_32px_rgba(0,0,0,0.03)] flex flex-col gap-5 border border-white/60">
+<div class="flex justify-between items-start">
+<span class="text-[#FDA4AF] font-bold text-[10px] tracking-[0.2em] uppercase">From Sarah</span>
+<span class="material-symbols-outlined text-secondary/30 text-lg">more_vert</span>
+</div>
+<h3 class="text-on-surface text-xl font-bold leading-tight tracking-tight">Miso-Glazed Black Cod</h3>
+<div class="flex items-center gap-4 text-sm font-medium">
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-[#FDA4AF]/70"></div><span class="text-secondary/80">32g</span></div>
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-indigo-300/70"></div><span class="text-secondary/80">12g</span></div>
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-amber-300/70"></div><span class="text-secondary/80">18g</span></div>
+</div>
+<div class="mt-1 text-secondary/40 text-[9px] font-bold uppercase tracking-[0.15em]">Cooked 12x</div>
+</div>
+<!-- Card 2 (Offset/Taller look) -->
+<div class="bg-white/30 backdrop-blur-xl rounded-[2rem] p-7 shadow-[0_8px_32px_rgba(0,0,0,0.03)] flex flex-col gap-5 border border-white/60 mt-6">
+<div class="flex justify-between items-start">
+<span class="text-[#FDA4AF] font-bold text-[10px] tracking-[0.2em] uppercase">From Sarah</span>
+<span class="material-symbols-outlined text-secondary/30 text-lg">more_vert</span>
+</div>
+<h3 class="text-on-surface text-xl font-bold leading-tight tracking-tight">Artisan Sourdough with Truffle Honey</h3>
+<div class="flex items-center gap-4 text-sm font-medium">
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-[#FDA4AF]/70"></div><span class="text-secondary/80">8g</span></div>
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-indigo-300/70"></div><span class="text-secondary/80">45g</span></div>
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-amber-300/70"></div><span class="text-secondary/80">4g</span></div>
+</div>
+<div class="mt-1 text-secondary/40 text-[9px] font-bold uppercase tracking-[0.15em]">Cooked 4x</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-white/30 backdrop-blur-xl rounded-[2rem] p-7 shadow-[0_8px_32px_rgba(0,0,0,0.03)] flex flex-col gap-5 border border-white/60 -mt-2">
+<div class="flex justify-between items-start">
+<span class="text-secondary/60 font-bold text-[10px] tracking-[0.2em] uppercase">Personal</span>
+<span class="material-symbols-outlined text-secondary/30 text-lg">more_vert</span>
+</div>
+<h3 class="text-on-surface text-xl font-bold leading-tight tracking-tight">Burrata &amp; Heirloom Tomato Salad</h3>
+<div class="flex items-center gap-4 text-sm font-medium">
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-[#FDA4AF]/70"></div><span class="text-secondary/80">14g</span></div>
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-indigo-300/70"></div><span class="text-secondary/80">6g</span></div>
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-amber-300/70"></div><span class="text-secondary/80">22g</span></div>
+</div>
+<div class="mt-1 text-secondary/40 text-[9px] font-bold uppercase tracking-[0.15em]">Cooked 28x</div>
+</div>
+<!-- Card 4 -->
+<div class="bg-white/30 backdrop-blur-xl rounded-[2rem] p-7 shadow-[0_8px_32px_rgba(0,0,0,0.03)] flex flex-col gap-5 border border-white/60">
+<div class="flex justify-between items-start">
+<span class="text-[#FDA4AF] font-bold text-[10px] tracking-[0.2em] uppercase">From Sarah</span>
+<span class="material-symbols-outlined text-secondary/30 text-lg">more_vert</span>
+</div>
+<h3 class="text-on-surface text-xl font-bold leading-tight tracking-tight">Wild Berry Parfait</h3>
+<div class="flex items-center gap-4 text-sm font-medium">
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-[#FDA4AF]/70"></div><span class="text-secondary/80">18g</span></div>
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-indigo-300/70"></div><span class="text-secondary/80">30g</span></div>
+<div class="flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-amber-300/70"></div><span class="text-secondary/80">5g</span></div>
+</div>
+<div class="mt-1 text-secondary/40 text-[9px] font-bold uppercase tracking-[0.15em]">Cooked 9x</div>
+</div>
+</div>
+<!-- Discover Section: Horizontal Scroll -->
+<section class="mb-16">
+<div class="flex justify-between items-center mb-8">
+<h3 class="text-on-surface text-2xl font-bold tracking-tight">Discover</h3>
+<span class="text-[#FDA4AF] font-bold text-sm tracking-wide">View Feed</span>
+</div>
+<div class="flex gap-6 overflow-x-auto pb-6 no-scrollbar -mx-8 px-8">
+<!-- Discover Card 1 -->
+<div class="min-w-[300px] p-[1px] rounded-[32px] bg-gradient-to-br from-[#FDA4AF]/40 to-violet-300/30 shadow-[0_8px_40px_rgba(0,0,0,0.02)]">
+<div class="bg-white/90 rounded-[31px] p-6 h-full border border-white/20">
+<div class="flex items-center gap-3 mb-5">
+<img alt="Julian" class="w-8 h-8 rounded-full border border-white shadow-sm" data-alt="Portrait of a creative professional man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmQZyMNv8O5SiOg_D2BuR7G6X93o6EucytRaO4dDjl4oPuASL4tC6fO6XHw9CQf2oYamHBvmzaCvEdaT-9TmSxSVdBNZRPTrL6ZXaPLLLbRM5f_QldnmGF195dvv3Rm8GC9reTzLLedBWeq2k4eFrzLRsIyCWIg8FMdqndp8ncufn6OMSPDK0S_I-yRqxYMPGgQLnPtgYeIu2dT9wkzZmqH5srIb8yCW4VznYrK8hhj5o1eQFjScmNR5sEJVxbGKMAWTrOzgniZuQ"/>
+<span class="text-sm font-bold text-on-surface/80">Julian shared a collection</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2 tracking-tight">Summer Solstice Menu</h4>
+<p class="text-secondary/70 text-sm mb-5 leading-relaxed font-light">12 recipes focused on cooling ingredients and seasonal citrus.</p>
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border-2 border-white shadow-sm"></div>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border-2 border-white shadow-sm"></div>
+<div class="w-8 h-8 rounded-full bg-surface-container-high border-2 border-white shadow-sm"></div>
+<div class="w-8 h-8 rounded-full bg-[#FDA4AF]/10 flex items-center justify-center text-[10px] font-bold text-[#FDA4AF] border-2 border-white shadow-sm">+9</div>
+</div>
+</div>
+</div>
+<!-- Discover Card 2 -->
+<div class="min-w-[300px] p-[1px] rounded-[32px] bg-gradient-to-br from-[#FDA4AF]/40 to-violet-300/30 shadow-[0_8px_40px_rgba(0,0,0,0.02)]">
+<div class="bg-white/90 rounded-[31px] p-6 h-full border border-white/20">
+<div class="flex items-center gap-3 mb-5">
+<img alt="Elena" class="w-8 h-8 rounded-full border border-white shadow-sm" data-alt="Close up of a woman with curly hair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDmFL5g_CM6HYX5yWwzzn-QtsRUGYlPS8wGue36x2bD1wQNifZoyU7gwEIo1BXaFKyhhVOsC8UPdZfpkDItX-VFcL_umsw_UnIGwZtOWoaL8yH_YJbz1kTayoEMaaEVTWoM-3PtVCey4z3GivMUwd2c1aUBrE_7E6AjdGXreUfAx7vc5tO5Y-NT1w9LKKYdMp-UP06Ulv67zPvGSN4FYKsHgUhVJEQzRnfXhN08s8QypOhn_rgXn5p2TcK7o5bIem53pNP_l8VTfw"/>
+<span class="text-sm font-bold text-on-surface/80">Elena's Weekly Favorite</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-2 tracking-tight">Mediterranean Soul</h4>
+<p class="text-secondary/70 text-sm mb-5 leading-relaxed font-light">The secret to the perfect Greek-style braised lamb shank.</p>
+<div class="w-full h-28 rounded-2xl bg-stone-100 overflow-hidden shadow-inner">
+<img alt="Lamb dish" class="w-full h-full object-cover grayscale-[0.2]" data-alt="Gourmet meat dish with herbs and vegetables" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqeugeiQZh8RazsNOXEVsnE-L-Yy5RgQBqoCndmv2FglR6Y5I_Qekk7eXGB8LPRZWvTzGFeuJ4MX1gwzKwBbXzjufDSVB6Bekzccrzy5RR90yGdofPyUN32TezhuGcnAGl9GbScPMBPnMvwsoFbSv7c7koWS26fzVb0oKXKHocySvcDJ8mM4Au0N1nK2bxjmB5ich3592Qf_6_wE_h4k9JV1DYa8FNDL6gHXo3TVJ3P8bzQMET0JR4-fuWOkae8hKKbDLXktJ9vd4"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Shell: Ultra-light Pill -->
+<nav class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[88%] max-w-sm z-50 flex justify-around items-center p-2.5 bg-white/40 dark:bg-stone-900/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/50 shadow-[0_12px_48px_rgba(0,0,0,0.06)]">
+<!-- Home -->
+<a class="flex items-center justify-center text-secondary/40 p-3.5 hover:text-[#FDA4AF] transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+</a>
+<!-- Chat -->
+<a class="flex items-center justify-center text-secondary/40 p-3.5 hover:text-[#FDA4AF] transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined text-2xl">chat_bubble</span>
+</a>
+<!-- Cookbook (ACTIVE) -->
+<a class="flex items-center justify-center text-[#FDA4AF] bg-white/60 dark:bg-white/10 rounded-full p-3.5 shadow-sm active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1, 'wght' 200;">book_5</span>
+</a>
+<!-- Community -->
+<a class="flex items-center justify-center text-secondary/40 p-3.5 hover:text-[#FDA4AF] transition-all active:scale-90" href="#">
+<span class="material-symbols-outlined text-2xl">group</span>
+</a>
+</nav>
+</body></html>

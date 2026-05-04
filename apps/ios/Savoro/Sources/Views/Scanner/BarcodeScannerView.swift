@@ -202,7 +202,7 @@ final class ScannerViewController: UIViewController, AVCaptureMetadataOutputObje
             self.captureSession.addOutput(metadataOutput)
 
             metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
-            metadataOutput.metadataObjectTypes = [.ean13, .ean8, .upce, .upca]
+            metadataOutput.metadataObjectTypes = [.ean13, .ean8, .upce]
 
             DispatchQueue.main.async {
                 let layer = AVCaptureVideoPreviewLayer(session: self.captureSession)

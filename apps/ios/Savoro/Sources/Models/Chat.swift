@@ -10,6 +10,7 @@ enum UIComponentType: String, Codable, Sendable {
     case quickLogChips = "quick_log_chips"
     case dailySnapshot = "daily_snapshot"
     case recipeCard = "recipe_card"
+    case mealPlan = "meal_plan"
     case unknown
 }
 
@@ -236,6 +237,31 @@ struct RecipeCardProps: Codable, Equatable, Sendable {
     }
 }
 
+// MARK: - MacroValues
+
+struct MacroValues: Codable, Equatable, Sendable {
+    let calories: Double
+    let protein: Double
+    let carb: Double
+    let fat: Double
+}
+
+// MARK: - MealPlanProps
+
+struct MealPlanProps: Codable, Equatable, Sendable {
+    let suggestedFood: FoodCardProps
+    let currentMacros: MacroValues
+    let projectedMacros: MacroValues
+    let goals: MacroValues
+
+    enum CodingKeys: String, CodingKey {
+        case suggestedFood = "suggested_food"
+        case currentMacros = "current_macros"
+        case projectedMacros = "projected_macros"
+        case goals
+    }
+}
+
 // MARK: - UIComponentProps (tagged union)
 
 enum UIComponentProps: Equatable, Sendable {
@@ -246,6 +272,7 @@ enum UIComponentProps: Equatable, Sendable {
     case quickLogChips(QuickLogChipsProps)
     case dailySnapshot(DailySnapshotProps)
     case recipeCard(RecipeCardProps)
+    case mealPlan(MealPlanProps)
     case unknown([String: AnyCodable])
 }
 
@@ -288,6 +315,8 @@ struct UIComponent: Codable, Equatable, Sendable {
             props = .dailySnapshot(try container.decode(DailySnapshotProps.self, forKey: .props))
         case .recipeCard:
             props = .recipeCard(try container.decode(RecipeCardProps.self, forKey: .props))
+        case .mealPlan:
+            props = .mealPlan(try container.decode(MealPlanProps.self, forKey: .props))
         case .unknown:
             let raw = try container.decode([String: AnyCodable].self, forKey: .props)
             props = .unknown(raw)
@@ -312,6 +341,8 @@ struct UIComponent: Codable, Equatable, Sendable {
         case .dailySnapshot(let p):
             try container.encode(p, forKey: .props)
         case .recipeCard(let p):
+            try container.encode(p, forKey: .props)
+        case .mealPlan(let p):
             try container.encode(p, forKey: .props)
         case .unknown(let raw):
             try container.encode(raw, forKey: .props)

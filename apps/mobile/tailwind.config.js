@@ -28,9 +28,27 @@ module.exports = {
           400: "#FB7185",
           500: "#F43F5E",
         },
+        // Pastel macro accent colors
+        macro: {
+          protein: "#93C5FD", // blue-300
+          carb: "#FDE68A",    // amber-200
+          fat: "#C4B5FD",     // violet-300
+        },
       },
       fontFamily: {
-        sans: ["System"],
+        sans: ["PlusJakartaSans-Regular"],
+        "sans-medium": ["PlusJakartaSans-Medium"],
+        "sans-semibold": ["PlusJakartaSans-SemiBold"],
+        "sans-bold": ["PlusJakartaSans-Bold"],
+        "sans-extrabold": ["PlusJakartaSans-ExtraBold"],
+      },
+      borderRadius: {
+        "2xl": "16px",
+        "3xl": "24px",
+      },
+      boxShadow: {
+        glass: "0 2px 16px rgba(0, 0, 0, 0.04)",
+        "glass-lg": "0 4px 24px rgba(0, 0, 0, 0.06)",
       },
     },
   },

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#2f3aa3",
+              "on-error": "#ffffff",
+              "on-background": "#1a1c1c",
+              "surface-container-high": "#e8e8e7",
+              "primary-fixed-dim": "#ffb2b9",
+              "on-surface": "#1a1c1c",
+              "on-secondary-fixed": "#1f1b17",
+              "surface-bright": "#f9f9f8",
+              "tertiary-container": "#8a95ff",
+              "inverse-on-surface": "#f1f1f0",
+              "inverse-primary": "#ffb2b9",
+              "inverse-surface": "#2f3130",
+              "on-primary-container": "#6f0122",
+              "surface-variant": "#e2e2e2",
+              "secondary-fixed-dim": "#cec5bf",
+              "on-tertiary": "#ffffff",
+              "outline": "#8a7173",
+              "surface": "#FAFAF9",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#6a635e",
+              "error-container": "#ffdad6",
+              "primary-container": "#FDA4AF",
+              "secondary-container": "#eae1da",
+              "surface-tint": "#FDA4AF",
+              "surface-container": "#eeeeed",
+              "tertiary": "#4953bc",
+              "surface-dim": "#dadad9",
+              "on-tertiary-container": "#1a2591",
+              "on-error-container": "#93000a",
+              "background": "#FAFAF9",
+              "on-primary": "#ffffff",
+              "on-primary-fixed": "#400010",
+              "on-primary-fixed-variant": "#891933",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#bdc2ff",
+              "on-tertiary-fixed": "#000767",
+              "surface-container-low": "#f3f4f3",
+              "tertiary-fixed": "#e0e0ff",
+              "primary-fixed": "#ffdadc",
+              "secondary-fixed": "#eae1da",
+              "on-secondary-fixed-variant": "#4b4641",
+              "outline-variant": "#debfc1",
+              "error": "#ba1a1a",
+              "secondary": "#645d58",
+              "primary": "#FDA4AF",
+              "surface-container-highest": "#e2e2e2",
+              "on-surface-variant": "#574143"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FAFAF9; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .gradient-aura {
+            background: radial-gradient(circle at 30% 30%, #FDA4AF 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, #C7D2FE 0%, transparent 50%),
+                        radial-gradient(circle at 40% 80%, #FDE68A 0%, transparent 50%);
+            filter: blur(60px);
+            opacity: 0.4;
+        }
+        .glass-button {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            border: 0.5px solid rgba(255, 255, 255, 0.4);
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-[#FAFAF9] text-on-surface min-h-screen pb-32 overflow-x-hidden">
+<!-- Top Navigation Anchor -->
+<header class="bg-transparent text-[#FDA4AF] flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto top-0 z-40">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-2xl" data-icon="menu">menu</span>
+<h1 class="font-headline text-on-surface headline-lg tracking-tighter font-bold">Savoro</h1>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-outline-variant/10">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="Close up portrait of a young man smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCifGqvnGOEHNPzGTWX2Qn80oENRTIK40I-1OQHJjgIgog5C2xz46Heps6sR8CaFP6jZxpuMcXKJnMHnn2mrQA0YGEwSxx18GqlwScUofRc5m5_uajs86vI8bboOfu4ZsmTS4P23gsPKzwnk7JVji8f5bVOaN6pzzazQc8Ul0dcDqOQJBkWzOhZrhY_tS-c6JDsWsiTyvoIJ_qOzWqKwMWIptcWZVXGaDThq6ZZzDalodVE2kWnczFE_g2d9WnbiyKo6gat4spLMGc"/>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 pt-8 space-y-12">
+<!-- Greeting & Date -->
+<section class="space-y-1">
+<h2 class="text-[32pt] font-extrabold text-[#1C1917] leading-tight tracking-tight">Good morning, Dylan</h2>
+<p class="text-secondary text-lg font-medium opacity-70">Tuesday, October 24th</p>
+</section>
+<!-- The Daily Card (Hero Element) -->
+<section class="relative group">
+<!-- Aura Background behind the glass -->
+<div class="absolute inset-0 -z-10 gradient-aura transform group-hover:scale-105 transition-transform duration-1000"></div>
+<div class="bg-white/40 backdrop-blur-[40px] rounded-[32px] p-8 flex flex-col md:flex-row gap-8 items-center border border-white/40 shadow-xl shadow-stone-200/20">
+<!-- Left Side: Visual Focus -->
+<div class="relative w-full md:w-1/2 flex justify-center">
+<div class="text-center">
+<span class="block text-stone-400 text-sm font-bold tracking-[0.2em] uppercase mb-2">Calories Consumed</span>
+<div class="flex items-baseline justify-center gap-2">
+<span class="text-6xl font-extrabold text-[#1C1917]">1,550</span>
+<span class="text-2xl text-stone-300 font-medium">/ 2,200</span>
+</div>
+</div>
+</div>
+<!-- Right Side: Macros -->
+<div class="w-full md:w-1/2 space-y-6">
+<!-- Protein -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-sm font-bold">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#FDA4AF]"></span>
+<span class="text-on-surface opacity-80">Protein</span>
+</div>
+<span class="text-secondary opacity-70">120g <span class="text-stone-300 ml-1">/ 160g</span></span>
+</div>
+<div class="h-1.5 w-full bg-stone-200/30 rounded-full overflow-hidden">
+<div class="h-full bg-[#FDA4AF] rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<!-- Carbs -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-sm font-bold">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#818CF8]"></span>
+<span class="text-on-surface opacity-80">Carbs</span>
+</div>
+<span class="text-secondary opacity-70">180g <span class="text-stone-300 ml-1">/ 220g</span></span>
+</div>
+<div class="h-1.5 w-full bg-stone-200/30 rounded-full overflow-hidden">
+<div class="h-full bg-[#818CF8] rounded-full opacity-60" style="width: 82%"></div>
+</div>
+</div>
+<!-- Fat -->
+<div class="space-y-2">
+<div class="flex justify-between items-center text-sm font-bold">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[#D97706]"></span>
+<span class="text-on-surface opacity-80">Fat</span>
+</div>
+<span class="text-secondary opacity-70">55g <span class="text-stone-300 ml-1">/ 70g</span></span>
+</div>
+<div class="h-1.5 w-full bg-stone-200/30 rounded-full overflow-hidden">
+<div class="h-full bg-[#D97706] rounded-full opacity-60" style="width: 78%"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Meal Timeline -->
+<section class="space-y-8">
+<h3 class="text-stone-400 font-bold tracking-[0.2em] uppercase text-xs">Today's Timeline</h3>
+<div class="relative space-y-10 pl-4">
+<!-- Vertical Line -->
+<div class="absolute left-[7px] top-4 bottom-4 w-[1px] bg-stone-200/40 rounded-full"></div>
+<!-- Breakfast -->
+<div class="flex gap-8 items-center relative">
+<div class="absolute left-[-4px] w-4 h-4 rounded-full bg-white border border-[#FDA4AF] z-10 shadow-sm shadow-[#FDA4AF]/10"></div>
+<span class="w-16 text-sm font-bold text-stone-300">8:20a</span>
+<div class="flex-1 bg-white/40 backdrop-blur-xl border border-white/40 rounded-3xl p-4 flex items-center justify-between shadow-sm shadow-stone-200/10 hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-2xl overflow-hidden">
+<img alt="Overnight Oats" class="w-full h-full object-cover" data-alt="A jar of overnight oats topped with berries" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRu_AXl1o-HaexKs0-_7zPE6LdJS6MTesPSNUVic3hW4Y7mX_OT6IxD2hZW01yCqFup5nypPMwHwVXc_KZGh6s6wlH6V_Wzi66oOJYV4gR13VJ-nfnUAqYtm9lOCQPR0SRcYx-umrj5-xJdPd6I19eI6hmeKs8050CqlFRxQ0Oj2ZAPpYGQXmxxKYGZL4E-Ky8II623WtZcAq5ieovSSQz1Gljq04cbkEeodpqD8zp9rQPIQdfyt3vJsKI-77_5zAjJRyLHTzPLFY"/>
+</div>
+<div>
+<h4 class="font-bold text-on-surface text-sm">Overnight Berry Oats</h4>
+<p class="text-xs font-medium text-stone-400">Greek yogurt, honey, chia</p>
+</div>
+</div>
+<span class="font-bold text-[#FDA4AF]">420 <span class="text-[9px] text-stone-300 uppercase tracking-tighter">kcal</span></span>
+</div>
+</div>
+<!-- Lunch -->
+<div class="flex gap-8 items-center relative">
+<div class="absolute left-[-4px] w-4 h-4 rounded-full bg-white border border-stone-200 z-10"></div>
+<span class="w-16 text-sm font-bold text-stone-300">12:45p</span>
+<div class="flex-1 bg-white/40 backdrop-blur-xl border border-white/40 rounded-3xl p-4 flex items-center justify-between shadow-sm shadow-stone-200/10 hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-2xl overflow-hidden">
+<img alt="Salmon Salad" class="w-full h-full object-cover" data-alt="Fresh salmon salad with greens and seeds" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBo2d-vnZ1ChQoCaTZc97T1is7snvA-WWluj00N9biGZTc8UHYvIZRskfFyV1CroX5T9CGw0XAHoO5bqrzBwuzfheTP1x9RUEpys9-cLoWZ6DYgj2juVuW_CTeDgvXk11JzHWRjq51bn2DMzU3tD4VvLXsoN92o90ERx1LL_mC2Eh55D_l9VnNSX4aG4hDY1Ds8PGK0JUWxxadj_dAWBbswrMzG_8mn5Wx2CV9Qaxwa3UltEZLqBZg4HSVh_ko--t5tNErLw6U47I"/>
+</div>
+<div>
+<h4 class="font-bold text-on-surface text-sm">Miso Glazed Salmon</h4>
+<p class="text-xs font-medium text-stone-400">Quinoa, charred broccoli</p>
+</div>
+</div>
+<span class="font-bold text-[#FDA4AF]">680 <span class="text-[9px] text-stone-300 uppercase tracking-tighter">kcal</span></span>
+</div>
+</div>
+<!-- Dinner -->
+<div class="flex gap-8 items-center relative opacity-40">
+<div class="absolute left-[-4px] w-4 h-4 rounded-full bg-white border border-stone-200 z-10"></div>
+<span class="w-16 text-sm font-bold text-stone-300">7:30p</span>
+<div class="flex-1 bg-stone-100/20 border border-stone-200/30 rounded-3xl p-4 border-dashed flex items-center justify-center">
+<p class="text-xs font-medium text-stone-400 italic">Planned: Grass-fed Ribeye Steak</p>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Floating Input Bar -->
+<div class="fixed bottom-24 left-1/2 -translate-x-1/2 w-[92%] max-w-lg z-50">
+<div class="bg-white/40 backdrop-blur-2xl border border-white/50 rounded-full p-2 pl-6 pr-2 flex items-center gap-4 shadow-lg shadow-stone-200/10">
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder-stone-300 font-medium text-sm" placeholder="Overnight oats again?" type="text"/>
+<button class="w-10 h-10 rounded-full glass-button text-[#FDA4AF] flex items-center justify-center shadow-sm shadow-stone-200/5 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-xl" data-icon="camera">camera</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-50 flex justify-around items-center p-2 bg-white/40 dark:bg-stone-900/40 backdrop-blur-2xl rounded-3xl border border-white/40 shadow-xl shadow-stone-200/10">
+<!-- Home (Active) -->
+<a class="flex items-center justify-center text-[#FDA4AF] bg-white/50 dark:bg-rose-900/10 rounded-2xl p-3 active:scale-95 transition-transform duration-150 shadow-sm shadow-stone-200/5" href="#">
+<span class="material-symbols-outlined" data-icon="home" data-weight="fill">home</span>
+</a>
+<!-- Chat -->
+<a class="flex items-center justify-center text-stone-300 dark:text-stone-600 p-3 hover:text-[#FDA4AF] transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+</a>
+<!-- Log/Book -->
+<a class="flex items-center justify-center text-stone-300 dark:text-stone-600 p-3 hover:text-[#FDA4AF] transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="book_5">book_5</span>
+</a>
+<!-- Community -->
+<a class="flex items-center justify-center text-stone-300 dark:text-stone-600 p-3 hover:text-[#FDA4AF] transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+</a>
+</nav>
+</body></html>

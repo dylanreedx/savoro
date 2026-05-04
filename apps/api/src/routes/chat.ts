@@ -140,6 +140,9 @@ chatRoutes.post("/message", requireAuth, async (c) => {
   const route = smartRoute(content);
   if (route.routed) {
     const result = await handleSmartRoute(route, userId, today);
+    if (result === null) {
+      // Smart route found no results — fall through to LLM path below
+    } else {
     const assistantMsg = {
       id: createId(),
       userId,
@@ -168,6 +171,7 @@ chatRoutes.post("/message", requireAuth, async (c) => {
         createdAt: new Date().toISOString(),
       },
     });
+    } // end else (result !== null)
   }
 
   // --- LLM path: load context and stream response ---
@@ -185,10 +189,10 @@ chatRoutes.post("/message", requireAuth, async (c) => {
 
   const conversationMessages: ModelMessage[] = history
     .reverse()
-    .filter((m) => m.role === "user" || m.role === "assistant")
+    .filter((m) => (m.role === "user" || m.role === "assistant") && m.content)
     .map((m) => ({
       role: m.role as "user" | "assistant",
-      content: m.content ?? "",
+      content: m.content!,
     }));
 
   // Build tools with execute functions that capture userId/today
@@ -228,8 +232,43 @@ chatRoutes.post("/message", requireAuth, async (c) => {
   });
 
   // Return SSE streaming response
-  return result.toTextStreamResponse({
+  // Build SSE envelope manually from fullStream for iOS SSE parser compatibility
+  const fullStream = result.fullStream;
+  const encoder = new TextEncoder();
+  const readable = new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const part of fullStream) {
+          switch (part.type) {
+            case "text-delta": {
+              const delta = (part as any).text ?? "";
+              if (delta) {
+                controller.enqueue(encoder.encode(`event: text-delta\ndata: ${JSON.stringify({ delta })}\n\n`));
+              }
+              break;
+            }
+              break;
+            case "tool-call":
+              controller.enqueue(encoder.encode(`event: tool-calls\ndata: ${JSON.stringify(part)}\n\n`));
+              break;
+            case "tool-result":
+              // Tool results feed into onStepFinish — no SSE event needed
+              break;
+            case "finish":
+              controller.enqueue(encoder.encode(`event: done\ndata: {}\n\n`));
+              break;
+          }
+        }
+        controller.close();
+      } catch (e) {
+        controller.enqueue(encoder.encode(`event: error\ndata: ${JSON.stringify({ error: String(e) })}\n\n`));
+        controller.close();
+      }
+    },
+  });
+  return new Response(readable, {
     headers: {
+      "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
     },
@@ -1266,12 +1305,13 @@ async function handleSmartRoute(
   route: { routed: true; type: string; query?: string },
   userId: string,
   today: string,
-): Promise<{ content: string | null; uiComponents: UIComponent[] | null }> {
+): Promise<{ content: string | null; uiComponents: UIComponent[] | null } | null> {
   switch (route.type) {
     case "search": {
       const results = await searchFoodExecutor(route.query!, 5);
       if (results.foods.length === 0) {
-        return { content: `No results for "${route.query}".`, uiComponents: null };
+        // No results — fall back to LLM which can handle restaurant names, estimates, etc.
+        return null;
       }
       return {
         content: null,

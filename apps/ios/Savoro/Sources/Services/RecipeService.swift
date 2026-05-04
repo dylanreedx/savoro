@@ -14,12 +14,8 @@ struct RecipeService {
         try await apiClient.request("/recipes")
     }
 
-    func get(_ id: String) async throws -> Recipe {
+    func get(_ id: String) async throws -> RecipeDetail {
         try await apiClient.request("/recipes/\(id)")
-    }
-
-    func getDetail(_ id: String) async throws -> RecipeDetail {
-        try await apiClient.request("/recipe/\(id)")
     }
 
     func create(_ draft: RecipeDraft) async throws -> Recipe {
@@ -43,10 +39,16 @@ struct RecipeService {
 
     // MARK: - Discovery Feed
 
-    func feed(cursor: String? = nil, limit: Int = 20) async throws -> FeedPage {
+    func feed(cursor: String? = nil, limit: Int = 20, sort: String? = nil, tags: [String] = []) async throws -> FeedPage {
         var path = "/recipes/feed?limit=\(limit)"
         if let cursor {
             path += "&cursor=\(cursor)"
+        }
+        if let sort {
+            path += "&sort=\(sort)"
+        }
+        if !tags.isEmpty {
+            path += "&tags=\(tags.joined(separator: ","))"
         }
         return try await apiClient.request(path)
     }

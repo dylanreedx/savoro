@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#2f3aa3",
+              "on-error": "#ffffff",
+              "on-background": "#292524",
+              "surface-container-high": "#e8e8e7",
+              "primary-fixed-dim": "#fda4af",
+              "on-surface": "#292524",
+              "on-secondary-fixed": "#44403c",
+              "surface-bright": "#fafaf9",
+              "tertiary-container": "#a5b4fc",
+              "inverse-on-surface": "#f5f5f4",
+              "inverse-primary": "#fda4af",
+              "inverse-surface": "#44403c",
+              "on-primary-container": "#4c0519",
+              "surface-variant": "#e7e5e4",
+              "secondary-fixed-dim": "#d6d3d1",
+              "on-tertiary": "#ffffff",
+              "outline": "#a8a29e",
+              "surface": "#fafaf9",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#57534e",
+              "error-container": "#fee2e2",
+              "primary-container": "#fda4af",
+              "secondary-container": "#f5f5f4",
+              "surface-tint": "#fda4af",
+              "surface-container": "#f5f5f4",
+              "tertiary": "#6366f1",
+              "surface-dim": "#e7e5e4",
+              "on-tertiary-container": "#1e1b4b",
+              "on-error-container": "#7f1d1d",
+              "background": "#fafaf9",
+              "on-primary": "#ffffff",
+              "on-primary-fixed": "#4c0519",
+              "on-primary-fixed-variant": "#9f1239",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#c7d2fe",
+              "on-tertiary-fixed": "#1e1b4b",
+              "surface-container-low": "#f5f5f4",
+              "tertiary-fixed": "#e0e7ff",
+              "primary-fixed": "#ffe4e6",
+              "secondary-fixed": "#f5f5f4",
+              "on-secondary-fixed-variant": "#57534e",
+              "outline-variant": "#d6d3d1",
+              "error": "#ef4444",
+              "secondary": "#78716c",
+              "primary": "#fda4af",
+              "surface-container-highest": "#e7e5e4",
+              "on-surface-variant": "#57534e"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .gradient-aura {
+        background: radial-gradient(circle at 50% 50%, rgba(253, 164, 175, 0.4) 0%, transparent 70%),
+                    radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.2) 0%, transparent 60%),
+                    radial-gradient(circle at 70% 80%, rgba(245, 158, 11, 0.15) 0%, transparent 60%);
+        filter: blur(35px);
+      }
+      .ios-bg {
+        background: linear-gradient(135deg, #f5f5f4 0%, #e7e5e4 100%);
+      }
+      .glass-widget {
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+      }
+      .ghost-border {
+        outline: 1px solid rgba(255, 255, 255, 0.4);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-stone-200 flex items-center justify-center min-h-screen font-body text-on-surface">
+<!-- iPhone Mockup Shell -->
+<div class="relative w-[390px] h-[844px] bg-black rounded-[55px] shadow-2xl border-[8px] border-stone-800 overflow-hidden">
+<!-- Screen Content (The Wallpaper) -->
+<div class="absolute inset-0 ios-bg flex flex-col items-center p-6 space-y-8 pt-16">
+<!-- Status Bar Placeholder -->
+<div class="w-full flex justify-between px-6 items-center text-sm font-semibold text-on-surface/80">
+<span>9:41</span>
+<div class="flex gap-1.5 items-center">
+<span class="material-symbols-outlined text-sm">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-sm">wifi</span>
+<span class="material-symbols-outlined text-sm">battery_full</span>
+</div>
+</div>
+<!-- Widget Section -->
+<div class="w-full grid grid-cols-2 gap-4">
+<!-- Small Widget (2x2) -->
+<div class="flex flex-col items-center gap-2">
+<div class="w-full aspect-square glass-widget rounded-3xl relative overflow-hidden ghost-border flex flex-col justify-end p-5">
+<!-- Gradient Aura Backdrop -->
+<div class="absolute inset-0 gradient-aura opacity-70"></div>
+<!-- Content -->
+<div class="relative z-10">
+<div class="text-2xl text-on-surface font-bold leading-tight">1,550</div>
+<div class="text-[9px] font-bold text-secondary uppercase tracking-widest opacity-80">/ 2,200 CAL</div>
+</div>
+</div>
+<span class="text-[11px] font-medium text-secondary">Savoro</span>
+</div>
+<!-- Icons Placeholder for Layout Symmetry -->
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col items-center gap-2">
+<div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Minimalist camera app icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIctUHStZr5jBg_fycJiBx5a-aaOsqO-ryQ_hng2fFXgrlG7XCAMpkELb31xTmUSkpjmD3p18rwq0PXtzMWYPrfkOxQ9DFiTsmDmHZVD7m4P7Brp2pfEXlkj9O2W84QtkqE6BCOer6VX9u1dzsgQQclzNividj9Wk8u8vtyvgTj4ctD7FYj3H3-XumSu5qpKsL07OcwHfoZqSbxWjDGIgArtWWFiNlXAst6vv5c6FUhJCIcg2mJlSKDaAbDqGkS_5Kwy3kyqiVDrc"/>
+</div>
+<span class="text-[11px] font-medium text-secondary">Photos</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Abstract music app icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_zKe_wOJVL6qtnGioCVn4kzflieVJ8QaHDb6wrVWzjzq8uHApSy3eiVIzLPLbuHymuQzPaMI5kRMFeRiUFzFzu8ZLuDezSHjHbRLdp_QZ3C-SCqkK9-RvfeUy6ySj_G6AW0_XaKMdOVUGHGwp_I_-u1QPjDUs0gZweZgIYA4UF6UfUYByllLTqI72KtXHTAMQgPfHBfcqc1xthuIZS52Hsk0lnxdeKsGF6o2tylkNkTPlYpDLcIJFcdcApnV-lB12hS0qFLzOZec"/>
+</div>
+<span class="text-[11px] font-medium text-secondary">Music</span>
+</div>
+</div>
+<!-- Medium Widget (4x2) -->
+<div class="col-span-2 flex flex-col items-center gap-2">
+<div class="w-full h-[169px] glass-widget rounded-3xl relative overflow-hidden ghost-border flex items-center p-6 gap-8">
+<!-- Left: Gradient Aura Area -->
+<div class="w-[100px] h-full flex items-center justify-center relative">
+<div class="w-24 h-24 gradient-aura opacity-90 rounded-full"></div>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl opacity-80" style="font-variation-settings: 'FILL' 1;">restaurant</span>
+</div>
+</div>
+<!-- Right: Data -->
+<div class="flex-1 space-y-4">
+<div>
+<h3 class="text-sm font-bold text-on-surface">Daily Balance</h3>
+<p class="text-[11px] text-secondary">650 calories remaining</p>
+</div>
+<!-- Macro Rows -->
+<div class="space-y-3">
+<!-- Protein -->
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold">
+<div class="flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-rose-300"></div>
+<span class="text-secondary">Protein</span>
+</div>
+<span class="text-on-surface">112g</span>
+</div>
+<div class="w-full h-0.5 bg-stone-200/50 rounded-full overflow-hidden">
+<div class="h-full bg-rose-300 w-[70%]"></div>
+</div>
+</div>
+<!-- Carbs -->
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold">
+<div class="flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-indigo-300"></div>
+<span class="text-secondary">Carbs</span>
+</div>
+<span class="text-on-surface">185g</span>
+</div>
+<div class="w-full h-0.5 bg-stone-200/50 rounded-full overflow-hidden">
+<div class="h-full bg-indigo-300 w-[55%]"></div>
+</div>
+</div>
+<!-- Fats -->
+<div class="space-y-1">
+<div class="flex justify-between text-[10px] font-bold">
+<div class="flex items-center gap-1.5">
+<div class="w-1.5 h-1.5 rounded-full bg-amber-300"></div>
+<span class="text-secondary">Fats</span>
+</div>
+<span class="text-on-surface">42g</span>
+</div>
+<div class="w-full h-0.5 bg-stone-200/50 rounded-full overflow-hidden">
+<div class="h-full bg-amber-300 w-[40%]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<span class="text-[11px] font-medium text-secondary">Savoro</span>
+</div>
+<!-- Lower App Grid -->
+<div class="col-span-2 grid grid-cols-4 gap-4 pt-4">
+<div class="flex flex-col items-center gap-2">
+<div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Minimalist messages icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlkLpGEwpuduZoeMhNfQ_9TtVrryA1mlW7N6rs5YdUQnFKZvV81AJAw6RrmcPGacrXTMlHvB8b8avGlRLr6uB7aMX_oxt0VHWXat_PZbBho6RJMCn5C76KggxN2UsvGKqgfkTtgfgvaWIvOWf-kCyin-TxPnZhTJql7wcZQM9YWQuV7YnRLcxwukb5f9RP17gdaFnEghVVETEc7F6XsL5rCJ35Jwd2r0vRt_sUMxOfU-BSXYo-FGDmZ3K7HSI9rxAfcp9zfCOBLik"/>
+</div>
+<span class="text-[11px] font-medium text-secondary">Mail</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Minimalist map icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqad7nGaeXE5sn9tdTKEsFJwN13WAaxHptwCxJ89W1NL8fH3eL3vphE34TwJP4Upj9g02CuOKoafKHyZMiAoMwWT8QULkA9NPTVBrwIc6CXQwqPfdxPQ1La9-joALD4UXA0LVvLwZSZOSe68RDDiLk-BF_vjAgXKXeXIYqCGb4cWPLnHyXKAnKK41QOOpXSGQBFbYr9_8cpvwdxPonQTR8zGlQgj8NQI0xV146V4lJR8bkz2znIcuXK0kPUTIYi4E-ZWMeZZ3gOqk"/>
+</div>
+<span class="text-[11px] font-medium text-secondary">Maps</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Minimalist calendar icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD2WziSZ7zGGoj6gNDhrLHUvgGgxQ_hF10Uw9F5ONh-1ltGmRaS0Pr0loRBnDW672lQWtP3YWZFwBD3NIA2z7MPwuifC1Jiillk3H1kAbC4c9MD4QwZtprFh7NIeQZNZxSGjDw9zWRPrk0bFagtsjXAlnc2j-Jt33jZEe8ph2bHb_6vmOR5pPNprv9B6Bk6jyp6c-EAXhFJQC-2w4sOLy0zXjbkBhQr55wd25ieyy5x7XgdjVU2MGXtfwfL-iDs6HXaPX0PML-VcV8"/>
+</div>
+<span class="text-[11px] font-medium text-secondary">Calendar</span>
+</div>
+<div class="flex flex-col items-center gap-2">
+<div class="w-16 h-16 bg-[#fda4af] rounded-2xl shadow-sm flex items-center justify-center overflow-hidden">
+<span class="text-white font-bold text-xl">S</span>
+</div>
+<span class="text-[11px] font-medium text-secondary">Savoro</span>
+</div>
+</div>
+</div>
+<!-- Dock -->
+<div class="absolute bottom-6 w-[90%] h-24 glass-widget rounded-[38px] flex justify-around items-center px-4 ghost-border">
+<div class="w-16 h-16 bg-white/40 rounded-2xl shadow-sm"></div>
+<div class="w-16 h-16 bg-white/40 rounded-2xl shadow-sm"></div>
+<div class="w-16 h-16 bg-white/40 rounded-2xl shadow-sm"></div>
+<div class="w-16 h-16 bg-white/40 rounded-2xl shadow-sm"></div>
+</div>
+<!-- Home Indicator -->
+<div class="absolute bottom-2 w-32 h-1 bg-on-surface/10 rounded-full"></div>
+</div>
+<!-- Dynamic Island Placeholder -->
+<div class="absolute top-2 left-1/2 -translate-x-1/2 w-32 h-8 bg-black rounded-3xl z-50"></div>
+</div>
+</body></html>

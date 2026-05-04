@@ -1,0 +1,12 @@
+dist/
+node_modules/
+.expo/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
+__mocks__/
+.vscode/
+.idea/
+*.md

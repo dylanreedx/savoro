@@ -26,7 +26,7 @@ function colNames(tbl: Parameters<typeof getTableConfig>[0]): string[] {
 function jsColNames(tbl: Parameters<typeof getTableConfig>[0]): string[] {
   // Drizzle columns expose camelCase JS key in the table object
   return Object.keys(tbl as object).filter(
-    (k) => !k.startsWith("_") && typeof (tbl as Record<string, unknown>)[k] === "object"
+    (k) => !k.startsWith("_") && typeof (tbl as unknown as Record<string, unknown>)[k] === "object"
   );
 }
 

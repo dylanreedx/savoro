@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#2f3aa3",
+              "on-error": "#ffffff",
+              "on-background": "#1a1c1c",
+              "surface-container-high": "#e8e8e7",
+              "primary-fixed-dim": "#ffb2b9",
+              "on-surface": "#1a1c1c",
+              "on-secondary-fixed": "#1f1b17",
+              "surface-bright": "#f9f9f8",
+              "tertiary-container": "#8a95ff",
+              "inverse-on-surface": "#f1f1f0",
+              "inverse-primary": "#ffb2b9",
+              "inverse-surface": "#2f3130",
+              "on-primary-container": "#6f0122",
+              "surface-variant": "#e2e2e2",
+              "secondary-fixed-dim": "#cec5bf",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#6a635e",
+              "error-container": "#ffdad6",
+              "primary-container": "#FDA4AF",
+              "secondary-container": "#eae1da",
+              "surface-tint": "#FDA4AF",
+              "surface-container": "#eeeeed",
+              "tertiary": "#4953bc",
+              "surface-dim": "#dadad9",
+              "on-tertiary-container": "#1a2591",
+              "on-error-container": "#93000a",
+              "background": "#f9f9f8",
+              "on-primary": "#ffffff",
+              "on-primary-fixed": "#400010",
+              "on-primary-fixed-variant": "#891933",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#bdc2ff",
+              "on-tertiary-fixed": "#000767",
+              "surface-container-low": "#f3f4f3",
+              "tertiary-fixed": "#e0e0ff",
+              "primary-fixed": "#ffdadc",
+              "secondary-fixed": "#eae1da",
+              "on-secondary-fixed-variant": "#4b4641",
+              "outline-variant": "#debfc1",
+              "error": "#ba1a1a",
+              "secondary": "#a8a29e",
+              "primary": "#FDA4AF",
+              "surface-container-highest": "#e2e2e2",
+              "on-surface-variant": "#574143"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-fill {
+            font-variation-settings: 'FILL' 1, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .aura-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(253, 164, 175, 0.12) 0%, rgba(249, 249, 248, 0) 70%);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .ghost-border {
+            border: 1px solid rgba(222, 191, 193, 0.2);
+        }
+        .glass-button {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(253, 164, 175, 0.3);
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation Anchor -->
+<header class="fixed top-0 left-0 right-0 z-50 bg-transparent">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<h1 class="font-plus-jakarta-sans headline-lg tracking-tighter text-2xl font-bold text-primary">
+            Savoro
+        </h1>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full overflow-hidden ghost-border hover:opacity-80 transition-opacity">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="Close up portrait of a young man smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkwxhn2LX65SIkqIkY-DxNdW1gkax8zvmzSVSPRg3Lu8c3BKO3gI35_sDHW6GGFhcgkpvMk_kTBM5M9-bGo5ttdecjq4dTcScZzAqooqWOFRTqT_annofRVMfyLv9lsIktKuGaKveq3LeWE2TodpzudKsgGbyUrSCG0kS9GFfVlMbU6ga9_05qekKGezajXGFsLf5g2Fy3eu1Dut1e8updZ7Ho0bzl5y1YTXO61U1nKI3jljMQa_AtlcR-ZE1iYwtRe10FLJMQ-Lo"/>
+</button>
+</div>
+</div>
+</header>
+<!-- The Daily Card: Collapsible Header Aura -->
+<section class="pt-20 pb-4 px-6 relative overflow-hidden">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-64 aura-gradient -z-10"></div>
+<div class="max-w-2xl mx-auto">
+<div class="glass-panel ghost-border rounded-3xl p-4 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-1.5 h-10 bg-primary rounded-full"></div>
+<div>
+<p class="text-[10px] font-bold text-secondary uppercase tracking-[0.2em]">The Daily Card</p>
+<p class="text-lg font-bold text-on-surface">1,420 <span class="text-sm font-normal text-secondary/60">/ 2,200 kcal</span></p>
+</div>
+</div>
+<div class="flex gap-1.5">
+<div class="h-1 w-10 bg-primary/40 rounded-full"></div>
+<div class="h-1 w-10 bg-indigo-300/40 rounded-full"></div>
+<div class="h-1 w-10 bg-amber-400/40 rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Chat Conversation Thread -->
+<main class="max-w-2xl mx-auto px-6 pb-44 space-y-8">
+<!-- User Message -->
+<div class="flex flex-col items-end space-y-2">
+<div class="glass-panel ghost-border px-5 py-3 rounded-2xl rounded-tr-none max-w-[85%] shadow-sm">
+<p class="body-lg text-on-surface">I ate 200g of this</p>
+</div>
+<div class="w-32 h-40 rounded-xl overflow-hidden ghost-border shadow-md">
+<img alt="Barcode photo" class="w-full h-full object-cover" data-alt="A smartphone scanning a product barcode on a white box" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsKDPUFLxjN47bTJn0MJDQgcykwY0Al2Hbl6mLlbL7aME3jb8NaB-D7PdT0b3f22fgX9bYglK24MPefalEnCgRvbvqjDLLZbqjJdGrOJcvctfz89afF3M6IO9AvujjaN9yvQaFPLPKdqwerrD44JyOCvrOOTHBFTQyYHbsf4NXESHxuuoYdKtJmne5joX0zoBYIGbOv0MMBeBwhOMyW-jJcLyc1tthHkcfUt3-t2pjnjY7I64F5nA_9c4ZX5JAFQoJGaoEY9IGCxQ"/>
+</div>
+</div>
+<!-- AI Response: Text + Product Card -->
+<div class="flex flex-col items-start space-y-4">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-primary/60 text-sm" style="font-variation-settings: 'FILL' 1, 'wght' 200;">auto_awesome</span>
+<span class="text-[10px] font-bold text-secondary/70 uppercase tracking-[0.2em]">Savoro AI</span>
+</div>
+<div class="bg-surface-container-low/50 px-5 py-3 rounded-2xl rounded-tl-none max-w-[85%] border border-white/40">
+<p class="body-lg text-on-surface">Got it. That's a Siggi's Vanilla Yogurt. I've logged it for your morning snack.</p>
+</div>
+<!-- AI Gen-UI Card: Product -->
+<div class="w-full glass-panel ghost-border rounded-3xl overflow-hidden shadow-xl">
+<div class="p-6">
+<div class="flex justify-between items-start mb-6">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 bg-white/80 rounded-2xl flex items-center justify-center p-2 ghost-border">
+<img alt="Siggi's Yogurt" class="w-full h-full object-contain" data-alt="Single container of high protein vanilla yogurt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBLzaC5rru0evty8a7OlV0pJrxZ2IQOS4hTesLz2i6-KIQ6WbOSnKlYsA2hmMZVT215d7qiKLGpB_GKf2X87Fd7sAmeIgvhAdgaoKs4AAIN3ReuKZ431uJpZ1bjv3AXytl2o3h_2lb6MhCIChTyB09blj7sQ43NC-Gcgodtx8XNKIjAYPs1c4G6cDgvjl4cPlZ220p-i_w0S3bgnfRuuQl43zOOOnwwCjqiK-Cfh6HXlR00Q12wZPIHdYkaVMo2SlRa-NZymDBMOT0"/>
+</div>
+<div>
+<h3 class="headline-sm font-bold text-on-surface">Siggi's Vanilla</h3>
+<p class="body-md text-secondary/70">Skyr Icelandic Yogurt (200g)</p>
+</div>
+</div>
+<div class="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1, 'wght' 400;">check_circle</span>
+<span class="text-[10px] font-bold uppercase tracking-wide">Logged</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-white/40 p-3 rounded-2xl text-center border border-white/60">
+<div class="flex justify-center mb-1"><div class="w-1.5 h-1.5 rounded-full bg-primary/60"></div></div>
+<p class="text-lg font-bold">18g</p>
+<p class="text-[9px] text-secondary/70 font-bold uppercase tracking-widest">Protein</p>
+</div>
+<div class="bg-white/40 p-3 rounded-2xl text-center border border-white/60">
+<div class="flex justify-center mb-1"><div class="w-1.5 h-1.5 rounded-full bg-indigo-300/60"></div></div>
+<p class="text-lg font-bold">12g</p>
+<p class="text-[9px] text-secondary/70 font-bold uppercase tracking-widest">Carbs</p>
+</div>
+<div class="bg-white/40 p-3 rounded-2xl text-center border border-white/60">
+<div class="flex justify-center mb-1"><div class="w-1.5 h-1.5 rounded-full bg-amber-400/60"></div></div>
+<p class="text-lg font-bold">0g</p>
+<p class="text-[9px] text-secondary/70 font-bold uppercase tracking-widest">Fat</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- AI Response: Recipe Builder -->
+<div class="flex flex-col items-start space-y-4">
+<div class="bg-surface-container-low/50 px-5 py-3 rounded-2xl rounded-tl-none max-w-[85%] border border-white/40">
+<p class="body-lg text-on-surface">I've also drafted a 'Power Bowl' recipe using this yogurt as a base. Would you like to save this to your cookbook?</p>
+</div>
+<!-- AI Gen-UI Card: Recipe Builder -->
+<div class="w-full glass-panel ghost-border rounded-3xl overflow-hidden shadow-xl">
+<div class="p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="headline-sm font-bold text-on-surface">Berry Power Bowl</h3>
+<span class="material-symbols-outlined text-secondary/50">edit</span>
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex items-center justify-between p-3 bg-white/40 rounded-xl ghost-border">
+<span class="text-on-surface text-sm">Siggi's Vanilla Yogurt</span>
+<span class="text-secondary/70 font-medium text-sm">200g</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-white/40 rounded-xl ghost-border">
+<span class="text-on-surface text-sm">Fresh Blueberries</span>
+<span class="text-secondary/70 font-medium text-sm">50g</span>
+</div>
+<div class="flex items-center justify-between p-3 bg-white/40 rounded-xl ghost-border">
+<span class="text-on-surface text-sm">Chia Seeds</span>
+<span class="text-secondary/70 font-medium text-sm">1 tbsp</span>
+</div>
+</div>
+<button class="w-full py-4 glass-button text-primary font-bold rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98] border border-primary/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 200;">menu_book</span>
+                    Save to Cookbook
+                </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Input Bar -->
+<div class="fixed bottom-24 left-1/2 -translate-x-1/2 w-[92%] max-w-2xl z-40">
+<div class="glass-panel ghost-border rounded-3xl p-2 flex items-center gap-2 shadow-2xl">
+<button class="p-3 text-secondary/60 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 200;">photo_camera</span>
+</button>
+<button class="p-3 text-secondary/60 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 200;">barcode_scanner</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-secondary/40 py-3 px-2 text-sm" placeholder="Tell me what you ate..." type="text"/>
+<button class="w-12 h-12 rounded-2xl bg-primary/90 text-on-primary flex items-center justify-center shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 300;">mic</span>
+</button>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-50 bg-white/70 dark:bg-stone-900/70 backdrop-blur-2xl rounded-[2rem] border border-white/20 shadow-2xl shadow-black/5 flex justify-around items-center p-2.5">
+<a class="flex items-center justify-center text-secondary/40 p-3 hover:text-primary transition-colors active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">home</span>
+</a>
+<!-- Active Tab: Chat -->
+<a class="flex items-center justify-center text-primary bg-primary/10 rounded-2xl p-3 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 400;">chat_bubble</span>
+</a>
+<a class="flex items-center justify-center text-secondary/40 p-3 hover:text-primary transition-colors active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">book_5</span>
+</a>
+<a class="flex items-center justify-center text-secondary/40 p-3 hover:text-primary transition-colors active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 300;">group</span>
+</a>
+</nav>
+</body></html>

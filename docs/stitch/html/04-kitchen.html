@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Savoro - Our Kitchen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#2f3aa3",
+              "on-error": "#ffffff",
+              "on-background": "#1a1c1c",
+              "surface-container-high": "#e8e8e7",
+              "primary-fixed-dim": "#ffb2b9",
+              "on-surface": "#1a1c1c",
+              "on-secondary-fixed": "#1f1b17",
+              "surface-bright": "#f9f9f8",
+              "tertiary-container": "#8a95ff",
+              "inverse-on-surface": "#f1f1f0",
+              "inverse-primary": "#ffb2b9",
+              "inverse-surface": "#2f3130",
+              "on-primary-container": "#6f0122",
+              "surface-variant": "#e2e2e2",
+              "secondary-fixed-dim": "#cec5bf",
+              "on-tertiary": "#ffffff",
+              "outline": "#8a7173",
+              "surface": "#f9f9f8",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#6a635e",
+              "error-container": "#ffdad6",
+              "primary-container": "#fb7185",
+              "secondary-container": "#eae1da",
+              "surface-tint": "#a93349",
+              "surface-container": "#eeeeed",
+              "tertiary": "#4953bc",
+              "surface-dim": "#dadad9",
+              "on-tertiary-container": "#1a2591",
+              "on-error-container": "#93000a",
+              "background": "#f9f9f8",
+              "on-primary": "#ffffff",
+              "on-primary-fixed": "#400010",
+              "on-primary-fixed-variant": "#891933",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#bdc2ff",
+              "on-tertiary-fixed": "#000767",
+              "surface-container-low": "#f3f4f3",
+              "tertiary-fixed": "#e0e0ff",
+              "primary-fixed": "#ffdadc",
+              "secondary-fixed": "#eae1da",
+              "on-secondary-fixed-variant": "#4b4641",
+              "outline-variant": "#debfc1",
+              "error": "#ba1a1a",
+              "secondary": "#645d58",
+              "primary": "#a93349",
+              "surface-container-highest": "#e2e2e2",
+              "on-surface-variant": "#574143"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .gradient-aura {
+            background: radial-gradient(circle at 50% 50%, rgba(251, 113, 133, 0.15) 0%, rgba(249, 249, 248, 0) 70%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- Top App Bar -->
+<header class="bg-transparent docked full-width top-0 z-40">
+<div class="flex justify-between items-center w-full px-6 py-6 max-w-7xl mx-auto">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-rose-500 text-2xl">menu</span>
+<h1 class="font-plus-jakarta-sans text-on-surface headline-lg tracking-tighter font-bold">Our Kitchen</h1>
+</div>
+<div class="flex items-center -space-x-3">
+<img class="w-10 h-10 rounded-full border-2 border-surface object-cover" data-alt="Female user profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxYVx0Rf5v1e-hjRfNNs0o6h5c8zuMSyibsk7CEN_6JAawaAamNMlnnUIo_ndUc7mL6C8Gmjrq6TtRks0TQpOX5MotJqPoGGOFOFyAENRSSOk0wEUjxH1FlBl7Jisl5ivTLu37D6aRFEqjPvZn-WIvL1umIARrJbebRyVdq1EA70H6SsQu2rlW6qNiXUbfZL7QiFyQny9suPdvDMCsso228kGMPT825FjGvDNeuuO-LKqi_09jL7VStq72iVWufYW0r-qyz0287P8"/>
+<img class="w-10 h-10 rounded-full border-2 border-surface object-cover" data-alt="Male user profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5P14opx57fY6qTBi2sney3qp9wxeqcdkpX8WG6nqNNzbglOC_EFE1rRMWEfzTWHKYlRd8DTHhtATK2USl9uxeIon3j7OFCIK4oCD_59IAjWhbPg04m0mAHeBWQ91oOQsgWC86up4XLuMHOK2Nu0tFC3cXcOKvUWBHBT6iJ1k1Tdn3ppSqutALM_wLThuZncrDpsxk1H42DmUGphBz0MeBijvL1eCPIFaW8SFZyDFOvP34stOUleqnx0PN4l6bu7zqoZq0bbeED0U"/>
+<div class="w-10 h-10 rounded-full border-2 border-surface bg-secondary-container flex items-center justify-center text-xs font-bold text-secondary">+2</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-6 space-y-12 relative">
+<!-- Aura Background -->
+<div class="fixed top-1/4 right-0 w-96 h-96 gradient-aura -z-10 blur-3xl"></div>
+<!-- Weekly Meal Strip -->
+<section>
+<div class="flex overflow-x-auto gap-4 hide-scrollbar py-2">
+<div class="flex-none w-28 bg-surface-container-lowest p-3 rounded-2xl shadow-sm border border-outline-variant/10">
+<p class="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2">Mon</p>
+<div class="space-y-2">
+<div class="h-12 w-full rounded-lg bg-rose-50 flex items-center justify-center">
+<span class="material-symbols-outlined text-rose-300 text-sm">restaurant</span>
+</div>
+<p class="text-xs font-semibold leading-tight">Pesto Pasta</p>
+</div>
+</div>
+<div class="flex-none w-28 bg-primary-container p-3 rounded-2xl shadow-sm">
+<p class="text-[10px] font-bold uppercase tracking-widest text-on-primary-container mb-2">Tue</p>
+<div class="space-y-2">
+<div class="h-12 w-full rounded-lg bg-white/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-sm">local_fire_department</span>
+</div>
+<p class="text-xs font-bold text-white leading-tight">Miso Salmon</p>
+</div>
+</div>
+<div class="flex-none w-28 bg-surface-container-lowest p-3 rounded-2xl shadow-sm border border-outline-variant/10">
+<p class="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2">Wed</p>
+<div class="space-y-2">
+<div class="h-12 w-full rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-stone-300 text-sm">add</span>
+</div>
+<p class="text-xs font-medium text-secondary italic">Plan meal</p>
+</div>
+</div>
+<div class="flex-none w-28 bg-surface-container-lowest p-3 rounded-2xl shadow-sm border border-outline-variant/10 opacity-60">
+<p class="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2">Thu</p>
+<div class="h-12 w-full rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-stone-300 text-sm">lock</span>
+</div>
+</div>
+<div class="flex-none w-28 bg-surface-container-lowest p-3 rounded-2xl shadow-sm border border-outline-variant/10 opacity-60">
+<p class="text-[10px] font-bold uppercase tracking-widest text-secondary mb-2">Fri</p>
+<div class="h-12 w-full rounded-lg bg-surface-container-low flex items-center justify-center">
+<span class="material-symbols-outlined text-stone-300 text-sm">lock</span>
+</div>
+</div>
+<!-- Extra days for scrolling feel -->
+</div>
+</section>
+<!-- Bento Grid: Shared Cookbook & Grocery List -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Shared Cookbook (Masonry-ish Layout) -->
+<section class="lg:col-span-7 space-y-6">
+<div class="flex justify-between items-end px-2">
+<h2 class="text-2xl font-bold tracking-tight">Shared Cookbook</h2>
+<button class="text-primary font-bold text-sm tracking-wide">View All</button>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<!-- Glass Card 1 -->
+<div class="relative group aspect-[4/5] bg-white/65 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/30 shadow-sm">
+<img class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" data-alt="Plate of fresh gourmet salad" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgTTF9H1fBZhXmuazD-LS_BVJAISnxuNZSn2uC6DQawJ-lbZ_LF9MgPUj_7W_7I-PMTN2cf7AUjpPpxqX78VBgy5pHhnko3beBj64-m0iGw5tNW3ZQFiqyBYX8JZlXY3XZECukvv5w8ZS-F-pn4ivJ7D0lj-bujTE_A6lRAKHt6lY5ZNSWGiObEkXTRYYEFgtoRVcj07ANe2OQeRi_f1M4IR7NYCCp_vtmrIFKM6-hh021GGo0DU7ZIUK_HxR6ojb_KTnR9XZMZOU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 text-white">
+<p class="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Entrée</p>
+<h3 class="font-bold leading-tight">Summer Zucchini Velouté</h3>
+</div>
+<img class="absolute top-4 right-4 w-8 h-8 rounded-full border-2 border-white/50" data-alt="Sarah profile thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMwDwh7xIWP9SgGPR3pBzqhV4UvzMiF0jhR7fzOFVPdSMtcMzqKsiz7qH5qpxzzRlpAoxxetWzZE8vHB5K9FJCEfVLymnYyrFEczLKXbSKY6YdjhK_Fl-JSEQ7xWXGFkdf7RQd-qKUTvRdvcm9s_6NYNhHyXZ0sZRBf99OqmikvNWbXw5VeCtQ8mi5fc43935t4FOXUlQJdD5t4sRt-K6mjuW9KDw6017OvHJNLpzI1kssVKbFQ0qHW9zqA3jMydQUfrpujlWCg3c"/>
+</div>
+<!-- Glass Card 2 -->
+<div class="relative group aspect-square bg-white/65 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/30 shadow-sm mt-8">
+<img class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" data-alt="Colorful healthy bowl with grains" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo_r2p5NRjIKb0fyJF9eB-vRyq56pfv-hikUXlZP2WLXs21yUJ3fJOj_jblj08Pwrb3Zl1xOs-Jh4u71PnsvGmWfygp3EWuhEFEPFmyyd52QYD5tatMEpaycMZkEVMrHlQxed79KnrN6H4fHB7cHVKZlgndjCeBbZHXK7LKUZ5gOoztVBkEoADhbBre6UM3UyqbVJpNnonh1MZUejT25US-nU4Ozyr4tK-Q_6EhUOaShdaBOojgWny-nQa-aJTVGYU78H-ls32Ig4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 text-white">
+<p class="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Bowl</p>
+<h3 class="font-bold leading-tight">Ahi Tuna Poke</h3>
+</div>
+<img class="absolute top-4 right-4 w-8 h-8 rounded-full border-2 border-white/50" data-alt="James profile thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5Oe1PS8PDdjunOSvOGqqfaagJsoyLUCm5Rn02PfQPzhMB9DhAj-zayBHvW61e32gCWFNjHYMMXrYt2mgmfYDTklLtlK34LZc5EJdLD-ZIS2EM85QXQ0--h0Gk0fFcx6_pk-r_RSmG6qSL0WICCvrGla4pjGrqzyu55tuVAElI8BisEHDyINqoH2-k8jlRzNVvRjikMog2p9zU4mm-UIOkdlRo0agKbTvP3kDqVHmvX-h_1bgKIgX2W3So2uM-g2WvzqqlSejOdFU"/>
+</div>
+<!-- Glass Card 3 -->
+<div class="relative group aspect-square bg-white/65 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/30 shadow-sm -mt-8">
+<img class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" data-alt="Roasted vegetables plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGI10uCee3dXiCpUsPfCBBKDxizirsIv8lWKHiXYh-cdiqI5It4kvBnokJJ4iM_ViRbmt-6J60DCYgQGMrFqV-6riyDZfKSqU8eJ8krkPtPN63Zxbq01LmfzyVivkg5i-lptHydOBuxrtmRBacTYnpxw1UGBXTvqBpdMIBDN7E6IkoWT7-cI4DB2gjsJWJtYPmerr_h75GPZegzj41gtazPMtyQpE6U5sN48QFn-Ox2_WEoqtSHZ5NMne3D-0OmRRsqNBcTWApjq0"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 text-white">
+<h3 class="font-bold leading-tight">Charred Roots</h3>
+</div>
+<img class="absolute top-4 right-4 w-8 h-8 rounded-full border-2 border-white/50" data-alt="Sarah profile thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBArdtDT74MY8T-YZQwpfqpp1aJWPQh8fkJpSOIR53knlFBftkzfqGrD_yNfxTsu8Zr7EKU3iH0EdJvwyVXbZn-71tFUeI-4qTqL4cYez6OtKolHhd-gCdkwBhtXK9JCbsM67lu-L1DJfaQ1--pPYP5gpjXUu1TQvDxbEO8dKOZEy_s0OGDpgoFdYXaLeGeFT_EH_mCsOpCOHmGuAVLIRd6NSxHxz62VLASrW0RtOzEtikpmCLdax9MIUFZFlx3c_fNKYXnbvbpbhQ"/>
+</div>
+<!-- Glass Card 4 -->
+<div class="relative group aspect-[3/4] bg-white/65 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/30 shadow-sm">
+<img class="w-full h-full object-cover opacity-90 group-hover:scale-105 transition-transform duration-500" data-alt="Steaming bowl of ramen" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwbYNJRAXwUA-ve0vk7-STFRRrQ1N9kuUXs4iYHWdTiW5MEOh5Z4avXiuiSqQskch2KgkyZEA-U_o9uT__pwJpYFGvV0WReqrjrc7BpcqhqozNf_IP_Ab3XthwkB_DgcNgF3rgqx1OuWiZHpt3Cz9rhYb89o9rqH8jIxZ_eOaWA2eVhR8aquaqUFjYtFUPL7OYUws5W11RrsnIsz__BRTfH49jFNZfcmmHzHsfkQ0b1vMXJGbHQnH9CDecN57Cwe2uHG0-ngoH00Y"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 text-white">
+<h3 class="font-bold leading-tight">Tantanmen Ramen</h3>
+</div>
+<img class="absolute top-4 right-4 w-8 h-8 rounded-full border-2 border-white/50" data-alt="Alex profile thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYUr1t-4MUQ5zX2vvGwJ2iwtUgbfDKKWmaoKNPFufc3qGxfKApX8vSrgvy1msPyiiKJyS_v9UocyDNpBpY1T-douE79yxpnNT0_WHdF-V2D3Md2x8J-G8ZAHiUWQj_UseNlw8pjrBkml9GId8M8HJars49icz9PvRGe3jijUXk4THftFFTx6-AU73BUsRCBW5SU06nXAyKhHetMaWxTCju99w_ejEJmEhQi9mzN9DUKXRL9FzKPXCyuLNRmUw_XXAYU0w-DnDOEzM"/>
+</div>
+</div>
+</section>
+<!-- Grocery List Section -->
+<section class="lg:col-span-5 space-y-6">
+<div class="bg-surface-container-low rounded-[2rem] p-8 space-y-8">
+<div class="flex justify-between items-center">
+<h2 class="text-xl font-extrabold tracking-tight">Grocery List</h2>
+<span class="material-symbols-outlined text-rose-500 bg-white p-2 rounded-xl shadow-sm">add</span>
+</div>
+<!-- Produce -->
+<div class="space-y-4">
+<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-secondary/60">Produce</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded border-2 border-rose-200 flex items-center justify-center bg-white"></div>
+<span class="text-sm font-medium">Bok Choy (2 heads)</span>
+</div>
+<div class="flex items-center gap-3 opacity-50">
+<div class="w-5 h-5 rounded border-2 border-rose-400 bg-rose-400 flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-xs">check</span>
+</div>
+<span class="text-sm font-medium line-through">Heirloom Tomatoes</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded border-2 border-rose-200 flex items-center justify-center bg-white"></div>
+<span class="text-sm font-medium">Fresh Ginger (50g)</span>
+</div>
+</div>
+</div>
+<!-- Protein -->
+<div class="space-y-4">
+<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-secondary/60">Protein</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded border-2 border-rose-200 flex items-center justify-center bg-white"></div>
+<span class="text-sm font-medium">Wild Caught Salmon</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded border-2 border-rose-200 flex items-center justify-center bg-white"></div>
+<span class="text-sm font-medium">Extra Firm Tofu</span>
+</div>
+</div>
+</div>
+<!-- Pantry -->
+<div class="space-y-4">
+<h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-secondary/60">Pantry</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-5 h-5 rounded border-2 border-rose-200 flex items-center justify-center bg-white"></div>
+<span class="text-sm font-medium">White Miso Paste</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Activity Feed -->
+<div class="px-4 py-6 space-y-4 border-t border-outline-variant/20">
+<h3 class="text-xs font-bold text-secondary uppercase tracking-widest">Kitchen Activity</h3>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-rose-400"></div>
+<p class="text-xs text-secondary font-medium"><span class="text-on-surface font-bold">Sarah</span> added Miso Salmon <span class="opacity-50">· 2h ago</span></p>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-stone-300"></div>
+<p class="text-xs text-secondary font-medium"><span class="text-on-surface font-bold">James</span> checked off Tomatoes <span class="opacity-50">· 4h ago</span></p>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-stone-300"></div>
+<p class="text-xs text-secondary font-medium"><span class="text-on-surface font-bold">Alex</span> joined the kitchen <span class="opacity-50">· 1d ago</span></p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-md z-50 flex justify-around items-center p-2 bg-white/65 dark:bg-stone-900/65 backdrop-blur-xl rounded-3xl border border-rose-200/30 dark:border-rose-900/30 shadow-2xl shadow-stone-900/5">
+<a class="flex items-center justify-center text-stone-400 dark:text-stone-600 p-3 hover:text-rose-400 transition-colors active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+</a>
+<a class="flex items-center justify-center text-stone-400 dark:text-stone-600 p-3 hover:text-rose-400 transition-colors active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+</a>
+<a class="flex items-center justify-center text-stone-400 dark:text-stone-600 p-3 hover:text-rose-400 transition-colors active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">book_5</span>
+</a>
+<a class="flex items-center justify-center text-rose-500 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-900/20 rounded-xl p-3 active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+</a>
+</nav>
+</body></html>

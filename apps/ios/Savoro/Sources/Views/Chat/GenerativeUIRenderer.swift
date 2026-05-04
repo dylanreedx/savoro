@@ -13,6 +13,9 @@ struct GenerativeUIRenderer: View {
         case .foodCard(let props):
             FoodCardView(props: props, onLog: onLog, onDismiss: onDismiss)
 
+        case .mealPlan(let props):
+            MealPlanView(props: props, onSelect: { _ in })
+
         case .macroSummary, .confirmButton, .foodList,
              .quickLogChips, .dailySnapshot, .recipeCard, .unknown:
             // Other component types rendered by their own views (future work)

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Savoro - Profile</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-tertiary-fixed-variant": "#2f3aa3",
+              "on-error": "#ffffff",
+              "on-background": "#1a1c1c",
+              "surface-container-high": "#e8e8e7",
+              "primary-fixed-dim": "#ffb2b9",
+              "on-surface": "#1a1c1c",
+              "on-secondary-fixed": "#1f1b17",
+              "surface-bright": "#f9f9f8",
+              "tertiary-container": "#8a95ff",
+              "inverse-on-surface": "#f1f1f0",
+              "inverse-primary": "#ffb2b9",
+              "inverse-surface": "#2f3130",
+              "on-primary-container": "#6f0122",
+              "surface-variant": "#e2e2e2",
+              "secondary-fixed-dim": "#cec5bf",
+              "on-tertiary": "#ffffff",
+              "outline": "#8a7173",
+              "surface": "#f9f9f8",
+              "on-secondary": "#ffffff",
+              "on-secondary-container": "#6a635e",
+              "error-container": "#ffdad6",
+              "primary-container": "#FDA4AF", // Updated to new lighter rose
+              "secondary-container": "#eae1da",
+              "surface-tint": "#FDA4AF",
+              "surface-container": "#eeeeed",
+              "tertiary": "#4953bc",
+              "surface-dim": "#dadad9",
+              "on-tertiary-container": "#1a2591",
+              "on-error-container": "#93000a",
+              "background": "#f9f9f8",
+              "on-primary": "#ffffff",
+              "on-primary-fixed": "#400010",
+              "on-primary-fixed-variant": "#891933",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-fixed-dim": "#bdc2ff",
+              "on-tertiary-fixed": "#000767",
+              "surface-container-low": "#f6f6f6", // Softened background
+              "tertiary-fixed": "#e0e0ff",
+              "primary-fixed": "#ffdadc",
+              "secondary-fixed": "#eae1da",
+              "on-secondary-fixed-variant": "#4b4641",
+              "outline-variant": "#e5e5e5",
+              "error": "#ba1a1a",
+              "secondary": "#71717a",
+              "primary": "#FDA4AF", // Updated to new lighter rose
+              "surface-container-highest": "#e2e2e2",
+              "on-surface-variant": "#71717a"
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; /* Refined weight */
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.4);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+      .gradient-aura {
+        position: fixed;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(253, 164, 175, 0.1) 0%, rgba(249, 249, 248, 0) 70%);
+        filter: blur(80px);
+        z-index: -1;
+      }
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary-container/30">
+<!-- Background Auras -->
+<div class="gradient-aura top-[-150px] left-[-150px]"></div>
+<div class="gradient-aura bottom-[-150px] right-[-150px]"></div>
+<!-- Full Screen Sheet Overlay -->
+<main class="min-h-screen w-full max-w-2xl mx-auto bg-surface-container-lowest/80 backdrop-blur-sm md:shadow-xl md:my-8 md:rounded-[3rem] overflow-hidden relative">
+<!-- Header / Close Action -->
+<header class="flex justify-between items-center px-6 py-6">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface opacity-60" data-icon="close">close</span>
+</button>
+<h1 class="font-headline font-semibold text-lg tracking-tight text-on-surface">Profile</h1>
+<div class="w-10"></div>
+</header>
+<!-- Profile Hero -->
+<section class="flex flex-col items-center px-6 pt-4 pb-10">
+<div class="relative group">
+<div class="w-28 h-28 rounded-full overflow-hidden border-[1px] border-surface-container-low shadow-sm">
+<img alt="User profile photo" class="w-full h-full object-cover grayscale-[20%]" data-alt="Portrait of a smiling woman with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfBHKwfr1n-GL9DzKvyu_ktjQ7Xc8mTC5AQljgjYfm-XInnULrXT2G4yeeyKM7Qvdn56a9Z8lzwm2j8fL5sJ-rbYAzqNUVa7as1u4-XYPMvFgRIF5zq8wl4rPoyE0agxuoOxN-_bIfmaXjgjWO-KZHEcfmLAkLsTaC_RD35LnuIY2b78hNzhdXPHRLiq-Z2yu7FKC6HjfrqrZ81R8na1lOpeUr7t-wgvTIbt9aU_EWx4sZPdctl5e-wzlKQiHxGAge8MALxxAa4WA"/>
+</div>
+<button class="absolute bottom-0 right-0 bg-white text-primary p-2 rounded-full shadow-md scale-90 hover:scale-100 transition-transform">
+<span class="material-symbols-outlined text-[16px]" data-icon="edit">edit</span>
+</button>
+</div>
+<h2 class="mt-6 font-headline font-bold text-xl text-on-surface">Elena Vance</h2>
+<p class="text-secondary body-sm opacity-80 mt-1">Digital Sommelier • Member since 2023</p>
+</section>
+<!-- Target Fields (Bento Style) -->
+<section class="px-6 space-y-4">
+<h3 class="font-headline font-semibold text-sm text-secondary uppercase tracking-widest flex items-center gap-2 px-1">
+            Daily Targets
+            <span class="material-symbols-outlined text-primary text-sm opacity-60" data-icon="target">track_changes</span>
+</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-low/40 p-5 rounded-[2rem] border border-white/40 flex flex-col justify-between">
+<span class="text-secondary text-[10px] font-bold uppercase tracking-widest">Calories</span>
+<div class="flex items-baseline gap-1 mt-2">
+<input class="bg-transparent border-none p-0 font-headline font-bold text-2xl text-on-surface w-20 focus:ring-0" type="number" value="1850"/>
+<span class="text-on-surface-variant text-xs font-medium opacity-60">kcal</span>
+</div>
+</div>
+<div class="bg-surface-container-low/40 p-5 rounded-[2rem] border border-white/40 flex flex-col justify-between">
+<span class="text-primary text-[10px] font-bold uppercase tracking-widest">Protein</span>
+<div class="flex items-baseline gap-1 mt-2">
+<input class="bg-transparent border-none p-0 font-headline font-bold text-2xl text-primary w-20 focus:ring-0" type="number" value="140"/>
+<span class="text-primary/60 text-xs font-medium">g</span>
+</div>
+</div>
+<div class="bg-surface-container-low/40 p-5 rounded-[2rem] border border-white/40 flex flex-col justify-between">
+<span class="text-[#818CF8] text-[10px] font-bold uppercase tracking-widest opacity-80">Carbs</span>
+<div class="flex items-baseline gap-1 mt-2">
+<input class="bg-transparent border-none p-0 font-headline font-bold text-2xl text-[#818CF8] opacity-80 w-20 focus:ring-0" type="number" value="210"/>
+<span class="text-[#818CF8]/60 text-xs font-medium">g</span>
+</div>
+</div>
+<div class="bg-surface-container-low/40 p-5 rounded-[2rem] border border-white/40 flex flex-col justify-between">
+<span class="text-[#D97706] text-[10px] font-bold uppercase tracking-widest opacity-80">Fat</span>
+<div class="flex items-baseline gap-1 mt-2">
+<input class="bg-transparent border-none p-0 font-headline font-bold text-2xl text-[#D97706] opacity-80 w-20 focus:ring-0" type="number" value="65"/>
+<span class="text-[#D97706]/60 text-xs font-medium">g</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Calendar Dot Grid -->
+<section class="px-6 mt-10">
+<div class="flex justify-between items-end mb-4 px-1">
+<div>
+<h3 class="font-headline font-semibold text-base text-on-surface">Consistency</h3>
+<p class="text-secondary text-xs">Your logging streak: 12 days</p>
+</div>
+<span class="text-primary/80 font-bold text-[10px] uppercase tracking-widest">October 2024</span>
+</div>
+<div class="bg-surface-container-low/30 backdrop-blur-sm p-6 rounded-[2.5rem] border border-white/20">
+<div class="grid grid-cols-7 gap-y-5 justify-items-center">
+<!-- Day Labels -->
+<div class="text-[9px] font-bold text-outline-variant uppercase">M</div>
+<div class="text-[9px] font-bold text-outline-variant uppercase">T</div>
+<div class="text-[9px] font-bold text-outline-variant uppercase">W</div>
+<div class="text-[9px] font-bold text-outline-variant uppercase">T</div>
+<div class="text-[9px] font-bold text-outline-variant uppercase">F</div>
+<div class="text-[9px] font-bold text-outline-variant uppercase">S</div>
+<div class="text-[9px] font-bold text-outline-variant uppercase">S</div>
+<!-- Calendar Dots (Using Primary Accent for Logged Days) -->
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-primary/80"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+<div class="w-1.5 h-1.5 rounded-full bg-surface-container-high"></div>
+</div>
+</div>
+</section>
+<!-- Weekly Sparklines -->
+<section class="px-6 mt-10">
+<h3 class="font-headline font-semibold text-sm text-secondary uppercase tracking-widest mb-4 px-1">Weekly Trends</h3>
+<div class="space-y-3">
+<!-- Protein Sparkline (Softer highlights) -->
+<div class="glass-card p-5 rounded-3xl flex items-center justify-between border-white/60">
+<div>
+<p class="text-[9px] font-bold text-secondary/60 uppercase tracking-widest">Protein</p>
+<p class="font-bold text-primary text-sm">Avg: 142g</p>
+</div>
+<div class="h-8 w-28 flex items-end gap-[3px]">
+<div class="bg-primary/10 w-2.5 h-3 rounded-full"></div>
+<div class="bg-primary/20 w-2.5 h-5 rounded-full"></div>
+<div class="bg-primary/40 w-2.5 h-6 rounded-full"></div>
+<div class="bg-primary w-2.5 h-8 rounded-full"></div>
+<div class="bg-primary/30 w-2.5 h-4 rounded-full"></div>
+<div class="bg-primary/20 w-2.5 h-3 rounded-full"></div>
+<div class="bg-primary/50 w-2.5 h-7 rounded-full"></div>
+</div>
+</div>
+<!-- Carbs Sparkline -->
+<div class="glass-card p-5 rounded-3xl flex items-center justify-between border-white/60">
+<div>
+<p class="text-[9px] font-bold text-secondary/60 uppercase tracking-widest">Carbs</p>
+<p class="font-bold text-[#818CF8] opacity-80 text-sm">Avg: 205g</p>
+</div>
+<div class="h-8 w-28 flex items-end gap-[3px]">
+<div class="bg-[#818CF8]/20 w-2.5 h-5 rounded-full"></div>
+<div class="bg-[#818CF8]/10 w-2.5 h-2 rounded-full"></div>
+<div class="bg-[#818CF8]/80 w-2.5 h-8 rounded-full"></div>
+<div class="bg-[#818CF8]/40 w-2.5 h-6 rounded-full"></div>
+<div class="bg-[#818CF8]/30 w-2.5 h-4 rounded-full"></div>
+<div class="bg-[#818CF8]/50 w-2.5 h-7 rounded-full"></div>
+<div class="bg-[#818CF8]/20 w-2.5 h-3 rounded-full"></div>
+</div>
+</div>
+<!-- Fat Sparkline -->
+<div class="glass-card p-5 rounded-3xl flex items-center justify-between border-white/60">
+<div>
+<p class="text-[9px] font-bold text-secondary/60 uppercase tracking-widest">Fat</p>
+<p class="font-bold text-[#D97706] opacity-80 text-sm">Avg: 68g</p>
+</div>
+<div class="h-8 w-28 flex items-end gap-[3px]">
+<div class="bg-[#D97706]/10 w-2.5 h-2 rounded-full"></div>
+<div class="bg-[#D97706]/20 w-2.5 h-4 rounded-full"></div>
+<div class="bg-[#D97706]/15 w-2.5 h-3 rounded-full"></div>
+<div class="bg-[#D97706]/30 w-2.5 h-5 rounded-full"></div>
+<div class="bg-[#D97706]/60 w-2.5 h-7 rounded-full"></div>
+<div class="bg-[#D97706]/80 w-2.5 h-8 rounded-full"></div>
+<div class="bg-[#D97706]/40 w-2.5 h-6 rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer / Settings -->
+<footer class="mt-12 mb-10 px-6 text-center">
+<a class="inline-flex items-center gap-2.5 text-primary/80 font-bold text-xs uppercase tracking-widest hover:text-primary transition-colors py-2 px-6 rounded-full bg-white/40 shadow-sm border border-white/50" href="#">
+<span class="material-symbols-outlined text-base" data-icon="settings" style="font-variation-settings: 'FILL' 0, 'wght' 300;">settings</span>
+            Settings
+        </a>
+<div class="mt-8">
+<p class="text-[9px] text-outline-variant font-bold uppercase tracking-[0.3em] opacity-60">Savoro Premium • v2.4.0</p>
+</div>
+</footer>
+</main>
+</body></html>
