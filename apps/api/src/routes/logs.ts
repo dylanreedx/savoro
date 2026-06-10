@@ -8,8 +8,21 @@ import { getActiveGoal } from '../repo/goals'
 import { insertRecipeLog, listEntriesForDay } from '../repo/logs'
 import { getLoggableVersion } from '../repo/recipes'
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
+const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const
+
+function isCalendarDate(value: string): boolean {
+  const match = DATE_RE.exec(value)
+  if (!match) return false
+
+  const [, yearPart, monthPart, dayPart] = match
+  const year = Number(yearPart)
+  const month = Number(monthPart)
+  const day = Number(dayPart)
+  const date = new Date(Date.UTC(year, month - 1, day))
+
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+}
 type MealType = (typeof MEAL_TYPES)[number]
 
 export const logs = new Hono<AppEnv>()
@@ -19,7 +32,7 @@ logs.use('*', requireAuth)
 logs.get('/day', async (c) => {
   const userId = c.get('userId')
   const date = c.req.query('date')
-  if (!date || !DATE_RE.test(date)) {
+  if (!date || !isCalendarDate(date)) {
     throw new ApiError('validation_failed', 'date query param must be YYYY-MM-DD.')
   }
 
@@ -48,7 +61,7 @@ logs.post('/recipes', async (c) => {
   if (body.recipeVersionId !== undefined && typeof body.recipeVersionId !== 'string') {
     throw new ApiError('validation_failed', 'recipeVersionId must be a string.')
   }
-  if (typeof body.date !== 'string' || !DATE_RE.test(body.date)) {
+  if (typeof body.date !== 'string' || !isCalendarDate(body.date)) {
     throw new ApiError('validation_failed', 'date must be YYYY-MM-DD.')
   }
   if (!MEAL_TYPES.includes(body.mealType as MealType)) {

@@ -23,6 +23,8 @@ async function logRecipe(token: string, body: Record<string, unknown>) {
   return app.request('/v1/logs/recipes', authed(token, { method: 'POST', body: JSON.stringify(body) }), env)
 }
 
+const INVALID_DATES = ['2026-02-30', '2026-13-10', '2026-06-00', 'June 10', '2026/06/10', '2026-6-10']
+
 describe('logs endpoints', () => {
   let versionId: string
 
@@ -126,10 +128,38 @@ describe('logs endpoints', () => {
     expect(res.status).toBe(422)
   })
 
-  it('validates servings and date', async () => {
+  it('rejects invalid calendar dates when reading a day log', async () => {
+    for (const date of INVALID_DATES) {
+      const res = await app.request(`/v1/logs/day?date=${encodeURIComponent(date)}`, authed('alice-token'), env)
+      expect(res.status).toBe(422)
+    }
+  })
+
+  it('rejects invalid calendar dates when logging a recipe', async () => {
+    for (const date of INVALID_DATES) {
+      const res = await logRecipe('alice-token', { recipeId: 'rec_bowl', date, mealType: 'lunch', servings: 1 })
+      expect(res.status).toBe(422)
+    }
+  })
+
+  it('accepts real calendar dates when reading and logging logs', async () => {
+    const logged = await logRecipe('alice-token', {
+      recipeId: 'rec_bowl',
+      date: '2028-02-29',
+      mealType: 'lunch',
+      servings: 1,
+    })
+    expect(logged.status).toBe(201)
+
+    const res = await app.request('/v1/logs/day?date=2028-02-29', authed('alice-token'), env)
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as DayResponse
+    expect(body.dayLog.totals.calories).toBe(500)
+  })
+
+  it('validates servings and meal type', async () => {
     for (const bad of [
       { recipeId: 'rec_bowl', date: '2026-06-10', mealType: 'lunch', servings: 0 },
-      { recipeId: 'rec_bowl', date: 'June 10', mealType: 'lunch', servings: 1 },
       { recipeId: 'rec_bowl', date: '2026-06-10', mealType: 'brunch', servings: 1 },
     ]) {
       const res = await logRecipe('alice-token', bad)
