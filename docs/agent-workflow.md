@@ -4,6 +4,21 @@ Rules for every agent working on Savoro. Read this, your Linear issue, and the d
 it references before touching code. When this doc and an issue conflict, comment on
 the issue and stop.
 
+## Ticket assignment — agents never pick their own work
+
+- Your issue ID arrives in your launch prompt. **If you were launched without a
+  specific SAV issue ID, stop and ask — do not browse the backlog and choose.**
+- Every issue carries a track label: `track:frontend`, `track:backend`, or
+  `track:integration`. You may only work an issue whose label matches your role.
+  If your assigned issue's label doesn't match the track your prompt describes,
+  comment on the issue and stop.
+- Exception — explicit backlog-clearing runs only: if your prompt says to work a
+  track's backlog (rather than naming an issue), you may only claim issues that are
+  **Todo + unassigned + your track label**, and you claim by setting yourself as
+  assignee and moving the issue to In Progress *before* touching code. Already
+  assigned or In Progress means it's owned — skip it. One issue at a time, fully
+  landed before claiming the next.
+
 ## Source of truth
 
 - **Linear** (team Savorofit/SAV, project "Savoro MVP") decides *what* to build.
