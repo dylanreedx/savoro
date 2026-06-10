@@ -1,0 +1,25 @@
+{
+  "name": "savoro-api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local",
+    "db:migrate:remote": "wrangler d1 migrations apply DB --remote"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.2",
+    "hono": "^4.7.11"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.8.36",
+    "@cloudflare/workers-types": "^4.20250610.0",
+    "@types/node": "^25.9.2",
+    "typescript": "^5.8.3",
+    "vitest": "~3.2.3",
+    "wrangler": "^4.19.1"
+  }
+}

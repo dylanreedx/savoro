@@ -1,0 +1,120 @@
+import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
+
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email').unique(),
+  displayName: text('display_name'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
+export const sessions = sqliteTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    tokenHash: text('token_hash').notNull().unique(),
+    expiresAt: text('expires_at').notNull(),
+    createdAt: text('created_at').notNull(),
+    lastUsedAt: text('last_used_at'),
+    revokedAt: text('revoked_at'),
+  },
+  (t) => [index('idx_sessions_user').on(t.userId)],
+)
+
+export const recipes = sqliteTable(
+  'recipes',
+  {
+    id: text('id').primaryKey(),
+    ownerUserId: text('owner_user_id')
+      .notNull()
+      .references(() => users.id),
+    visibility: text('visibility', { enum: ['private', 'unlisted', 'public'] }).notNull(),
+    status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull(),
+    currentVersionId: text('current_version_id'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_recipes_owner_status').on(t.ownerUserId, t.status)],
+)
+
+export const recipeVersions = sqliteTable(
+  'recipe_versions',
+  {
+    id: text('id').primaryKey(),
+    recipeId: text('recipe_id')
+      .notNull()
+      .references(() => recipes.id),
+    versionNumber: integer('version_number').notNull(),
+    title: text('title').notNull(),
+    servings: real('servings').notNull(),
+    calories: real('calories').notNull(),
+    proteinGrams: real('protein_grams').notNull(),
+    carbsGrams: real('carbs_grams').notNull(),
+    fatGrams: real('fat_grams').notNull(),
+    fiberGrams: real('fiber_grams'),
+    sodiumMilligrams: real('sodium_milligrams'),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [uniqueIndex('uq_recipe_versions_number').on(t.recipeId, t.versionNumber)],
+)
+
+export const foodLogEntries = sqliteTable(
+  'food_log_entries',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    logDate: text('log_date').notNull(),
+    mealType: text('meal_type', { enum: ['breakfast', 'lunch', 'dinner', 'snack'] }).notNull(),
+    itemType: text('item_type', { enum: ['food', 'recipe'] }).notNull(),
+    foodId: text('food_id'),
+    servingId: text('serving_id'),
+    recipeId: text('recipe_id').references(() => recipes.id),
+    recipeVersionId: text('recipe_version_id').references(() => recipeVersions.id),
+    quantity: real('quantity').notNull(),
+    quantityUnit: text('quantity_unit').notNull(),
+    snapshotDisplayName: text('snapshot_display_name').notNull(),
+    snapshotCalories: real('snapshot_calories').notNull(),
+    snapshotProteinGrams: real('snapshot_protein_grams').notNull(),
+    snapshotCarbsGrams: real('snapshot_carbs_grams').notNull(),
+    snapshotFatGrams: real('snapshot_fat_grams').notNull(),
+    snapshotFiberGrams: real('snapshot_fiber_grams'),
+    snapshotSodiumMilligrams: real('snapshot_sodium_milligrams'),
+    snapshotSourceLabel: text('snapshot_source_label'),
+    snapshotCapturedAt: text('snapshot_captured_at').notNull(),
+    sourceType: text('source_type').notNull(),
+    privacyDomain: text('privacy_domain').notNull().default('private_user_data'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_food_logs_user_date').on(t.userId, t.logDate)],
+)
+
+export const goals = sqliteTable(
+  'goals',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    calories: real('calories').notNull(),
+    proteinGrams: real('protein_grams').notNull(),
+    carbsGrams: real('carbs_grams').notNull(),
+    fatGrams: real('fat_grams').notNull(),
+    fiberGrams: real('fiber_grams'),
+    sodiumMilligrams: real('sodium_milligrams'),
+    startDate: text('start_date').notNull(),
+    endDate: text('end_date'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [index('idx_goals_user_dates').on(t.userId, t.startDate)],
+)
+
+export type FoodLogEntryRow = typeof foodLogEntries.$inferSelect
+export type RecipeVersionRow = typeof recipeVersions.$inferSelect
+export type GoalRow = typeof goals.$inferSelect
