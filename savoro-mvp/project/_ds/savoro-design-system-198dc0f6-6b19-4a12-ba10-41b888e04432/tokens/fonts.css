@@ -1,0 +1,15 @@
+/* ============================================================
+   Savoro · Webfonts
+   ------------------------------------------------------------
+   Plus Jakarta Sans is Savoro's single typeface — a friendly,
+   geometric humanist sans with a warm, rounded character.
+   In the product it ships as a self-hosted variable woff2
+   (@fontsource-variable/plus-jakarta-sans, weights 200–800).
+
+   In this design system it is loaded from the Google Fonts CDN
+   (the binaries cannot be bundled here). To go fully offline,
+   drop the variable woff2 into assets/fonts/ and swap the
+   @import below for matching @font-face rules.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');

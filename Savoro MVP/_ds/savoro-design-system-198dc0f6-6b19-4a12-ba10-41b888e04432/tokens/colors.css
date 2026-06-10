@@ -1,0 +1,102 @@
+/* ============================================================
+   Savoro · Color
+   ------------------------------------------------------------
+   Four families, all defined in oklch for perceptual evenness:
+     · Sand     — warm grey/stone neutrals (the whole canvas)
+     · Blush    — soft pink, the signature accent ("pink, but
+                  not too pink"). Carbs macro + the logo dot.
+     · Sage     — muted green, used for positive / success /
+                  protein macro.
+     · Lavender — subtle cool accent, used sparingly.
+   Base scales first, then semantic aliases that components use.
+   ============================================================ */
+
+:root {
+	/* ---- Sand — warm neutrals ---- */
+	--sand-50: oklch(0.98 0.005 80);
+	--sand-100: oklch(0.96 0.008 80);
+	--sand-200: oklch(0.92 0.012 80);
+	--sand-300: oklch(0.86 0.016 75);
+	--sand-400: oklch(0.72 0.02 70);
+	--sand-500: oklch(0.58 0.02 65);
+	--sand-600: oklch(0.48 0.018 60);
+	--sand-700: oklch(0.38 0.015 55);
+	--sand-800: oklch(0.28 0.012 50);
+	--sand-900: oklch(0.18 0.008 45);
+	--sand-950: oklch(0.12 0.006 40);
+
+	/* ---- Blush — soft pink (signature accent) ---- */
+	--blush-50: oklch(0.97 0.012 10);
+	--blush-100: oklch(0.95 0.025 10);
+	--blush-200: oklch(0.9 0.04 10);
+	--blush-300: oklch(0.85 0.055 10);
+	--blush-400: oklch(0.78 0.07 8);
+	--blush-500: oklch(0.68 0.085 6);
+
+	/* ---- Sage — muted green (positive) ---- */
+	--sage-50: oklch(0.97 0.01 145);
+	--sage-100: oklch(0.95 0.02 145);
+	--sage-200: oklch(0.9 0.035 145);
+	--sage-300: oklch(0.83 0.045 145);
+	--sage-400: oklch(0.72 0.055 145);
+
+	/* ---- Lavender — subtle cool accent ---- */
+	--lavender-100: oklch(0.94 0.025 280);
+	--lavender-200: oklch(0.88 0.04 280);
+	--lavender-300: oklch(0.82 0.055 280);
+
+	/* ---- Glass surfaces (translucent white) ---- */
+	--glass: oklch(1 0 0 / 0.55);
+	--glass-strong: oklch(1 0 0 / 0.7);
+	--glass-subtle: oklch(1 0 0 / 0.35);
+	--glass-hover: oklch(1 0 0 / 0.72);
+	--glass-border: oklch(1 0 0 / 0.5);
+	--glass-highlight: oklch(1 0 0 / 0.95); /* bright edge for light-catching gradient borders */
+
+	/* ============================================================
+	   Semantic aliases — prefer these in components
+	   ============================================================ */
+
+	/* Surfaces & background */
+	--surface-page: var(--sand-50);
+	--surface-raised: var(--sand-100);
+	--surface-card: var(--glass);
+	--surface-card-strong: var(--glass-strong);
+	--surface-inverse: var(--sand-900);
+
+	/* Text */
+	--text-strong: var(--sand-900);
+	--text-body: var(--sand-700);
+	--text-muted: var(--sand-500);
+	--text-subtle: var(--sand-400);
+	--text-inverse: var(--sand-50);
+	--text-on-accent: var(--sand-900);
+
+	/* Accent */
+	--accent: var(--blush-400);
+	--accent-soft: var(--blush-100);
+	--accent-strong: var(--blush-500);
+
+	/* Feedback */
+	--positive: var(--sage-400);
+	--positive-soft: var(--sage-100);
+
+	/* Borders & lines */
+	--border: var(--sand-200);
+	--border-strong: var(--sand-300);
+	--border-glass: var(--glass-border);
+
+	/* Macro palette — DEDICATED ACCESSIBLE DATA COLORS.
+	   Four distinct hues, each ≥3:1 against white/sand for graphical
+	   objects (WCAG 1.4.11) and separated in both hue AND lightness so
+	   they stay distinguishable under color-vision deficiencies.
+	   NB: deliberately NOT blush — the soft brand pastels are too low
+	   contrast to encode data, and pink doubled up on carbs+calories. */
+	--macro-protein: oklch(0.58 0.115 152);   /* green */
+	--macro-carbs: oklch(0.62 0.135 64);       /* amber */
+	--macro-fat: oklch(0.54 0.105 292);        /* violet */
+	--macro-calories: oklch(0.32 0.015 60);    /* ink */
+
+	/* Focus ring */
+	--ring: var(--blush-300);
+}

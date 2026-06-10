@@ -1,0 +1,23 @@
+# OS
+.DS_Store
+
+# Agent artifacts
+.pi/
+
+# Archives
+*.zip
+
+# Dependencies
+node_modules/
+
+# Env / secrets
+.env*
+!.env.example
+
+# Cloudflare
+.wrangler/
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/

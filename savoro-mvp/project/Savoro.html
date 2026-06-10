@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Savoro — iOS MVP</title>
+
+<!-- React + Babel (pinned) -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Savoro design system tokens + fonts + base -->
+<link rel="stylesheet" href="_ds/savoro-design-system-198dc0f6-6b19-4a12-ba10-41b888e04432/styles.css" />
+
+<style>
+  html, body { height: 100%; margin: 0; background: #0a0a0a; overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+  #root { height: 100%; }
+  * { -webkit-tap-highlight-color: transparent; }
+  ::-webkit-scrollbar { width: 0; height: 0; background: transparent; }
+  image-slot { border-radius: 20px; }
+
+  /* ── Dark appearance — warm medium-dark, not aggressive black ── */
+  [data-theme="dark"] {
+    --sand-100: oklch(1 0 0 / 0.07);
+    --sand-200: oklch(1 0 0 / 0.10);
+    --sand-300: oklch(1 0 0 / 0.22);
+
+    --glass: oklch(1 0 0 / 0.08);
+    --glass-strong: oklch(1 0 0 / 0.16);
+    --glass-subtle: oklch(1 0 0 / 0.04);
+    --glass-hover: oklch(1 0 0 / 0.20);
+    --glass-border: oklch(1 0 0 / 0.14);
+
+    --surface-page: oklch(0.255 0.014 60);
+    --surface-raised: oklch(0.305 0.014 60);
+    --surface-card: var(--glass);
+    --surface-card-strong: var(--glass-strong);
+    --surface-inverse: oklch(0.37 0.012 55);
+
+    --text-strong: oklch(0.97 0.006 85);
+    --text-body: oklch(0.86 0.010 80);
+    --text-muted: oklch(0.70 0.012 75);
+    --text-subtle: oklch(0.58 0.012 70);
+
+    --border: oklch(1 0 0 / 0.12);
+    --border-strong: oklch(1 0 0 / 0.20);
+    --border-glass: var(--glass-border);
+
+    --accent-soft: oklch(0.66 0.07 10 / 0.24);
+    --accent-strong: oklch(0.85 0.06 12);
+    --positive: oklch(0.79 0.06 150);
+    --positive-soft: oklch(0.72 0.05 150 / 0.20);
+
+    --macro-calories: oklch(0.86 0.05 28);
+    --ring: var(--blush-400);
+  }
+</style>
+
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#f3ddd6" />
+    <text x="50" y="62" font-family="system-ui, sans-serif" font-size="46" font-weight="800" fill="#1c1812" text-anchor="middle">s<tspan fill="#e08aa0">.</tspan></text>
+  </svg>
+</template>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Savoro DS component bundle (plain JS), then expose its exports as globals -->
+<script src="_ds/savoro-design-system-198dc0f6-6b19-4a12-ba10-41b888e04432/_ds_bundle.js"></script>
+<script>Object.assign(window, window.SavoroDesignSystem_198dc0 || {});</script>
+
+<!-- Image slot custom element (plain JS) -->
+<script src="frames/image-slot.js"></script>
+
+<!-- Frames + app (Babel) -->
+<script type="text/babel" src="frames/ios-frame.jsx"></script>
+<script type="text/babel" src="frames/tweaks-panel.jsx"></script>
+<script type="text/babel" src="app/icons.jsx"></script>
+<script type="text/babel" src="app/data.jsx"></script>
+<script type="text/babel" src="app/kit.jsx"></script>
+<script type="text/babel" src="app/cards.jsx"></script>
+<script type="text/babel" src="app/screens-today.jsx"></script>
+<script type="text/babel" src="app/screens-discover.jsx"></script>
+<script type="text/babel" src="app/screens-recipe.jsx"></script>
+<script type="text/babel" src="app/screens-cookbook.jsx"></script>
+<script type="text/babel" src="app/screens-profile.jsx"></script>
+<script type="text/babel" src="app/sheets.jsx"></script>
+<script type="text/babel" src="app/App.jsx"></script>
+</body>
+</html>

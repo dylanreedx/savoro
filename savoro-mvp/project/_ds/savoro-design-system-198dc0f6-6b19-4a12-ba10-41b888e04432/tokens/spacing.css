@@ -1,0 +1,94 @@
+/* ============================================================
+   Savoro · Spacing, Radius, Shadow & Motion
+   ------------------------------------------------------------
+   Generous, soft, airy. Large pill/glass radii, low-contrast
+   diffuse shadows, and an inner highlight on glass surfaces.
+   Motion is gentle: cubic-out easing, 200–700ms, no bounce.
+   ============================================================ */
+
+:root {
+	/* ---- Spacing scale (rem, 4px base) ---- */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.25rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+	--space-10: 2.5rem;
+	--space-12: 3rem;
+	--space-16: 4rem;
+	--space-20: 5rem;
+	--space-24: 6rem;
+	--space-32: 8rem;
+
+	/* ---- Radius ---- */
+	--radius-chip: 0.625rem;   /* small controls, icon tiles */
+	--radius-card: 1rem;       /* food cards, inner panels */
+	--radius-glass: 1.25rem;   /* glass cards, nav, dialogs */
+	--radius-pill: 9999px;     /* buttons, badges, chips */
+
+	/* ---- Shadows (soft, diffuse, low contrast) ---- */
+	--shadow-glass: 0 4px 24px oklch(0 0 0 / 0.05);
+	--shadow-glass-lg: 0 8px 40px oklch(0 0 0 / 0.08);
+	--shadow-float: 0 20px 60px oklch(0 0 0 / 0.1);
+	--shadow-sm: 0 1px 2px oklch(0 0 0 / 0.06);
+	/* Crisp inner top highlight + a faint full-perimeter inner hairline — reads as a glass edge */
+	--shadow-inner-glass: inset 0 1px 0 0 oklch(1 0 0 / 0.6), inset 0 0 0 1px oklch(1 0 0 / 0.1);
+	/* Light-catching gradient border for glass: bright at top-left, fading away */
+	--glass-edge: linear-gradient(135deg, var(--glass-highlight) 0%, oklch(1 0 0 / 0.3) 35%, oklch(1 0 0 / 0.05) 65%, oklch(1 0 0 / 0.25) 100%); /* @kind other */
+
+	/* ---- Blur (glass backdrops) ---- */
+	--blur-glass: 16px;
+	--blur-glass-strong: 20px;
+
+	/* ---- Motion ---- */
+	--ease-out: cubic-bezier(0.215,0.61,0.355,1); /* @kind other */
+	--dur-fast: 150ms; /* @kind other */
+	--dur-base: 200ms; /* @kind other */
+	--dur-slow: 300ms; /* @kind other */
+	--dur-slower: 600ms; /* @kind other */
+
+	/* ---- Layout ---- */
+	--container-max: 72rem;  /* max-w-6xl, 1152px */
+	--container-prose: 56rem; /* max-w-4xl */
+}
+
+/* ============================================================
+   Glass surface utility classes — reusable beyond components.
+   The edge is a light-catching gradient border (via a masked
+   ::before ring) plus a crisp inner top highlight — so the rim
+   reads like real glass catching light, not a flat hairline.
+   ============================================================ */
+.savoro-glass,
+.savoro-glass-strong {
+	position: relative;
+	border-radius: var(--radius-glass);
+	box-shadow: var(--shadow-glass), var(--shadow-inner-glass);
+}
+
+.savoro-glass {
+	background: var(--glass);
+	backdrop-filter: blur(var(--blur-glass));
+	-webkit-backdrop-filter: blur(var(--blur-glass));
+}
+
+.savoro-glass-strong {
+	background: var(--glass-strong);
+	backdrop-filter: blur(var(--blur-glass-strong));
+	-webkit-backdrop-filter: blur(var(--blur-glass-strong));
+}
+
+.savoro-glass::before,
+.savoro-glass-strong::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	padding: 1.5px;
+	background: var(--glass-edge);
+	-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	        mask-composite: exclude;
+	pointer-events: none;
+}

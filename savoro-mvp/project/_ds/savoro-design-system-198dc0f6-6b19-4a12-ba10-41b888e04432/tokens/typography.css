@@ -1,0 +1,62 @@
+/* ============================================================
+   Savoro · Typography
+   ------------------------------------------------------------
+   One family, Plus Jakarta Sans, across the whole product.
+   Display text is extrabold + tight tracking; body copy is
+   relaxed and set in muted sand. Numbers use tabular figures
+   wherever macros or calories appear.
+   ============================================================ */
+
+:root {
+	/* ---- Family ---- */
+	--font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-numeric: 'Plus Jakarta Sans', system-ui, sans-serif; /* pair with font-variant-numeric: tabular-nums */
+
+	/* ---- Weights ---- */
+	--weight-regular: 400;
+	--weight-medium: 500;
+	--weight-semibold: 600;
+	--weight-bold: 700;
+	--weight-extrabold: 800;
+
+	/* ---- Type scale (rem) ---- */
+	--text-2xs: 0.625rem;   /* 10px — micro meta, macro chips */
+	--text-xs: 0.75rem;     /* 12px — labels, meta */
+	--text-sm: 0.875rem;    /* 14px — UI default, buttons */
+	--text-base: 1rem;      /* 16px — body */
+	--text-lg: 1.125rem;    /* 18px — lead body */
+	--text-xl: 1.25rem;     /* 20px — small headings, logo */
+	--text-2xl: 1.5rem;     /* 24px */
+	--text-3xl: 1.875rem;   /* 30px — section h2 */
+	--text-4xl: 2.25rem;    /* 36px — h2 large / hero sm */
+	--text-5xl: 3rem;       /* 48px — hero md */
+	--text-6xl: 3.75rem;    /* 60px — hero lg */
+
+	/* ---- Line heights ---- */
+	--leading-tight: 1.08;    /* display headlines */
+	--leading-snug: 1.25;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.65;  /* body copy */
+
+	/* ---- Letter spacing ---- */
+	--tracking-tight: -0.02em;   /* headings */
+	--tracking-normal: 0;
+	--tracking-wide: 0.2em;      /* SECTION LABELS (uppercase) */
+
+	/* ============================================================
+	   Semantic type roles
+	   ============================================================ */
+	--type-display-weight: var(--weight-extrabold);
+	--type-display-tracking: var(--tracking-tight);
+	--type-display-leading: var(--leading-tight);
+
+	--type-heading-weight: var(--weight-bold);
+	--type-heading-tracking: var(--tracking-tight);
+
+	--type-body-weight: var(--weight-regular);
+	--type-body-leading: var(--leading-relaxed);
+
+	--type-label-weight: var(--weight-semibold);
+	--type-label-size: var(--text-xs);
+	--type-label-tracking: var(--tracking-wide);
+}

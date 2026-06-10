@@ -1,0 +1,45 @@
+/* ============================================================
+   Savoro · Base
+   ------------------------------------------------------------
+   Document defaults that establish the warm, antialiased,
+   sand-on-sand canvas every Savoro surface sits on.
+   ============================================================ */
+
+html {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	scroll-behavior: smooth;
+	text-rendering: optimizeLegibility;
+}
+
+body {
+	margin: 0;
+	background-color: var(--surface-page);
+	color: var(--text-strong);
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	line-height: var(--leading-normal);
+}
+
+/* Tabular figures wherever macros / calories / counts appear */
+.tabular-nums {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Brand text selection */
+::selection {
+	background-color: var(--blush-200);
+	color: var(--sand-900);
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

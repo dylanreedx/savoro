@@ -1,0 +1,403 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "components/core/**",
+              "components/forms/**",
+              "components/nutrition/**",
+              "ui_kits/savoro/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Plus Jakarta Sans))/i]",
+        "message": "Font not provided by the design system. Available: Plus Jakarta Sans."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|variant|style|key|ref|className|style|children)$/]",
+        "message": "<Badge> doesn't accept that prop. Declared props: children, variant, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Badge'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:default|blush|sage|lavender)$/]",
+        "message": "<Badge> variant must be one of 'default' | 'blush' | 'sage' | 'lavender'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|variant|size|href|disabled|iconLeft|iconRight|style|onClick|key|ref|className|style|children)$/]",
+        "message": "<Button> doesn't accept that prop. Declared props: children, variant, size, href, disabled, iconLeft, iconRight, style, onClick."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='variant'] > Literal[value!=/^(?:primary|secondary|ghost)$/]",
+        "message": "<Button> variant must be one of 'primary' | 'secondary' | 'ghost'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Button'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm|md|lg)$/]",
+        "message": "<Button> size must be one of 'sm' | 'md' | 'lg'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='CalorieRing'] > JSXAttribute > JSXIdentifier[name!=/^(?:current|goal|size|stroke|style|key|ref|className|style|children)$/]",
+        "message": "<CalorieRing> doesn't accept that prop. Declared props: current, goal, size, stroke, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='FoodCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|amount|calories|protein|carbs|fat|style|key|ref|className|style|children)$/]",
+        "message": "<FoodCard> doesn't accept that prop. Declared props: name, amount, calories, protein, carbs, fat, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='GlassCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|strong|hover|padding|style|key|ref|className|style|children)$/]",
+        "message": "<GlassCard> doesn't accept that prop. Declared props: children, strong, hover, padding, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Input'] > JSXAttribute > JSXIdentifier[name!=/^(?:dark|icon|style|wrapperStyle|key|ref|className|style|children)$/]",
+        "message": "<Input> doesn't accept that prop. Declared props: dark, icon, style, wrapperStyle."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute > JSXIdentifier[name!=/^(?:size|inverse|mark|style|key|ref|className|style|children)$/]",
+        "message": "<Logo> doesn't accept that prop. Declared props: size, inverse, mark, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='Logo'] > JSXAttribute[name.name='size'] > Literal[value!=/^(?:sm|md|lg)$/]",
+        "message": "<Logo> size must be one of 'sm' | 'md' | 'lg'."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='MacroBar'] > JSXAttribute > JSXIdentifier[name!=/^(?:protein|carbs|fat|legend|height|style|key|ref|className|style|children)$/]",
+        "message": "<MacroBar> doesn't accept that prop. Declared props: protein, carbs, fat, legend, height, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='QuickLogChip'] > JSXAttribute > JSXIdentifier[name!=/^(?:name|emoji|calories|selected|onToggle|style|key|ref|className|style|children)$/]",
+        "message": "<QuickLogChip> doesn't accept that prop. Declared props: name, emoji, calories, selected, onToggle, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='RecipeCard'] > JSXAttribute > JSXIdentifier[name!=/^(?:title|calories|protein|carbs|fat|servings|prepTime|tags|gradient|style|key|ref|className|style|children)$/]",
+        "message": "<RecipeCard> doesn't accept that prop. Declared props: title, calories, protein, carbs, fat, servings, prepTime, tags, gradient, style."
+      },
+      {
+        "selector": "JSXOpeningElement[name.name='SectionLabel'] > JSXAttribute > JSXIdentifier[name!=/^(?:children|style|key|ref|className|style|children)$/]",
+        "message": "<SectionLabel> doesn't accept that prop. Declared props: children, style."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {
+      "Badge": {
+        "replaces": []
+      },
+      "Button": {
+        "replaces": []
+      },
+      "CalorieRing": {
+        "replaces": []
+      },
+      "FoodCard": {
+        "replaces": []
+      },
+      "GlassCard": {
+        "replaces": []
+      },
+      "Input": {
+        "replaces": []
+      },
+      "Logo": {
+        "replaces": []
+      },
+      "MacroBar": {
+        "replaces": []
+      },
+      "QuickLogChip": {
+        "replaces": []
+      },
+      "RecipeCard": {
+        "replaces": []
+      },
+      "SectionLabel": {
+        "replaces": []
+      }
+    },
+    "tokens": [
+      "--accent",
+      "--accent-soft",
+      "--accent-strong",
+      "--blur-glass",
+      "--blur-glass-strong",
+      "--blush-100",
+      "--blush-200",
+      "--blush-300",
+      "--blush-400",
+      "--blush-50",
+      "--blush-500",
+      "--border",
+      "--border-glass",
+      "--border-strong",
+      "--container-max",
+      "--container-prose",
+      "--dur-base",
+      "--dur-fast",
+      "--dur-slow",
+      "--dur-slower",
+      "--ease-out",
+      "--font-numeric",
+      "--font-sans",
+      "--glass",
+      "--glass-border",
+      "--glass-edge",
+      "--glass-highlight",
+      "--glass-hover",
+      "--glass-strong",
+      "--glass-subtle",
+      "--lavender-100",
+      "--lavender-200",
+      "--lavender-300",
+      "--leading-normal",
+      "--leading-relaxed",
+      "--leading-snug",
+      "--leading-tight",
+      "--macro-calories",
+      "--macro-carbs",
+      "--macro-fat",
+      "--macro-protein",
+      "--positive",
+      "--positive-soft",
+      "--radius-card",
+      "--radius-chip",
+      "--radius-glass",
+      "--radius-pill",
+      "--ring",
+      "--sage-100",
+      "--sage-200",
+      "--sage-300",
+      "--sage-400",
+      "--sage-50",
+      "--sand-100",
+      "--sand-200",
+      "--sand-300",
+      "--sand-400",
+      "--sand-50",
+      "--sand-500",
+      "--sand-600",
+      "--sand-700",
+      "--sand-800",
+      "--sand-900",
+      "--sand-950",
+      "--shadow-float",
+      "--shadow-glass",
+      "--shadow-glass-lg",
+      "--shadow-inner-glass",
+      "--shadow-sm",
+      "--space-1",
+      "--space-10",
+      "--space-12",
+      "--space-16",
+      "--space-2",
+      "--space-20",
+      "--space-24",
+      "--space-3",
+      "--space-32",
+      "--space-4",
+      "--space-5",
+      "--space-6",
+      "--space-8",
+      "--surface-card",
+      "--surface-card-strong",
+      "--surface-inverse",
+      "--surface-page",
+      "--surface-raised",
+      "--text-2xl",
+      "--text-2xs",
+      "--text-3xl",
+      "--text-4xl",
+      "--text-5xl",
+      "--text-6xl",
+      "--text-base",
+      "--text-body",
+      "--text-inverse",
+      "--text-lg",
+      "--text-muted",
+      "--text-on-accent",
+      "--text-sm",
+      "--text-strong",
+      "--text-subtle",
+      "--text-xl",
+      "--text-xs",
+      "--tracking-normal",
+      "--tracking-tight",
+      "--tracking-wide",
+      "--type-body-leading",
+      "--type-body-weight",
+      "--type-display-leading",
+      "--type-display-tracking",
+      "--type-display-weight",
+      "--type-heading-tracking",
+      "--type-heading-weight",
+      "--type-label-size",
+      "--type-label-tracking",
+      "--type-label-weight",
+      "--weight-bold",
+      "--weight-extrabold",
+      "--weight-medium",
+      "--weight-regular",
+      "--weight-semibold"
+    ],
+    "tokenKinds": {
+      "--sand-50": "color",
+      "--sand-100": "color",
+      "--sand-200": "color",
+      "--sand-300": "color",
+      "--sand-400": "color",
+      "--sand-500": "color",
+      "--sand-600": "color",
+      "--sand-700": "color",
+      "--sand-800": "color",
+      "--sand-900": "color",
+      "--sand-950": "color",
+      "--blush-50": "color",
+      "--blush-100": "color",
+      "--blush-200": "color",
+      "--blush-300": "color",
+      "--blush-400": "color",
+      "--blush-500": "color",
+      "--sage-50": "color",
+      "--sage-100": "color",
+      "--sage-200": "color",
+      "--sage-300": "color",
+      "--sage-400": "color",
+      "--lavender-100": "color",
+      "--lavender-200": "color",
+      "--lavender-300": "color",
+      "--glass": "color",
+      "--glass-strong": "color",
+      "--glass-subtle": "color",
+      "--glass-hover": "color",
+      "--glass-border": "color",
+      "--glass-highlight": "color",
+      "--surface-page": "color",
+      "--surface-raised": "color",
+      "--surface-card": "color",
+      "--surface-card-strong": "color",
+      "--surface-inverse": "color",
+      "--text-strong": "font",
+      "--text-body": "font",
+      "--text-muted": "font",
+      "--text-subtle": "font",
+      "--text-inverse": "font",
+      "--text-on-accent": "font",
+      "--accent": "color",
+      "--accent-soft": "color",
+      "--accent-strong": "color",
+      "--positive": "color",
+      "--positive-soft": "color",
+      "--border": "color",
+      "--border-strong": "color",
+      "--border-glass": "color",
+      "--macro-protein": "color",
+      "--macro-carbs": "color",
+      "--macro-fat": "color",
+      "--macro-calories": "color",
+      "--ring": "color",
+      "--font-sans": "font",
+      "--font-numeric": "font",
+      "--weight-regular": "font",
+      "--weight-medium": "font",
+      "--weight-semibold": "font",
+      "--weight-bold": "font",
+      "--weight-extrabold": "font",
+      "--text-2xs": "font",
+      "--text-xs": "font",
+      "--text-sm": "font",
+      "--text-base": "font",
+      "--text-lg": "font",
+      "--text-xl": "font",
+      "--text-2xl": "font",
+      "--text-3xl": "font",
+      "--text-4xl": "font",
+      "--text-5xl": "font",
+      "--text-6xl": "font",
+      "--leading-tight": "font",
+      "--leading-snug": "font",
+      "--leading-normal": "font",
+      "--leading-relaxed": "font",
+      "--tracking-tight": "font",
+      "--tracking-normal": "font",
+      "--tracking-wide": "font",
+      "--type-display-weight": "font",
+      "--type-display-tracking": "font",
+      "--type-display-leading": "font",
+      "--type-heading-weight": "font",
+      "--type-heading-tracking": "font",
+      "--type-body-weight": "font",
+      "--type-body-leading": "font",
+      "--type-label-weight": "font",
+      "--type-label-size": "font",
+      "--type-label-tracking": "font",
+      "--space-1": "spacing",
+      "--space-2": "spacing",
+      "--space-3": "spacing",
+      "--space-4": "spacing",
+      "--space-5": "spacing",
+      "--space-6": "spacing",
+      "--space-8": "spacing",
+      "--space-10": "spacing",
+      "--space-12": "spacing",
+      "--space-16": "spacing",
+      "--space-20": "spacing",
+      "--space-24": "spacing",
+      "--space-32": "spacing",
+      "--radius-chip": "radius",
+      "--radius-card": "radius",
+      "--radius-glass": "radius",
+      "--radius-pill": "radius",
+      "--shadow-glass": "shadow",
+      "--shadow-glass-lg": "shadow",
+      "--shadow-float": "shadow",
+      "--shadow-sm": "shadow",
+      "--shadow-inner-glass": "shadow",
+      "--glass-edge": "other",
+      "--blur-glass": "spacing",
+      "--blur-glass-strong": "spacing",
+      "--ease-out": "other",
+      "--dur-fast": "other",
+      "--dur-base": "other",
+      "--dur-slow": "other",
+      "--dur-slower": "other",
+      "--container-max": "spacing",
+      "--container-prose": "spacing"
+    },
+    "fontFamilies": [
+      "Plus Jakarta Sans"
+    ]
+  }
+}
