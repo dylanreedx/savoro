@@ -44,17 +44,36 @@ Never edit the other track's directory. Integration issues are the only place th
 tracks meet, and they start only when the relevant frontend and backend issues are
 both Done.
 
-## Branching and history
+## Branching, worktrees, and history
+
+**The repo root (`/Users/dylan/Documents/personal/savoro`) stays parked on `main`,
+clean, always.** No agent edits files or switches branches there — it is only the
+integration point where squash-merges land. Launch prompts must never say "work on
+the current branch": branch names drift and get retired (this has already stranded
+runs twice). Every run creates its own branch and worktree:
+
+```bash
+ROOT=/Users/dylan/Documents/personal/savoro
+git -C "$ROOT" worktree add "$ROOT/../savoro-wt/sav-<id>" -b feat/sav-<id>-<slug> main
+cd "$ROOT/../savoro-wt/sav-<id>"   # all work happens here
+```
 
 - One branch per Linear issue, off **latest `main`**, named `feat/sav-<id>-<slug>`
   (e.g. `feat/sav-122-date-validation`).
-- Work in your own git worktree (`git worktree add ../savoro-sav-<id> feat/sav-<id>-<slug>`)
-  so parallel agents never share a working tree.
+- Worktrees don't share dependencies or build caches: run `bun install` in
+  `apps/api`, and expect Xcode to rebuild DerivedData. That's the price of isolation.
 - Commit per green slice on your branch. When acceptance criteria pass, **squash-merge
-  into `main`** with the SAV id in the commit subject
-  (`git merge --squash`, subject like `SAV-122: reject impossible calendar dates`),
-  then delete the branch and remove the worktree. Disjoint directories make conflicts
-  impossible by construction; if you hit one anyway, stop and comment on the issue.
+  into `main`** with the SAV id in the commit subject, then clean up:
+
+```bash
+git -C "$ROOT" merge --squash feat/sav-<id>-<slug>
+git -C "$ROOT" commit -m "SAV-<id>: <summary>"
+git -C "$ROOT" worktree remove "$ROOT/../savoro-wt/sav-<id>"
+git -C "$ROOT" branch -D feat/sav-<id>-<slug>
+```
+
+  Disjoint directories make conflicts impossible by construction; if you hit one
+  anyway, stop and comment on the issue.
 - Do not push to origin, open PRs, deploy, or create external services unless the
   issue says so.
 
