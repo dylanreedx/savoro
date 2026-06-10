@@ -173,7 +173,7 @@ struct RecipeDetailActionBarViewModel: Equatable {
         guard actions.contains(action) else { return nil }
         switch action {
         case .save, .edit: return nil
-        case .fork: return .forkRemix(recipeId: recipeId)
+        case .fork: return .forkRemix(recipeId: recipeId, sourceVersionId: currentVersionId)
         case .log: return .logRecipe(recipeId: recipeId, recipeVersionId: currentVersionId)
         case .share: return .shareRecipe(recipeId: recipeId)
         }
@@ -198,41 +198,51 @@ struct RecipeDetailActionBarViewModel: Equatable {
 
 struct ForkRemixConfirmationSheetModel: Equatable {
     let recipeId: String
+    let sourceVersionId: String?
     let sourceTitle: String
     let title: String = "Remix as a private copy"
     let subtitle: String
     let privacyCopy: String = "Your copy will start private and editable in this local mock app. You can make changes before choosing any visibility later."
     let sourceProtectionCopy: String = "The source recipe stays unchanged. This action does not republish, post, sync, or modify the original recipe."
+    let attributionCopy: String
     let localOnlyCopy: String = "For this MVP slice, Confirm records the remix choice locally only; SAV-78 will create the attributed private copy."
     let cancelLabel: String = "Cancel"
     let confirmLabel: String = "Confirm private copy"
 
-    init(recipeId: String, sourceTitle: String = "this recipe") {
+    init(recipeId: String, sourceVersionId: String? = nil, sourceTitle: String = "this recipe") {
         self.recipeId = recipeId
+        self.sourceVersionId = sourceVersionId
         self.sourceTitle = sourceTitle
         subtitle = "Create your own version of \(sourceTitle)."
+        attributionCopy = "The future fork flow will preserve attribution and the source version so credit and provenance stay attached."
     }
 
     var visibleCopy: String {
-        [title, subtitle, privacyCopy, sourceProtectionCopy, localOnlyCopy, cancelLabel, confirmLabel].joined(separator: " ")
+        [title, subtitle, privacyCopy, sourceProtectionCopy, attributionCopy, localOnlyCopy, cancelLabel, confirmLabel].joined(separator: " ")
     }
 
     var confirmationToast: SavoroToast {
         SavoroToast(
             title: "Remix choice noted locally",
-            message: "Your private editable copy flow is confirmed for \(recipeId). No source recipe changes. No backend sync, post, or publish action started.",
+            message: "Your private editable copy flow is confirmed for \(recipeId). No source recipe changes. Source version and attribution are kept for the future fork flow. No backend sync, post, or publish action started.",
             style: .success
         )
     }
 
     var routeMetadata: [String: String] {
-        [
+        var metadata = [
             "recipeId": recipeId,
-            "sheetRoute": SavoroSheetRoute.forkRemix(recipeId: recipeId).id,
+            "sheetRoute": SavoroSheetRoute.forkRemix(recipeId: recipeId, sourceVersionId: sourceVersionId).id,
+            "preservesAttribution": "true",
+            "preservesSourceVersion": "true",
             "startsBackendRequest": "false",
             "mutatesSourceRecipe": "false",
             "createsPublicPost": "false"
         ]
+        if let sourceVersionId {
+            metadata["sourceVersionId"] = sourceVersionId
+        }
+        return metadata
     }
 }
 
@@ -263,6 +273,7 @@ struct ForkRemixConfirmationSheetView: View {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
                 confirmationRow(systemImage: "lock.fill", text: model.privacyCopy)
                 confirmationRow(systemImage: "doc.on.doc", text: model.sourceProtectionCopy)
+                confirmationRow(systemImage: "tag", text: model.attributionCopy)
                 confirmationRow(systemImage: "shippingbox", text: model.localOnlyCopy)
             }
 
@@ -278,11 +289,15 @@ struct ForkRemixConfirmationSheetView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("fork-remix-confirm-button")
+                .accessibilityLabel("Confirm private editable copy")
+                .accessibilityHint("Records this remix choice locally without changing the source recipe.")
 
                 Button(model.cancelLabel) { dismiss() }
                     .buttonStyle(.bordered)
                     .frame(maxWidth: .infinity)
                     .accessibilityIdentifier("fork-remix-cancel-button")
+                    .accessibilityLabel("Cancel remix")
+                    .accessibilityHint("Closes the confirmation sheet without recording a remix choice.")
             }
         }
         .padding(SavoroSpacing.lg)

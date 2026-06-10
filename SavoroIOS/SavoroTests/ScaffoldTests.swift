@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 import XCTest
 @testable import Savoro
 
@@ -1207,7 +1208,7 @@ final class ScaffoldTests: XCTestCase {
 
         XCTAssertNil(viewModel.route(for: .save))
         XCTAssertEqual(viewModel.toast(for: .save)?.title, "Saved to local mock")
-        XCTAssertEqual(viewModel.route(for: .fork), .forkRemix(recipeId: "recipe_shawarma_bowl"))
+        XCTAssertEqual(viewModel.route(for: .fork), .forkRemix(recipeId: "recipe_shawarma_bowl", sourceVersionId: "recipe_version_20260606"))
         XCTAssertEqual(viewModel.route(for: .log), .logRecipe(recipeId: "recipe_shawarma_bowl", recipeVersionId: "recipe_version_20260606"))
         XCTAssertEqual(viewModel.route(for: .log)?.id, "log-recipe:recipe_shawarma_bowl:recipe_version_20260606:no-meal")
         XCTAssertEqual(viewModel.route(for: .share), .shareRecipe(recipeId: "recipe_shawarma_bowl"))
@@ -1242,6 +1243,8 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("editable"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("source recipe stays unchanged"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("does not republish"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("preserve attribution"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("source version"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("SAV-78 will create"))
     }
 
@@ -1257,12 +1260,15 @@ final class ScaffoldTests: XCTestCase {
     }
 
     func testForkRemixRouteMetadataDoesNotMutateSourceOrCreatePublicPost() {
-        let route = SavoroSheetRoute.forkRemix(recipeId: "recipe_shawarma_bowl")
-        let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl")
+        let route = SavoroSheetRoute.forkRemix(recipeId: "recipe_shawarma_bowl", sourceVersionId: "recipe_version_20260606")
+        let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl", sourceVersionId: "recipe_version_20260606")
 
-        XCTAssertEqual(route.id, "fork-remix:recipe_shawarma_bowl")
+        XCTAssertEqual(route.id, "fork-remix:recipe_shawarma_bowl:recipe_version_20260606")
         XCTAssertEqual(route.title, "Fork / Remix")
         XCTAssertEqual(model.routeMetadata["sheetRoute"], route.id)
+        XCTAssertEqual(model.routeMetadata["sourceVersionId"], "recipe_version_20260606")
+        XCTAssertEqual(model.routeMetadata["preservesAttribution"], "true")
+        XCTAssertEqual(model.routeMetadata["preservesSourceVersion"], "true")
         XCTAssertEqual(model.routeMetadata["startsBackendRequest"], "false")
         XCTAssertEqual(model.routeMetadata["mutatesSourceRecipe"], "false")
         XCTAssertEqual(model.routeMetadata["createsPublicPost"], "false")
@@ -1271,6 +1277,45 @@ final class ScaffoldTests: XCTestCase {
     @MainActor
     func testForkRemixConfirmationSheetCanBeConstructed() {
         _ = ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl"))
+    }
+
+    @MainActor
+    func testForkRemixConfirmationSheetScreenshotEvidence() {
+        let bounds = CGRect(x: 0, y: 0, width: 393, height: 852)
+        let controller = UIHostingController(
+            rootView: NavigationStack {
+                ForkRemixConfirmationSheetView(
+                    model: ForkRemixConfirmationSheetModel(
+                        recipeId: "recipe_shawarma_bowl",
+                        sourceVersionId: "recipe_version_20260606",
+                        sourceTitle: "Chicken Shawarma Bowl"
+                    )
+                )
+            }
+            .frame(width: bounds.width, height: bounds.height)
+        )
+        controller.view.bounds = bounds
+        controller.view.backgroundColor = .systemBackground
+
+        let window = UIWindow(frame: bounds)
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.setNeedsLayout()
+        controller.view.layoutIfNeeded()
+
+        let image = UIGraphicsImageRenderer(bounds: bounds).image { _ in
+            controller.view.drawHierarchy(in: bounds, afterScreenUpdates: true)
+        }
+        let attachment = XCTAttachment(image: image)
+        attachment.name = "SAV-77 fork remix confirmation sheet"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        XCTAssertGreaterThan(image.size.width, 0)
+        XCTAssertGreaterThan(image.size.height, 0)
+
+        window.isHidden = true
+        window.rootViewController = nil
     }
 
     func testRecipeDetailSocialContextExposesNoSAV62Actions() throws {
@@ -1354,7 +1399,7 @@ final class ScaffoldTests: XCTestCase {
 
         XCTAssertEqual(RecipeDetailAccessState.from(recipe: recipe), .recipe(recipe))
         XCTAssertEqual(actionModel.actions.map(\.label), ["Save", "Fork", "Log", "Share"])
-        XCTAssertEqual(actionModel.route(for: .fork), .forkRemix(recipeId: "recipe_shawarma_bowl"))
+        XCTAssertEqual(actionModel.route(for: .fork), .forkRemix(recipeId: "recipe_shawarma_bowl", sourceVersionId: "recipe_version_20260606"))
         XCTAssertEqual(actionModel.route(for: .log), .logRecipe(recipeId: "recipe_shawarma_bowl", recipeVersionId: "recipe_version_20260606"))
         XCTAssertEqual(actionModel.route(for: .share), .shareRecipe(recipeId: "recipe_shawarma_bowl"))
     }

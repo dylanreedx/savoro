@@ -34,7 +34,7 @@ enum SavoroSheetRoute: Hashable, Identifiable {
     case addMeal
     case logRecipe(recipeId: String?, recipeVersionId: String? = nil, mealType: MealType? = nil)
     case logPicker(mealType: MealType? = nil)
-    case forkRemix(recipeId: String)
+    case forkRemix(recipeId: String, sourceVersionId: String? = nil)
     case shareRecipe(recipeId: String)
     case publishVisibility(recipeId: String?)
     case communityShareSetup(recipeId: String?)
@@ -49,7 +49,11 @@ enum SavoroSheetRoute: Hashable, Identifiable {
             }
             return "log-recipe:\(recipeId ?? "new"):\(mealType?.rawValue ?? "no-meal")"
         case let .logPicker(mealType): return "log-picker:\(mealType?.rawValue ?? "no-meal")"
-        case let .forkRemix(recipeId): return "fork-remix:\(recipeId)"
+        case let .forkRemix(recipeId, sourceVersionId):
+            if let sourceVersionId {
+                return "fork-remix:\(recipeId):\(sourceVersionId)"
+            }
+            return "fork-remix:\(recipeId)"
         case let .shareRecipe(recipeId): return "share-recipe:\(recipeId)"
         case let .publishVisibility(recipeId): return "publish-visibility:\(recipeId ?? "new")"
         case let .communityShareSetup(recipeId): return "community-share-setup:\(recipeId ?? "new")"
@@ -79,7 +83,7 @@ enum SavoroSheetRoute: Hashable, Identifiable {
         case .logPicker:
             return "Mock picker with recents, saved, mine, local mixed food/recipe search results, and preserved meal context for recipe handoff. Persistence and backend calls are not implemented."
         case .forkRemix:
-            return "Confirmation sheet for remixing as a private editable copy. Confirm records local mock status only; attributed copy creation is not implemented in this slice."
+            return "Confirmation sheet for remixing as a private editable copy. Confirm records local mock status only; attributed source-version copy creation is not implemented in this slice."
         case .shareRecipe:
             return "Placeholder sheet route for future native sharing and community distribution. No external share, post, or publish action is performed."
         case .publishVisibility:
@@ -378,9 +382,9 @@ struct SavoroTabShellView: View {
                 )
                 activeSheet = nil
             }
-        case let .forkRemix(recipeId):
+        case let .forkRemix(recipeId, sourceVersionId):
             NavigationStack {
-                ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: recipeId)) { model in
+                ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: recipeId, sourceVersionId: sourceVersionId)) { model in
                     activeToast = model.confirmationToast
                     activeSheet = nil
                 }
