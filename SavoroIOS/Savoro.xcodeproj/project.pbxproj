@@ -1,0 +1,178 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		29AA00000000000000000002 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000001 /* AppEnvironment.swift */; };
+		29AA00000000000000000004 /* RootPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000003 /* RootPlaceholderView.swift */; };
+		29AA00000000000000000006 /* SavoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000005 /* SavoroApp.swift */; };
+		29AA00000000000000000008 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000007 /* APIClient.swift */; };
+		29AA0000000000000000000A /* MockAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000009 /* MockAPIClient.swift */; };
+		29AA00000000000000000050 /* LoggingRequests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000004F /* LoggingRequests.swift */; };
+		29AA0000000000000000000C /* FixtureLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000000B /* FixtureLoader.swift */; };
+		29AA0000000000000000000E /* SavoroColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000000D /* SavoroColor.swift */; };
+		29AA00000000000000000040 /* SavoroPrimitives.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000003F /* SavoroPrimitives.swift */; };
+		29AA00000000000000000042 /* SavoroDesignSystemGallery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000041 /* SavoroDesignSystemGallery.swift */; };
+		29AA00000000000000000044 /* NutritionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000043 /* NutritionModels.swift */; };
+		29AA00000000000000000048 /* RecipeModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000047 /* RecipeModels.swift */; };
+		29AA00000000000000000010 /* CommunityPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000000F /* CommunityPlaceholderView.swift */; };
+		29AA00000000000000000012 /* CookbookPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000011 /* CookbookPlaceholderView.swift */; };
+		29AA00000000000000000014 /* DiscoverPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000013 /* DiscoverPlaceholderView.swift */; };
+		29AA00000000000000000016 /* LoggingPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000015 /* LoggingPlaceholderView.swift */; };
+		29AA00000000000000000052 /* LogPickerPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000051 /* LogPickerPlaceholderView.swift */; };
+		29AA00000000000000000018 /* PlaceholderFeatureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000017 /* PlaceholderFeatureView.swift */; };
+		29AA0000000000000000001A /* ProfilePlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000019 /* ProfilePlaceholderView.swift */; };
+		29AA0000000000000000001C /* RecipeDetailPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000001B /* RecipeDetailPlaceholderView.swift */; };
+		29AA0000000000000000001E /* RecipeEditorPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000001D /* RecipeEditorPlaceholderView.swift */; };
+		29AA00000000000000000020 /* TodayPlaceholderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000001F /* TodayPlaceholderView.swift */; };
+		29AA00000000000000000022 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000021 /* Assets.xcassets */; };
+		29AA0000000000000000003C /* ScaffoldTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000003B /* ScaffoldTests.swift */; };
+		29AA0000000000000000003E /* health.json in Resources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000003D /* health.json */; };
+		29AA00000000000000000046 /* day-log.json in Resources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000045 /* day-log.json */; };
+		29AA0000000000000000004A /* recipe-detail.json in Resources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000049 /* recipe-detail.json */; };
+		29AA0000000000000000004C /* SocialModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000004B /* SocialModels.swift */; };
+		29AA0000000000000000004E /* social-surface.json in Resources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000004D /* social-surface.json */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		29AA00000000000000000053 /* PBXContainerItemProxy */ = {isa = PBXContainerItemProxy; containerPortal = 29AA0000000000000000002D /* Project object */; proxyType = 1; remoteGlobalIDString = 29AA0000000000000000002B; remoteInfo = Savoro; };
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		29AA00000000000000000001 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/AppEnvironment.swift; sourceTree = "<group>"; };
+		29AA00000000000000000003 /* RootPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/RootPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA00000000000000000005 /* SavoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App/SavoroApp.swift; sourceTree = "<group>"; };
+		29AA00000000000000000007 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/API/APIClient.swift; sourceTree = "<group>"; };
+		29AA00000000000000000009 /* MockAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/API/MockAPIClient.swift; sourceTree = "<group>"; };
+		29AA0000000000000000004F /* LoggingRequests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/API/LoggingRequests.swift; sourceTree = "<group>"; };
+		29AA0000000000000000000B /* FixtureLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Fixtures/FixtureLoader.swift; sourceTree = "<group>"; };
+		29AA0000000000000000000D /* SavoroColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem/SavoroColor.swift; sourceTree = "<group>"; };
+		29AA0000000000000000003F /* SavoroPrimitives.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem/SavoroPrimitives.swift; sourceTree = "<group>"; };
+		29AA00000000000000000041 /* SavoroDesignSystemGallery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem/SavoroDesignSystemGallery.swift; sourceTree = "<group>"; };
+		29AA00000000000000000043 /* NutritionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Models/NutritionModels.swift; sourceTree = "<group>"; };
+		29AA00000000000000000047 /* RecipeModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Models/RecipeModels.swift; sourceTree = "<group>"; };
+		29AA0000000000000000000F /* CommunityPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Community/CommunityPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA00000000000000000011 /* CookbookPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Cookbook/CookbookPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA00000000000000000013 /* DiscoverPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Discover/DiscoverPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA00000000000000000015 /* LoggingPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Logging/LoggingPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA00000000000000000051 /* LogPickerPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Logging/LogPickerPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA00000000000000000017 /* PlaceholderFeatureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/PlaceholderFeatureView.swift; sourceTree = "<group>"; };
+		29AA00000000000000000019 /* ProfilePlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Profile/ProfilePlaceholderView.swift; sourceTree = "<group>"; };
+		29AA0000000000000000001B /* RecipeDetailPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/RecipeDetail/RecipeDetailPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA0000000000000000001D /* RecipeEditorPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/RecipeEditor/RecipeEditorPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA0000000000000000001F /* TodayPlaceholderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/Today/TodayPlaceholderView.swift; sourceTree = "<group>"; };
+		29AA00000000000000000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
+		29AA0000000000000000003B /* ScaffoldTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaffoldTests.swift; sourceTree = "<group>"; };
+		29AA0000000000000000003D /* health.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Fixtures/health.json; sourceTree = "<group>"; };
+		29AA00000000000000000045 /* day-log.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Fixtures/day-log.json; sourceTree = "<group>"; };
+		29AA00000000000000000049 /* recipe-detail.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Fixtures/recipe-detail.json; sourceTree = "<group>"; };
+		29AA0000000000000000004B /* SocialModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Models/SocialModels.swift; sourceTree = "<group>"; };
+		29AA0000000000000000004D /* social-surface.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = Fixtures/social-surface.json; sourceTree = "<group>"; };
+		29AA00000000000000000023 /* Savoro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Savoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		29AA00000000000000000024 /* SavoroTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavoroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		29AA00000000000000000027 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		29AA0000000000000000002A /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		29AA0000000000000000002E = {isa = PBXGroup; children = (29AA0000000000000000002F /* Savoro */, 29AA00000000000000000030 /* SavoroTests */, 29AA00000000000000000031 /* Products */,); sourceTree = "<group>"; };
+		29AA0000000000000000002F /* Savoro */ = {isa = PBXGroup; children = (
+				29AA00000000000000000001 /* AppEnvironment.swift */,
+				29AA00000000000000000003 /* RootPlaceholderView.swift */,
+				29AA00000000000000000005 /* SavoroApp.swift */,
+				29AA00000000000000000007 /* APIClient.swift */,
+				29AA00000000000000000009 /* MockAPIClient.swift */,
+				29AA0000000000000000004F /* LoggingRequests.swift */,
+				29AA0000000000000000000B /* FixtureLoader.swift */,
+				29AA0000000000000000000D /* SavoroColor.swift */,
+				29AA0000000000000000003F /* SavoroPrimitives.swift */,
+				29AA00000000000000000041 /* SavoroDesignSystemGallery.swift */,
+				29AA00000000000000000043 /* NutritionModels.swift */,
+				29AA00000000000000000047 /* RecipeModels.swift */,
+				29AA0000000000000000004B /* SocialModels.swift */,
+				29AA0000000000000000000F /* CommunityPlaceholderView.swift */,
+				29AA00000000000000000011 /* CookbookPlaceholderView.swift */,
+				29AA00000000000000000013 /* DiscoverPlaceholderView.swift */,
+				29AA00000000000000000015 /* LoggingPlaceholderView.swift */,
+				29AA00000000000000000051 /* LogPickerPlaceholderView.swift */,
+				29AA00000000000000000017 /* PlaceholderFeatureView.swift */,
+				29AA00000000000000000019 /* ProfilePlaceholderView.swift */,
+				29AA0000000000000000001B /* RecipeDetailPlaceholderView.swift */,
+				29AA0000000000000000001D /* RecipeEditorPlaceholderView.swift */,
+				29AA0000000000000000001F /* TodayPlaceholderView.swift */,
+				29AA00000000000000000021 /* Assets.xcassets */,
+			); path = Savoro; sourceTree = "<group>"; };
+		29AA00000000000000000030 /* SavoroTests */ = {isa = PBXGroup; children = (29AA0000000000000000003B /* ScaffoldTests.swift */, 29AA0000000000000000003D /* health.json */, 29AA00000000000000000045 /* day-log.json */, 29AA00000000000000000049 /* recipe-detail.json */, 29AA0000000000000000004D /* social-surface.json */,); path = SavoroTests; sourceTree = "<group>"; };
+		29AA00000000000000000031 /* Products */ = {isa = PBXGroup; children = (29AA00000000000000000023 /* Savoro.app */, 29AA00000000000000000024 /* SavoroTests.xctest */,); name = Products; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		29AA0000000000000000002B /* Savoro */ = {isa = PBXNativeTarget; buildConfigurationList = 29AA00000000000000000033 /* Build configuration list for PBXNativeTarget \"Savoro\" */; buildPhases = (29AA00000000000000000025 /* Sources */, 29AA00000000000000000027 /* Frameworks */, 29AA00000000000000000026 /* Resources */,); buildRules = (); dependencies = (); name = Savoro; productName = Savoro; productReference = 29AA00000000000000000023 /* Savoro.app */; productType = "com.apple.product-type.application"; };
+		29AA0000000000000000002C /* SavoroTests */ = {isa = PBXNativeTarget; buildConfigurationList = 29AA00000000000000000034 /* Build configuration list for PBXNativeTarget \"SavoroTests\" */; buildPhases = (29AA00000000000000000028 /* Sources */, 29AA0000000000000000002A /* Frameworks */, 29AA00000000000000000029 /* Resources */,); buildRules = (); dependencies = (29AA00000000000000000054 /* PBXTargetDependency */,); name = SavoroTests; productName = SavoroTests; productReference = 29AA00000000000000000024 /* SavoroTests.xctest */; productType = "com.apple.product-type.bundle.unit-test"; };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29AA0000000000000000002D /* Project object */ = {isa = PBXProject; attributes = {BuildIndependentTargetsInParallel = 1; LastSwiftUpdateCheck = 1540; LastUpgradeCheck = 1540; TargetAttributes = {29AA0000000000000000002B = {CreatedOnToolsVersion = 15.4;}; 29AA0000000000000000002C = {CreatedOnToolsVersion = 15.4; TestTargetID = 29AA0000000000000000002B;}; }; }; buildConfigurationList = 29AA00000000000000000032 /* Build configuration list for PBXProject \"Savoro\" */; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base,); mainGroup = 29AA0000000000000000002E; productRefGroup = 29AA00000000000000000031 /* Products */; projectDirPath = ""; projectRoot = ""; targets = (29AA0000000000000000002B /* Savoro */, 29AA0000000000000000002C /* SavoroTests */,); };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		29AA00000000000000000026 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (29AA00000000000000000022 /* Assets.xcassets in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
+		29AA00000000000000000029 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (29AA0000000000000000003E /* health.json in Resources */, 29AA00000000000000000046 /* day-log.json in Resources */, 29AA0000000000000000004A /* recipe-detail.json in Resources */, 29AA0000000000000000004E /* social-surface.json in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		29AA00000000000000000025 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (
+				29AA00000000000000000002 /* AppEnvironment.swift in Sources */,
+				29AA00000000000000000004 /* RootPlaceholderView.swift in Sources */,
+				29AA00000000000000000006 /* SavoroApp.swift in Sources */,
+				29AA00000000000000000008 /* APIClient.swift in Sources */,
+				29AA0000000000000000000A /* MockAPIClient.swift in Sources */,
+				29AA00000000000000000050 /* LoggingRequests.swift in Sources */,
+				29AA0000000000000000000C /* FixtureLoader.swift in Sources */,
+				29AA0000000000000000000E /* SavoroColor.swift in Sources */,
+				29AA00000000000000000040 /* SavoroPrimitives.swift in Sources */,
+				29AA00000000000000000042 /* SavoroDesignSystemGallery.swift in Sources */,
+				29AA00000000000000000044 /* NutritionModels.swift in Sources */,
+				29AA00000000000000000048 /* RecipeModels.swift in Sources */,
+				29AA0000000000000000004C /* SocialModels.swift in Sources */,
+				29AA00000000000000000010 /* CommunityPlaceholderView.swift in Sources */,
+				29AA00000000000000000012 /* CookbookPlaceholderView.swift in Sources */,
+				29AA00000000000000000014 /* DiscoverPlaceholderView.swift in Sources */,
+				29AA00000000000000000016 /* LoggingPlaceholderView.swift in Sources */,
+				29AA00000000000000000052 /* LogPickerPlaceholderView.swift in Sources */,
+				29AA00000000000000000018 /* PlaceholderFeatureView.swift in Sources */,
+				29AA0000000000000000001A /* ProfilePlaceholderView.swift in Sources */,
+				29AA0000000000000000001C /* RecipeDetailPlaceholderView.swift in Sources */,
+				29AA0000000000000000001E /* RecipeEditorPlaceholderView.swift in Sources */,
+				29AA00000000000000000020 /* TodayPlaceholderView.swift in Sources */,
+			); runOnlyForDeploymentPostprocessing = 0; };
+		29AA00000000000000000028 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (29AA0000000000000000003C /* ScaffoldTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		29AA00000000000000000054 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 29AA0000000000000000002B /* Savoro */; targetProxy = 29AA00000000000000000053 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		29AA00000000000000000035 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; ENABLE_USER_SCRIPT_SANDBOXING = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; ENABLE_TESTABILITY = YES; SWIFT_OPTIMIZATION_LEVEL = "-Onone";}; name = Debug; };
+		29AA00000000000000000036 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES; CLANG_ENABLE_MODULES = YES; CURRENT_PROJECT_VERSION = 1; DEVELOPMENT_TEAM = ""; ENABLE_USER_SCRIPT_SANDBOXING = YES; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SDKROOT = iphoneos; SWIFT_VERSION = 5.0; SWIFT_COMPILATION_MODE = wholemodule;}; name = Release; };
+		29AA00000000000000000037 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Savoro/Resources/Info.plist; PRODUCT_BUNDLE_IDENTIFIER = com.savoro.Savoro; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; TARGETED_DEVICE_FAMILY = "1,2";}; name = Debug; };
+		29AA00000000000000000038 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor; GENERATE_INFOPLIST_FILE = NO; INFOPLIST_FILE = Savoro/Resources/Info.plist; PRODUCT_BUNDLE_IDENTIFIER = com.savoro.Savoro; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = YES; TARGETED_DEVICE_FAMILY = "1,2";}; name = Release; };
+		29AA00000000000000000039 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.savoro.SavoroTests; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savoro.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Savoro";}; name = Debug; };
+		29AA0000000000000000003A /* Release */ = {isa = XCBuildConfiguration; buildSettings = {BUNDLE_LOADER = "$(TEST_HOST)"; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = com.savoro.SavoroTests; PRODUCT_NAME = "$(TARGET_NAME)"; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Savoro.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Savoro";}; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		29AA00000000000000000032 /* Build configuration list for PBXProject "Savoro" */ = {isa = XCConfigurationList; buildConfigurations = (29AA00000000000000000035 /* Debug */, 29AA00000000000000000036 /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		29AA00000000000000000033 /* Build configuration list for PBXNativeTarget "Savoro" */ = {isa = XCConfigurationList; buildConfigurations = (29AA00000000000000000037 /* Debug */, 29AA00000000000000000038 /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		29AA00000000000000000034 /* Build configuration list for PBXNativeTarget "SavoroTests" */ = {isa = XCConfigurationList; buildConfigurations = (29AA00000000000000000039 /* Debug */, 29AA0000000000000000003A /* Release */,); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = 29AA0000000000000000002D /* Project object */;
+}

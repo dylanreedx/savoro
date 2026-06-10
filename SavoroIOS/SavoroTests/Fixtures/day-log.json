@@ -1,0 +1,71 @@
+{
+  "userId": "user_1",
+  "date": "2026-06-06",
+  "privacyDomain": "private_user_data",
+  "meals": [
+    {
+      "mealType": "lunch",
+      "entries": [
+        {
+          "id": "log_recipe_1",
+          "userId": "user_1",
+          "date": "2026-06-06",
+          "mealType": "lunch",
+          "itemType": "recipe",
+          "recipeId": "recipe_shawarma_bowl",
+          "recipeVersionId": "recipe_version_20260606",
+          "quantity": 1,
+          "quantityUnit": "serving",
+          "snapshot": {
+            "displayName": "Chicken Shawarma Bowl",
+            "sourceLabel": "Recipe v20260606",
+            "capturedAt": "2026-06-06T12:30:00Z",
+            "macros": {
+              "calories": 520,
+              "proteinGrams": 42,
+              "carbsGrams": 48,
+              "fatGrams": 18,
+              "fiberGrams": 7,
+              "sodiumMilligrams": 780
+            }
+          },
+          "sourceType": "recipe",
+          "privacyDomain": "private_user_data",
+          "createdAt": "2026-06-06T12:30:00Z",
+          "updatedAt": "2026-06-06T12:30:00Z"
+        }
+      ]
+    },
+    {
+      "mealType": "snack",
+      "entries": [
+        {
+          "id": "log_food_1",
+          "userId": "user_1",
+          "date": "2026-06-06",
+          "mealType": "snack",
+          "itemType": "food",
+          "foodId": "food_greek_yogurt",
+          "servingId": "serving_single_cup",
+          "quantity": 1,
+          "quantityUnit": "cup",
+          "snapshot": {
+            "displayName": "Greek Yogurt",
+            "sourceLabel": "USDA FoodData Central",
+            "capturedAt": "2026-06-06T15:00:00Z",
+            "macros": {
+              "calories": 150,
+              "proteinGrams": 20,
+              "carbsGrams": 8,
+              "fatGrams": 4
+            }
+          },
+          "sourceType": "search",
+          "privacyDomain": "private_user_data",
+          "createdAt": "2026-06-06T15:00:00Z",
+          "updatedAt": "2026-06-06T15:00:00Z"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+  "profile": {
+    "profile": {
+      "userId": "user_maya",
+      "username": "mayaeats",
+      "displayName": "Maya Reed",
+      "bio": "High-protein comfort food.",
+      "avatarUrl": "https://cdn.example.test/avatars/maya.jpg",
+      "coverImageUrl": null,
+      "websiteUrl": "https://example.test/maya",
+      "instagramUrl": null,
+      "tiktokUrl": null,
+      "visibility": "public",
+      "createdAt": "2026-06-01T10:00:00Z",
+      "updatedAt": "2026-06-06T10:00:00Z"
+    },
+    "isSelf": false,
+    "followState": "following",
+    "friendState": "none",
+    "publicRecipes": [
+      {
+        "id": "recipe_shawarma_bowl",
+        "ownerUserId": "user_maya",
+        "slug": "chicken-shawarma-bowl",
+        "title": "Chicken Shawarma Bowl",
+        "description": "Meal prep bowl with garlic yogurt sauce.",
+        "imageUrl": "https://cdn.example.test/recipes/shawarma.jpg",
+        "visibility": "public",
+        "status": "published",
+        "currentVersionId": "recipe_version_20260606",
+        "forkedFromRecipeId": null,
+        "forkedFromVersionId": null,
+        "creator": { "userId": "user_maya", "username": "mayaeats", "displayName": "Maya Reed", "avatarUrl": "https://cdn.example.test/avatars/maya.jpg" },
+        "perServingMacros": { "calories": 520, "proteinGrams": 42, "carbsGrams": 48, "fatGrams": 18, "fiberGrams": 7, "sodiumMilligrams": 760 },
+        "tags": ["high-protein", "meal-prep"],
+        "viewerState": { "isOwner": false, "isSaved": true, "canFork": true, "canLog": true },
+        "createdAt": "2026-06-06T12:00:00Z",
+        "updatedAt": "2026-06-06T12:00:00Z"
+      }
+    ]
+  },
+  "community": {
+    "id": "community_high_protein",
+    "slug": "high-protein-meal-prep",
+    "name": "High Protein Meal Prep",
+    "description": "Recipe-first community for prep-friendly meals.",
+    "imageUrl": "https://cdn.example.test/communities/high-protein.jpg",
+    "ownerUserId": "user_maya",
+    "visibility": "public",
+    "joinPolicy": "open",
+    "viewerMembership": "member",
+    "createdAt": "2026-06-01T10:00:00Z",
+    "updatedAt": "2026-06-06T10:00:00Z"
+  },
+  "communityShares": [
+    {
+      "id": "community_recipe_share_1",
+      "communityId": "community_high_protein",
+      "recipe": {
+        "id": "recipe_shawarma_bowl",
+        "ownerUserId": "user_maya",
+        "slug": "chicken-shawarma-bowl",
+        "title": "Chicken Shawarma Bowl",
+        "description": "Meal prep bowl with garlic yogurt sauce.",
+        "imageUrl": "https://cdn.example.test/recipes/shawarma.jpg",
+        "visibility": "public",
+        "status": "published",
+        "currentVersionId": "recipe_version_20260606",
+        "forkedFromRecipeId": null,
+        "forkedFromVersionId": null,
+        "creator": { "userId": "user_maya", "username": "mayaeats", "displayName": "Maya Reed", "avatarUrl": "https://cdn.example.test/avatars/maya.jpg" },
+        "perServingMacros": { "calories": 520, "proteinGrams": 42, "carbsGrams": 48, "fatGrams": 18, "fiberGrams": 7, "sodiumMilligrams": 760 },
+        "tags": ["high-protein", "meal-prep"],
+        "viewerState": { "isOwner": false, "isSaved": true, "canFork": true, "canLog": true },
+        "createdAt": "2026-06-06T12:00:00Z",
+        "updatedAt": "2026-06-06T12:00:00Z"
+      },
+      "recipeVersionId": "recipe_version_20260606",
+      "sharedBy": { "userId": "user_maya", "username": "mayaeats", "displayName": "Maya Reed", "avatarUrl": "https://cdn.example.test/avatars/maya.jpg" },
+      "caption": "Prep once, mix-and-match all week.",
+      "pinnedByUserId": "user_maya",
+      "pinnedAt": "2026-06-06T12:20:00Z",
+      "createdAt": "2026-06-06T12:10:00Z"
+    }
+  ],
+  "activity": [
+    {
+      "id": "activity_recipe_published",
+      "actor": { "userId": "user_maya", "username": "mayaeats", "displayName": "Maya Reed", "avatarUrl": "https://cdn.example.test/avatars/maya.jpg" },
+      "type": "recipe_published",
+      "recipe": {
+        "id": "recipe_shawarma_bowl",
+        "ownerUserId": "user_maya",
+        "slug": "chicken-shawarma-bowl",
+        "title": "Chicken Shawarma Bowl",
+        "description": "Meal prep bowl with garlic yogurt sauce.",
+        "imageUrl": "https://cdn.example.test/recipes/shawarma.jpg",
+        "visibility": "public",
+        "status": "published",
+        "currentVersionId": "recipe_version_20260606",
+        "forkedFromRecipeId": null,
+        "forkedFromVersionId": null,
+        "creator": { "userId": "user_maya", "username": "mayaeats", "displayName": "Maya Reed", "avatarUrl": "https://cdn.example.test/avatars/maya.jpg" },
+        "perServingMacros": { "calories": 520, "proteinGrams": 42, "carbsGrams": 48, "fatGrams": 18, "fiberGrams": 7, "sodiumMilligrams": 760 },
+        "tags": ["high-protein", "meal-prep"],
+        "viewerState": { "isOwner": false, "isSaved": true, "canFork": true, "canLog": true },
+        "createdAt": "2026-06-06T12:00:00Z",
+        "updatedAt": "2026-06-06T12:00:00Z"
+      },
+      "community": null,
+      "visibility": "public",
+      "createdAt": "2026-06-06T12:05:00Z"
+    },
+    {
+      "id": "activity_recipe_shared_to_community",
+      "actor": { "userId": "user_maya", "username": "mayaeats", "displayName": "Maya Reed", "avatarUrl": "https://cdn.example.test/avatars/maya.jpg" },
+      "type": "recipe_shared_to_community",
+      "recipe": {
+        "id": "recipe_shawarma_bowl",
+        "ownerUserId": "user_maya",
+        "slug": "chicken-shawarma-bowl",
+        "title": "Chicken Shawarma Bowl",
+        "description": "Meal prep bowl with garlic yogurt sauce.",
+        "imageUrl": "https://cdn.example.test/recipes/shawarma.jpg",
+        "visibility": "public",
+        "status": "published",
+        "currentVersionId": "recipe_version_20260606",
+        "forkedFromRecipeId": null,
+        "forkedFromVersionId": null,
+        "creator": { "userId": "user_maya", "username": "mayaeats", "displayName": "Maya Reed", "avatarUrl": "https://cdn.example.test/avatars/maya.jpg" },
+        "perServingMacros": { "calories": 520, "proteinGrams": 42, "carbsGrams": 48, "fatGrams": 18, "fiberGrams": 7, "sodiumMilligrams": 760 },
+        "tags": ["high-protein", "meal-prep"],
+        "viewerState": { "isOwner": false, "isSaved": true, "canFork": true, "canLog": true },
+        "createdAt": "2026-06-06T12:00:00Z",
+        "updatedAt": "2026-06-06T12:00:00Z"
+      },
+      "community": {
+        "id": "community_high_protein",
+        "slug": "high-protein-meal-prep",
+        "name": "High Protein Meal Prep",
+        "description": "Recipe-first community for prep-friendly meals.",
+        "imageUrl": "https://cdn.example.test/communities/high-protein.jpg",
+        "ownerUserId": "user_maya",
+        "visibility": "public",
+        "joinPolicy": "open",
+        "viewerMembership": "member",
+        "createdAt": "2026-06-01T10:00:00Z",
+        "updatedAt": "2026-06-06T10:00:00Z"
+      },
+      "visibility": "community",
+      "createdAt": "2026-06-06T12:12:00Z"
+    }
+  ],
+  "search": {
+    "query": "maya",
+    "results": [
+      {
+        "kind": "profile",
+        "profile": {
+          "userId": "user_maya",
+          "username": "mayaeats",
+          "displayName": "Maya Reed",
+          "bio": "High-protein comfort food.",
+          "avatarUrl": "https://cdn.example.test/avatars/maya.jpg",
+          "coverImageUrl": null,
+          "websiteUrl": "https://example.test/maya",
+          "instagramUrl": null,
+          "tiktokUrl": null,
+          "visibility": "public",
+          "createdAt": "2026-06-01T10:00:00Z",
+          "updatedAt": "2026-06-06T10:00:00Z"
+        }
+      },
+      {
+        "kind": "recipe",
+        "recipe": {
+          "id": "recipe_shawarma_bowl",
+          "ownerUserId": "user_maya",
+          "slug": "chicken-shawarma-bowl",
+          "title": "Chicken Shawarma Bowl",
+          "description": "Meal prep bowl with garlic yogurt sauce.",
+          "imageUrl": "https://cdn.example.test/recipes/shawarma.jpg",
+          "visibility": "public",
+          "status": "published",
+          "currentVersionId": "recipe_version_20260606",
+          "forkedFromRecipeId": null,
+          "forkedFromVersionId": null,
+          "creator": { "userId": "user_maya", "username": "mayaeats", "displayName": "Maya Reed", "avatarUrl": "https://cdn.example.test/avatars/maya.jpg" },
+          "perServingMacros": { "calories": 520, "proteinGrams": 42, "carbsGrams": 48, "fatGrams": 18, "fiberGrams": 7, "sodiumMilligrams": 760 },
+          "tags": ["high-protein", "meal-prep"],
+          "viewerState": { "isOwner": false, "isSaved": true, "canFork": true, "canLog": true },
+          "createdAt": "2026-06-06T12:00:00Z",
+          "updatedAt": "2026-06-06T12:00:00Z"
+        }
+      },
+      {
+        "kind": "community",
+        "community": {
+          "id": "community_high_protein",
+          "slug": "high-protein-meal-prep",
+          "name": "High Protein Meal Prep",
+          "description": "Recipe-first community for prep-friendly meals.",
+          "imageUrl": "https://cdn.example.test/communities/high-protein.jpg",
+          "ownerUserId": "user_maya",
+          "visibility": "public",
+          "joinPolicy": "open",
+          "viewerMembership": "member",
+          "createdAt": "2026-06-01T10:00:00Z",
+          "updatedAt": "2026-06-06T10:00:00Z"
+        }
+      }
+    ]
+  }
+}

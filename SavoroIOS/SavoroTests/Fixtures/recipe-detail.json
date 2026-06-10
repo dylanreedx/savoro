@@ -1,0 +1,130 @@
+{
+  "summary": {
+    "id": "recipe_shawarma_bowl",
+    "ownerUserId": "user_maya",
+    "slug": "chicken-shawarma-bowl",
+    "title": "Chicken Shawarma Bowl",
+    "description": "High-protein bowl with rice, chicken, and cucumber salad.",
+    "imageUrl": "https://example.test/images/shawarma.jpg",
+    "visibility": "public",
+    "status": "published",
+    "currentVersionId": "recipe_version_20260606",
+    "forkedFromRecipeId": "recipe_original_shawarma",
+    "forkedFromVersionId": "recipe_version_original_20260601",
+    "creator": {
+      "userId": "user_maya",
+      "username": "maya",
+      "displayName": "Maya Reed",
+      "avatarUrl": "https://example.test/avatars/maya.jpg"
+    },
+    "perServingMacros": {
+      "calories": 520,
+      "proteinGrams": 42,
+      "carbsGrams": 48,
+      "fatGrams": 18,
+      "fiberGrams": 7,
+      "sodiumMilligrams": 720
+    },
+    "tags": ["high-protein", "meal-prep"],
+    "viewerState": {
+      "isOwner": false,
+      "isSaved": true,
+      "canFork": true,
+      "canLog": true
+    },
+    "createdAt": "2026-06-06T12:00:00Z",
+    "updatedAt": "2026-06-06T12:30:00Z"
+  },
+  "currentVersion": {
+    "id": "recipe_version_20260606",
+    "recipeId": "recipe_shawarma_bowl",
+    "versionNumber": 1,
+    "title": "Chicken Shawarma Bowl",
+    "description": "High-protein bowl with rice, chicken, and cucumber salad.",
+    "instructionsMarkdown": "Season chicken. Cook rice. Assemble with salad and sauce.",
+    "servings": 4,
+    "yieldAmount": 4,
+    "yieldUnit": "bowls",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 25,
+    "perServingMacros": {
+      "calories": 520,
+      "proteinGrams": 42,
+      "carbsGrams": 48,
+      "fatGrams": 18,
+      "fiberGrams": 7,
+      "sodiumMilligrams": 720
+    },
+    "createdByUserId": "user_maya",
+    "publishedAt": "2026-06-06T12:30:00Z",
+    "createdAt": "2026-06-06T12:00:00Z"
+  },
+  "ingredients": [
+    {
+      "id": "ingredient_chicken",
+      "recipeVersionId": "recipe_version_20260606",
+      "foodId": "food_usda_chicken_breast",
+      "servingId": "serving_100g",
+      "quantity": 600,
+      "unit": "g",
+      "label": "chicken breast",
+      "note": "boneless skinless",
+      "sortOrder": 0,
+      "provenance": {
+        "sourceType": "usda",
+        "sourceId": "171077",
+        "sourceRevision": "fdc-2026-04",
+        "displayName": "USDA FoodData Central",
+        "url": "https://fdc.nal.usda.gov/",
+        "isVerified": true
+      }
+    },
+    {
+      "id": "ingredient_sauce",
+      "recipeVersionId": "recipe_version_20260606",
+      "quantity": 1,
+      "unit": "to taste",
+      "label": "garlic yogurt sauce",
+      "note": "free-text creator ingredient",
+      "sortOrder": 1,
+      "provenance": {
+        "sourceType": "user",
+        "displayName": "Creator provided",
+        "isVerified": false
+      }
+    }
+  ],
+  "steps": [
+    {
+      "id": "step_1",
+      "recipeVersionId": "recipe_version_20260606",
+      "body": "Season chicken and cook until browned and done.",
+      "sortOrder": 0
+    },
+    {
+      "id": "step_2",
+      "recipeVersionId": "recipe_version_20260606",
+      "body": "Assemble bowls with rice, chicken, cucumber salad, and sauce.",
+      "sortOrder": 1
+    }
+  ],
+  "provenance": {
+    "trustLevel": "mixed",
+    "summary": "Macros combine USDA-linked chicken data with creator-provided ingredients.",
+    "attributions": [
+      {
+        "sourceType": "usda",
+        "sourceId": "171077",
+        "sourceRevision": "fdc-2026-04",
+        "displayName": "USDA FoodData Central",
+        "url": "https://fdc.nal.usda.gov/",
+        "isVerified": true
+      },
+      {
+        "sourceType": "user",
+        "displayName": "Maya Reed",
+        "isVerified": false
+      }
+    ]
+  }
+}
