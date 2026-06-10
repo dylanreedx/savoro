@@ -62,9 +62,12 @@ final class ScaffoldTests: XCTestCase {
         _ = RecipeEditorPlaceholderView()
         var visibilityOption: RecipeVisibilityOption = .keepPrivate
         _ = RecipeVisibilityOptionSheetView(selectedOption: Binding(get: { visibilityOption }, set: { visibilityOption = $0 }))
+        var communitySetup = RecipeCommunityShareSetup()
+        _ = RecipeCommunityShareSetupSheetView(shareSetup: Binding(get: { communitySetup }, set: { communitySetup = $0 }))
         _ = SavoroPlaceholderSheetView(route: .logPicker())
         _ = LogPickerPlaceholderView(mealType: .lunch)
         _ = LogRecipeSheetView(viewModel: LogRecipeSheetViewModel(requestedRecipeId: nil))
+        _ = ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl"))
 
         var toast: SavoroToast? = .scaffoldDemo
         let toastBinding = Binding(get: { toast }, set: { toast = $0 })
@@ -295,10 +298,231 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(draftState.pendingOption, .unlistedLink)
     }
 
+    func testRecipeVisibilityMatrixMatchesPrivateUnlistedProfileCommunityBehavior() {
+        let privateState = RecipeVisibilityMatrixState(option: .keepPrivate)
+        XCTAssertTrue(privateState.isPrivateOnly)
+        XCTAssertFalse(privateState.hasMockLink)
+        XCTAssertFalse(privateState.isSearchable)
+        XCTAssertFalse(privateState.isDiscoverListed)
+        XCTAssertFalse(privateState.isProfileListed)
+        XCTAssertFalse(privateState.isCommunityListed)
+
+        let unlisted = RecipeVisibilityMatrixState(option: .unlistedLink)
+        XCTAssertFalse(unlisted.isPrivateOnly)
+        XCTAssertTrue(unlisted.hasMockLink)
+        XCTAssertFalse(unlisted.isSearchable)
+        XCTAssertFalse(unlisted.isDiscoverListed)
+        XCTAssertFalse(unlisted.isProfileListed)
+        XCTAssertFalse(unlisted.isCommunityListed)
+
+        let profile = RecipeVisibilityMatrixState(option: .publishToProfile)
+        XCTAssertFalse(profile.hasMockLink)
+        XCTAssertTrue(profile.isSearchable)
+        XCTAssertFalse(profile.isDiscoverListed)
+        XCTAssertTrue(profile.isProfileListed)
+        XCTAssertFalse(profile.isCommunityListed)
+
+        let communityNeedsSetup = RecipeVisibilityMatrixState(option: .shareToCommunity, hasPersistedCommunitySetup: false)
+        XCTAssertTrue(communityNeedsSetup.requiresCommunitySetup)
+        XCTAssertFalse(communityNeedsSetup.isCommunityListed)
+
+        let community = RecipeVisibilityMatrixState(option: .shareToCommunity, hasPersistedCommunitySetup: true)
+        XCTAssertFalse(community.requiresCommunitySetup)
+        XCTAssertFalse(community.isDiscoverListed)
+        XCTAssertFalse(community.isProfileListed)
+        XCTAssertTrue(community.isCommunityListed)
+    }
+
+    func testRecipeVisibilityUnpublishRevertsToPrivateMatrix() {
+        var state = RecipeVisibilityMatrixState(option: .shareToCommunity, hasPersistedCommunitySetup: true)
+
+        state.unpublishToPrivate()
+
+        XCTAssertEqual(state.option, .keepPrivate)
+        XCTAssertTrue(state.isPrivateOnly)
+        XCTAssertFalse(state.hasMockLink)
+        XCTAssertFalse(state.isSearchable)
+        XCTAssertFalse(state.isDiscoverListed)
+        XCTAssertFalse(state.isProfileListed)
+        XCTAssertFalse(state.isCommunityListed)
+        XCTAssertTrue(state.statusCopy.localizedCaseInsensitiveContains("not profile-listed"))
+    }
+
+    func testRecipeVisibilityMatrixFixturesCoverPrivateUnlistedPublicAndCommunityContexts() throws {
+        let fixtures = RecipeVisibilityMatrixFixture.fixtures
+        let privateFixture = try XCTUnwrap(fixtures.first { $0.id == "recipe_private_owner_only" })
+        let unlistedFixture = try XCTUnwrap(fixtures.first { $0.id == "recipe_unlisted_link_only" })
+        let publicFixture = try XCTUnwrap(fixtures.first { $0.id == "recipe_public_profile" })
+        let communityFixture = try XCTUnwrap(fixtures.first { $0.id == "recipe_community_saved_setup" })
+        let communityNeedsSetupFixture = try XCTUnwrap(fixtures.first { $0.id == "recipe_community_needs_setup" })
+
+        XCTAssertEqual(fixtures.map(\.matrix.option), [.keepPrivate, .unlistedLink, .publishToProfile, .shareToCommunity, .shareToCommunity])
+        XCTAssertTrue(privateFixture.isVisible(on: .ownerLibrary, to: .owner))
+        XCTAssertTrue(unlistedFixture.isVisible(on: .directLink, to: .directLinkViewer))
+        XCTAssertTrue(publicFixture.isVisible(on: .publicProfile, to: .publicViewer))
+        XCTAssertTrue(publicFixture.isVisible(on: .search, to: .followerViewer))
+        XCTAssertTrue(communityFixture.isVisible(on: .community, to: .communityViewer))
+        XCTAssertFalse(communityNeedsSetupFixture.isVisible(on: .community, to: .communityViewer))
+    }
+
+    func testPrivateRecipeFixturesAreOwnerOnlyAndNeverPublicSearchProfileDiscoverOrCommunityVisible() throws {
+        let fixture = try XCTUnwrap(RecipeVisibilityMatrixFixture.fixtures.first { $0.matrix.option == .keepPrivate })
+        let publicSurfaces: [RecipeVisibilitySurfaceContext] = [.directLink, .publicProfile, .search, .discover, .community]
+        let viewers: [RecipeVisibilityViewerContext] = [.owner, .publicViewer, .followerViewer, .directLinkViewer, .communityViewer]
+
+        XCTAssertTrue(fixture.isVisible(on: .ownerLibrary, to: .owner))
+        for surface in publicSurfaces {
+            for viewer in viewers {
+                XCTAssertFalse(fixture.isVisible(on: surface, to: viewer), "Private fixture leaked on \(surface) to \(viewer)")
+                XCTAssertNil(fixture.publicSurfacePayload(on: surface, to: viewer))
+            }
+        }
+        XCTAssertNil(fixture.publicSurfacePayload(on: .directLink, to: .owner))
+    }
+
+    func testUnlistedRecipeFixtureRequiresDirectLinkAndIsNotListedElsewhere() throws {
+        let fixture = try XCTUnwrap(RecipeVisibilityMatrixFixture.fixtures.first { $0.matrix.option == .unlistedLink })
+
+        XCTAssertTrue(fixture.isVisible(on: .directLink, to: .directLinkViewer))
+        XCTAssertNotNil(fixture.publicSurfacePayload(on: .directLink, to: .directLinkViewer))
+        XCTAssertFalse(fixture.isVisible(on: .directLink, to: .publicViewer))
+        XCTAssertFalse(fixture.isVisible(on: .publicProfile, to: .directLinkViewer))
+        XCTAssertFalse(fixture.isVisible(on: .search, to: .directLinkViewer))
+        XCTAssertFalse(fixture.isVisible(on: .discover, to: .directLinkViewer))
+        XCTAssertFalse(fixture.isVisible(on: .community, to: .directLinkViewer))
+    }
+
+    func testPublicAndCommunityVisibilityPayloadsUseOnlyPublicRecipeMetadata() throws {
+        let fixtures = RecipeVisibilityMatrixFixture.fixtures
+        let publicPayloads = fixtures.flatMap { fixture in
+            RecipeVisibilitySurfaceContext.allCases.compactMap { surface in
+                fixture.publicSurfacePayload(on: surface, to: surface == .community ? .communityViewer : .publicViewer)
+            }
+        }
+        let publicPayloadCopy = publicPayloads.flatMap { $0.map { "\($0.key): \($0.value)" } }.joined(separator: " ")
+        let deniedTerms = ["private log", "food log", "daily goal", "calorie goal", "body metric", "nutrition log", "adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food"]
+        let communityPayload = try XCTUnwrap(fixtures.first { $0.id == "recipe_community_saved_setup" }?.publicSurfacePayload(on: .community, to: .communityViewer))
+
+        XCTAssertTrue(publicPayloads.contains { $0["recipeId"] == "recipe_public_profile" && $0["surface"] == "publicProfile" })
+        XCTAssertTrue(publicPayloads.contains { $0["recipeId"] == "recipe_public_profile" && $0["surface"] == "search" })
+        XCTAssertEqual(communityPayload["communityId"], "community_weeknight")
+        XCTAssertEqual(communityPayload["caption"], "Cozy dinner idea for the mock group.")
+        XCTAssertTrue(deniedTerms.allSatisfy { !publicPayloadCopy.localizedCaseInsensitiveContains($0) })
+    }
+
+    func testRecipeVisibilityChangeStorePersistsLocalVisibilityAndUnpublish() {
+        let store = RecipeVisibilityChangeStore()
+
+        store.saveVisibility(.publishToProfile, draftKey: "recipe_1")
+        XCTAssertEqual(store.loadVisibility(draftKey: "recipe_1"), .publishToProfile)
+
+        store.unpublishToPrivate(draftKey: "recipe_1")
+        XCTAssertEqual(store.loadVisibility(draftKey: "recipe_1"), .keepPrivate)
+
+        store.saveVisibility(.unlistedLink, draftKey: "draft_temp")
+        store.moveVisibility(from: "draft_temp", to: "draft_saved")
+        XCTAssertEqual(store.loadVisibility(draftKey: "draft_saved"), .unlistedLink)
+        XCTAssertEqual(store.loadVisibility(draftKey: "draft_temp"), .keepPrivate)
+    }
+
+    func testUnsavedRecipeVisibilityAndCommunitySetupUseSeparateTemporaryDraftKeys() {
+        let visibilityStore = RecipeVisibilityChangeStore()
+        let communityStore = RecipeCommunityShareStore()
+        let firstTemporaryKey = RecipeEditorPlaceholderView.makeTemporaryDraftKey()
+        let secondTemporaryKey = RecipeEditorPlaceholderView.makeTemporaryDraftKey()
+
+        XCTAssertNotEqual(firstTemporaryKey, secondTemporaryKey)
+
+        visibilityStore.saveVisibility(.shareToCommunity, draftKey: firstTemporaryKey)
+        communityStore.saveSetup(
+            RecipeCommunityShareSetup(selectedCommunityId: "community_meal_prep", caption: "First unsaved flow caption."),
+            draftKey: firstTemporaryKey
+        )
+
+        XCTAssertEqual(visibilityStore.loadVisibility(draftKey: firstTemporaryKey), .shareToCommunity)
+        XCTAssertTrue(communityStore.hasSetup(draftKey: firstTemporaryKey))
+        XCTAssertEqual(visibilityStore.loadVisibility(draftKey: secondTemporaryKey), .keepPrivate)
+        XCTAssertFalse(communityStore.hasSetup(draftKey: secondTemporaryKey))
+        XCTAssertEqual(communityStore.loadSetup(draftKey: secondTemporaryKey).caption, "")
+
+        visibilityStore.saveVisibility(.unlistedLink, draftKey: secondTemporaryKey)
+        XCTAssertEqual(visibilityStore.loadVisibility(draftKey: firstTemporaryKey), .shareToCommunity)
+        XCTAssertEqual(visibilityStore.loadVisibility(draftKey: secondTemporaryKey), .unlistedLink)
+
+        visibilityStore.moveVisibility(from: firstTemporaryKey, to: "local_draft_1")
+        communityStore.moveSetup(from: firstTemporaryKey, to: "local_draft_1")
+        XCTAssertEqual(visibilityStore.loadVisibility(draftKey: "local_draft_1"), .shareToCommunity)
+        XCTAssertEqual(communityStore.loadSetup(draftKey: "local_draft_1").caption, "First unsaved flow caption.")
+        XCTAssertEqual(visibilityStore.loadVisibility(draftKey: firstTemporaryKey), .keepPrivate)
+        XCTAssertFalse(communityStore.hasSetup(draftKey: firstTemporaryKey))
+        XCTAssertEqual(visibilityStore.loadVisibility(draftKey: secondTemporaryKey), .unlistedLink)
+    }
+
+    func testRecipeVisibilityMatrixCopyIsLocalOnlyPrivacySafeAndNonShaming() {
+        let copy = [
+            RecipeVisibilityMatrixState.localOnlyNotice,
+            RecipeVisibilityMatrixState(option: .keepPrivate).visibleCopy,
+            RecipeVisibilityMatrixState(option: .unlistedLink).visibleCopy,
+            RecipeVisibilityMatrixState(option: .publishToProfile).visibleCopy,
+            RecipeVisibilityMatrixState(option: .shareToCommunity, hasPersistedCommunitySetup: false).visibleCopy,
+            RecipeVisibilityMatrixState(option: .shareToCommunity, hasPersistedCommunitySetup: true).visibleCopy
+        ].joined(separator: " ")
+        let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "calorie goal"]
+
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local mock"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("No backend publish"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("unpublish"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Private logs"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("body metrics are not included"))
+        XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
+    }
+
+    func testCommunityShareMockChoicesUsePublicLocalMetadataOnly() {
+        let choices = RecipeCommunityChoice.mockChoices
+        let copy = choices.map(\.visibleCopy).joined(separator: " ")
+        let deniedTerms = ["private log", "food log", "daily goal", "calorie goal", "body metric", "adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "starts backend"]
+
+        XCTAssertEqual(choices.map(\.id), ["community_weeknight", "community_meal_prep", "community_family"])
+        XCTAssertTrue(choices.allSatisfy { $0.metadata["privacyDomain"] == "public-community-metadata" })
+        XCTAssertTrue(choices.allSatisfy { $0.metadata["startsBackendPost"] == "false" })
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("public"))
+        XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
+    }
+
+    func testCommunityShareSelectionAndCaptionPersistInLocalStore() {
+        let store = RecipeCommunityShareStore()
+        var setup = RecipeCommunityShareSetup(selectedCommunityId: "community_meal_prep", caption: "Excited to share this cozy dinner idea.")
+
+        store.saveSetup(setup, draftKey: "draft_1")
+        setup.caption = "Updated caption for the mock community."
+        store.saveSetup(setup, draftKey: "draft_1")
+
+        let reloaded = store.loadSetup(draftKey: "draft_1")
+        XCTAssertEqual(reloaded.selectedCommunityId, "community_meal_prep")
+        XCTAssertEqual(reloaded.selectedCommunity?.name, "Meal prep ideas")
+        XCTAssertEqual(reloaded.caption, "Updated caption for the mock community.")
+        XCTAssertTrue(reloaded.statusCopy.localizedCaseInsensitiveContains("Meal prep ideas"))
+        XCTAssertTrue(reloaded.statusCopy.localizedCaseInsensitiveContains("Updated caption"))
+    }
+
+    func testCommunityShareSetupCopyIsLocalOnlyPrivacySafeAndNonShaming() {
+        let setup = RecipeCommunityShareSetup(selectedCommunityId: "community_weeknight", caption: "Simple dinner notes for neighbors.")
+        let copy = setup.visibleCopy
+        let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "calorie goal"]
+
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local mock app-session"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("does not create a backend community post"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Private logs"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("body metrics are not included"))
+        XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
+    }
+
     @MainActor
     func testRecipeVisibilitySheetAndEditorViewCanBeConstructed() {
         var option: RecipeVisibilityOption = .unlistedLink
         _ = RecipeVisibilityOptionSheetView(selectedOption: Binding(get: { option }, set: { option = $0 }))
+        var setup = RecipeCommunityShareSetup()
+        _ = RecipeCommunityShareSetupSheetView(shareSetup: Binding(get: { setup }, set: { setup = $0 }))
         _ = RecipeEditorPlaceholderView()
     }
 
@@ -1007,6 +1231,48 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
+    func testForkRemixConfirmationSheetModelExplainsPrivateEditableCopyAndSourceProtection() {
+        let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl", sourceTitle: "Chicken Shawarma Bowl")
+        let copy = model.visibleCopy
+
+        XCTAssertEqual(model.title, "Remix as a private copy")
+        XCTAssertEqual(model.cancelLabel, "Cancel")
+        XCTAssertEqual(model.confirmLabel, "Confirm private copy")
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("private"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("editable"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("source recipe stays unchanged"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("does not republish"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("SAV-78 will create"))
+    }
+
+    func testForkRemixConfirmationCopyIsPrivacySafeNonShamingAndNoFalseBackendClaims() {
+        let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl")
+        let copy = [model.visibleCopy, model.confirmationToast.title, model.confirmationToast.message ?? ""].joined(separator: " ")
+        let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "food log", "daily goal", "calorie goal", "body metric", "starts backend", "backend sync started", "published"]
+
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("No source recipe changes"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("No backend sync"))
+        XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
+    }
+
+    func testForkRemixRouteMetadataDoesNotMutateSourceOrCreatePublicPost() {
+        let route = SavoroSheetRoute.forkRemix(recipeId: "recipe_shawarma_bowl")
+        let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl")
+
+        XCTAssertEqual(route.id, "fork-remix:recipe_shawarma_bowl")
+        XCTAssertEqual(route.title, "Fork / Remix")
+        XCTAssertEqual(model.routeMetadata["sheetRoute"], route.id)
+        XCTAssertEqual(model.routeMetadata["startsBackendRequest"], "false")
+        XCTAssertEqual(model.routeMetadata["mutatesSourceRecipe"], "false")
+        XCTAssertEqual(model.routeMetadata["createsPublicPost"], "false")
+    }
+
+    @MainActor
+    func testForkRemixConfirmationSheetCanBeConstructed() {
+        _ = ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl"))
+    }
+
     func testRecipeDetailSocialContextExposesNoSAV62Actions() throws {
         let recipe = try FixtureLoader.decode(
             RecipeDetail.self,
@@ -1643,6 +1909,8 @@ final class ScaffoldTests: XCTestCase {
             .shareRecipe(recipeId: "recipe_1"),
             .publishVisibility(recipeId: nil),
             .publishVisibility(recipeId: "recipe_1"),
+            .communityShareSetup(recipeId: nil),
+            .communityShareSetup(recipeId: "recipe_1"),
             .recipeActions(recipeId: "recipe_1")
         ]
 
@@ -1655,6 +1923,8 @@ final class ScaffoldTests: XCTestCase {
             "share-recipe:recipe_1",
             "publish-visibility:new",
             "publish-visibility:recipe_1",
+            "community-share-setup:new",
+            "community-share-setup:recipe_1",
             "recipe-actions:recipe_1"
         ])
         XCTAssertTrue(routes.allSatisfy { !$0.title.isEmpty })
@@ -1745,12 +2015,14 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertTrue(routeSubtitles.allSatisfy { $0.localizedCaseInsensitiveContains("Placeholder route") })
 
         let placeholderOnlySheetRoutes: [SavoroSheetRoute] = [
-            .forkRemix(recipeId: "recipe_1"),
             .shareRecipe(recipeId: "recipe_1"),
-            .publishVisibility(recipeId: "recipe_1"),
             .recipeActions(recipeId: "recipe_1")
         ]
         XCTAssertTrue(placeholderOnlySheetRoutes.allSatisfy { $0.placeholderSubtitle.localizedCaseInsensitiveContains("Placeholder sheet route") })
+        XCTAssertTrue(SavoroSheetRoute.forkRemix(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("Confirmation sheet"))
+        XCTAssertTrue(SavoroSheetRoute.forkRemix(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("private editable copy"))
+        XCTAssertTrue(SavoroSheetRoute.publishVisibility(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("community and caption setup"))
+        XCTAssertTrue(SavoroSheetRoute.communityShareSetup(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("No backend post"))
         XCTAssertTrue(SavoroSheetRoute.logPicker().placeholderSubtitle.localizedCaseInsensitiveContains("recents"))
         XCTAssertTrue(SavoroSheetRoute.logPicker().placeholderSubtitle.localizedCaseInsensitiveContains("Search results"))
 

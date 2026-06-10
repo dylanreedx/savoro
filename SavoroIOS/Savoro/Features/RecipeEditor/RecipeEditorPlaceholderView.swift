@@ -84,6 +84,239 @@ public struct RecipeVisibilityOptionSheetDraftState: Equatable {
     }
 }
 
+public struct RecipeVisibilityMatrixState: Equatable {
+    public static let localOnlyNotice = "Visibility changes are saved in local mock app-session state only. No backend publish, unpublish, public listing, profile update, community post, or social activity is created. Private logs, goals, nutrition logs, and body metrics are not included."
+
+    public var option: RecipeVisibilityOption
+    public var hasPersistedCommunitySetup: Bool
+
+    public init(option: RecipeVisibilityOption = .keepPrivate, hasPersistedCommunitySetup: Bool = false) {
+        self.option = option
+        self.hasPersistedCommunitySetup = hasPersistedCommunitySetup
+    }
+
+    public var isPrivateOnly: Bool { option == .keepPrivate }
+    public var hasMockLink: Bool { option == .unlistedLink }
+    public var isSearchable: Bool { option == .publishToProfile }
+    public var isDiscoverListed: Bool { false }
+    public var isProfileListed: Bool { option == .publishToProfile }
+    public var isCommunityListed: Bool { option == .shareToCommunity && hasPersistedCommunitySetup }
+    public var requiresCommunitySetup: Bool { option == .shareToCommunity && !hasPersistedCommunitySetup }
+
+    public var statusCopy: String {
+        switch option {
+        case .keepPrivate:
+            return "Private visibility is active locally. This recipe is not profile-listed, community-listed, searchable, discoverable, or link-ready."
+        case .unlistedLink:
+            return "Unlisted link visibility is active locally. A mock link-style state is ready, but the recipe is not listed on profile, search, community, or Discover surfaces."
+        case .publishToProfile:
+            return "Publish to profile visibility is active locally. The recipe is marked for a mock public profile and search only, not Discover or community surfaces."
+        case .shareToCommunity:
+            if hasPersistedCommunitySetup {
+                return "Share to community visibility is active locally with saved mock community setup. No backend post is created."
+            }
+            return "Share to community needs a saved mock community and optional caption before the recipe is treated as community-listed locally. No backend post is created."
+        }
+    }
+
+    public var visibleCopy: String { [Self.localOnlyNotice, statusCopy].joined(separator: " ") }
+
+    public mutating func change(to option: RecipeVisibilityOption, hasPersistedCommunitySetup: Bool) {
+        self.option = option
+        self.hasPersistedCommunitySetup = hasPersistedCommunitySetup
+    }
+
+    public mutating func unpublishToPrivate() {
+        option = .keepPrivate
+    }
+}
+
+public enum RecipeVisibilityViewerContext: String, CaseIterable, Equatable {
+    case owner
+    case publicViewer
+    case followerViewer
+    case directLinkViewer
+    case communityViewer
+}
+
+public enum RecipeVisibilitySurfaceContext: String, CaseIterable, Equatable {
+    case ownerLibrary
+    case directLink
+    case publicProfile
+    case search
+    case discover
+    case community
+}
+
+public struct RecipeVisibilityMatrixFixture: Identifiable, Equatable {
+    public let id: String
+    public let title: String
+    public let matrix: RecipeVisibilityMatrixState
+    public let communitySetup: RecipeCommunityShareSetup?
+
+    public init(id: String, title: String, matrix: RecipeVisibilityMatrixState, communitySetup: RecipeCommunityShareSetup? = nil) {
+        self.id = id
+        self.title = title
+        self.matrix = matrix
+        self.communitySetup = communitySetup
+    }
+
+    public func isVisible(on surface: RecipeVisibilitySurfaceContext, to viewer: RecipeVisibilityViewerContext) -> Bool {
+        switch surface {
+        case .ownerLibrary:
+            return viewer == .owner
+        case .directLink:
+            return matrix.hasMockLink && viewer == .directLinkViewer
+        case .publicProfile:
+            return matrix.isProfileListed
+        case .search:
+            return matrix.isSearchable
+        case .discover:
+            return matrix.isDiscoverListed
+        case .community:
+            return matrix.isCommunityListed && viewer == .communityViewer
+        }
+    }
+
+    public func publicSurfacePayload(on surface: RecipeVisibilitySurfaceContext, to viewer: RecipeVisibilityViewerContext) -> [String: String]? {
+        guard surface != .ownerLibrary, isVisible(on: surface, to: viewer) else { return nil }
+        var payload = [
+            "recipeId": id,
+            "title": title,
+            "visibility": matrix.option.rawValue,
+            "surface": surface.rawValue,
+            "viewer": viewer.rawValue,
+            "payloadDomain": "recipe-visibility-public-fixture"
+        ]
+        if surface == .community, let communitySetup {
+            payload["communityId"] = communitySetup.selectedCommunityId
+            payload["caption"] = communitySetup.captionPreview
+        }
+        return payload
+    }
+
+    public static let fixtures: [Self] = [
+        RecipeVisibilityMatrixFixture(id: "recipe_private_owner_only", title: "Private pantry soup", matrix: RecipeVisibilityMatrixState(option: .keepPrivate)),
+        RecipeVisibilityMatrixFixture(id: "recipe_unlisted_link_only", title: "Unlisted picnic salad", matrix: RecipeVisibilityMatrixState(option: .unlistedLink)),
+        RecipeVisibilityMatrixFixture(id: "recipe_public_profile", title: "Public weeknight pasta", matrix: RecipeVisibilityMatrixState(option: .publishToProfile)),
+        RecipeVisibilityMatrixFixture(
+            id: "recipe_community_saved_setup",
+            title: "Community lentil skillet",
+            matrix: RecipeVisibilityMatrixState(option: .shareToCommunity, hasPersistedCommunitySetup: true),
+            communitySetup: RecipeCommunityShareSetup(selectedCommunityId: "community_weeknight", caption: "Cozy dinner idea for the mock group.")
+        ),
+        RecipeVisibilityMatrixFixture(
+            id: "recipe_community_needs_setup",
+            title: "Community draft noodles",
+            matrix: RecipeVisibilityMatrixState(option: .shareToCommunity, hasPersistedCommunitySetup: false),
+            communitySetup: nil
+        )
+    ]
+}
+
+final class RecipeVisibilityChangeStore: ObservableObject {
+    @Published private(set) var visibilityByDraftKey: [String: RecipeVisibilityOption]
+
+    init(visibilityByDraftKey: [String: RecipeVisibilityOption] = [:]) {
+        self.visibilityByDraftKey = visibilityByDraftKey
+    }
+
+    func loadVisibility(draftKey: String) -> RecipeVisibilityOption {
+        visibilityByDraftKey[draftKey] ?? .keepPrivate
+    }
+
+    func saveVisibility(_ option: RecipeVisibilityOption, draftKey: String) {
+        visibilityByDraftKey[draftKey] = option
+    }
+
+    func unpublishToPrivate(draftKey: String) {
+        visibilityByDraftKey[draftKey] = .keepPrivate
+    }
+
+    func moveVisibility(from oldDraftKey: String, to newDraftKey: String) {
+        guard oldDraftKey != newDraftKey, let option = visibilityByDraftKey.removeValue(forKey: oldDraftKey) else { return }
+        visibilityByDraftKey[newDraftKey] = option
+    }
+}
+
+public struct RecipeCommunityChoice: Identifiable, Equatable {
+    public let id: String
+    public let name: String
+    public let summary: String
+    public let metadata: [String: String]
+
+    public init(id: String, name: String, summary: String, metadata: [String: String]) {
+        self.id = id
+        self.name = name
+        self.summary = summary
+        self.metadata = metadata
+    }
+
+    public static let mockChoices: [Self] = [
+        RecipeCommunityChoice(id: "community_weeknight", name: "Weeknight cooks", summary: "Public recipe ideas for low-lift dinners.", metadata: ["mode": "mock-local-fixture", "privacyDomain": "public-community-metadata", "startsBackendPost": "false"]),
+        RecipeCommunityChoice(id: "community_meal_prep", name: "Meal prep ideas", summary: "Public planning inspiration from shared recipes.", metadata: ["mode": "mock-local-fixture", "privacyDomain": "public-community-metadata", "startsBackendPost": "false"]),
+        RecipeCommunityChoice(id: "community_family", name: "Family table", summary: "Public family-friendly recipe conversation.", metadata: ["mode": "mock-local-fixture", "privacyDomain": "public-community-metadata", "startsBackendPost": "false"])
+    ]
+
+    public var visibleCopy: String {
+        ([name, summary] + metadata.map { "\($0.key): \($0.value)" }).joined(separator: " ")
+    }
+}
+
+public struct RecipeCommunityShareSetup: Equatable {
+    public static let localOnlyNotice = "Community share setup is saved in local mock app-session state only. It does not create a backend community post, public listing, profile update, or social activity. Private logs, goals, nutrition logs, and body metrics are not included."
+
+    public var selectedCommunityId: String
+    public var caption: String
+
+    public init(selectedCommunityId: String = RecipeCommunityChoice.mockChoices[0].id, caption: String = "") {
+        self.selectedCommunityId = selectedCommunityId
+        self.caption = caption
+    }
+
+    public var selectedCommunity: RecipeCommunityChoice? {
+        RecipeCommunityChoice.mockChoices.first { $0.id == selectedCommunityId }
+    }
+
+    public var captionPreview: String {
+        let trimmed = caption.trimmedForRecipeEditor
+        return trimmed.isEmpty ? "No caption added." : trimmed
+    }
+
+    public var statusCopy: String {
+        "Community setup saved locally for \(selectedCommunity?.name ?? "a mock community") with caption: \(captionPreview)"
+    }
+
+    public var visibleCopy: String {
+        ([Self.localOnlyNotice, statusCopy] + RecipeCommunityChoice.mockChoices.map(\.visibleCopy)).joined(separator: " ")
+    }
+}
+
+final class RecipeCommunityShareStore: ObservableObject {
+    @Published private(set) var setupsByDraftKey: [String: RecipeCommunityShareSetup]
+
+    init(setupsByDraftKey: [String: RecipeCommunityShareSetup] = [:]) {
+        self.setupsByDraftKey = setupsByDraftKey
+    }
+
+    func loadSetup(draftKey: String) -> RecipeCommunityShareSetup {
+        setupsByDraftKey[draftKey] ?? RecipeCommunityShareSetup()
+    }
+
+    func saveSetup(_ setup: RecipeCommunityShareSetup, draftKey: String) {
+        setupsByDraftKey[draftKey] = setup
+    }
+
+    func hasSetup(draftKey: String) -> Bool {
+        setupsByDraftKey[draftKey] != nil
+    }
+
+    func moveSetup(from oldDraftKey: String, to newDraftKey: String) {
+        guard oldDraftKey != newDraftKey, let setup = setupsByDraftKey.removeValue(forKey: oldDraftKey) else { return }
+        setupsByDraftKey[newDraftKey] = setup
+    }
+}
+
 public struct RecipeEditorDraftForm: Equatable {
     public enum ValidationIssue: String, CaseIterable, Equatable {
         case titleRequired = "Add a recipe title."
@@ -574,22 +807,42 @@ final class RecipeEditorDraftStore: ObservableObject {
 public struct RecipeEditorPlaceholderView: View {
     @State private var form: RecipeEditorDraftForm
     @ObservedObject private var draftStore: RecipeEditorDraftStore
+    @ObservedObject private var communityShareStore: RecipeCommunityShareStore
+    @ObservedObject private var visibilityChangeStore: RecipeVisibilityChangeStore
     @State private var actionStatusCopy: String?
-    @State private var selectedVisibilityOption: RecipeVisibilityOption = .keepPrivate
+    @State private var selectedVisibilityOption: RecipeVisibilityOption
+    @State private var communityShareSetup: RecipeCommunityShareSetup
     @State private var isShowingVisibilityOptions = false
+    @State private var isShowingCommunityShareSetup = false
+    private let temporaryDraftKey: String
     private let photoCommand: RecipeEditorPhotoCommand
     private let onPhotoHookInvoked: (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus
 
-    init(draftId: String? = nil, draftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), photoCommand: RecipeEditorPhotoCommand = .mockLocalPlaceholder, onPhotoHookInvoked: @escaping (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus = { $0.invoke() }) {
-        _form = State(initialValue: draftId.map(draftStore.loadDraft(id:)) ?? .newDraft())
+    init(draftId: String? = nil, draftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore(), photoCommand: RecipeEditorPhotoCommand = .mockLocalPlaceholder, onPhotoHookInvoked: @escaping (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus = { $0.invoke() }) {
+        let loadedForm = draftId.map(draftStore.loadDraft(id:)) ?? .newDraft()
+        let temporaryDraftKey = Self.makeTemporaryDraftKey()
+        let draftKey = Self.visibilityDraftKey(for: loadedForm, temporaryDraftKey: temporaryDraftKey)
+        _form = State(initialValue: loadedForm)
+        _selectedVisibilityOption = State(initialValue: visibilityChangeStore.loadVisibility(draftKey: draftKey))
+        _communityShareSetup = State(initialValue: communityShareStore.loadSetup(draftKey: draftKey))
+        self.temporaryDraftKey = temporaryDraftKey
         self.draftStore = draftStore
+        self.communityShareStore = communityShareStore
+        self.visibilityChangeStore = visibilityChangeStore
         self.photoCommand = photoCommand
         self.onPhotoHookInvoked = onPhotoHookInvoked
     }
 
-    init(form: RecipeEditorDraftForm, draftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), photoCommand: RecipeEditorPhotoCommand = .mockLocalPlaceholder, onPhotoHookInvoked: @escaping (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus = { $0.invoke() }) {
+    init(form: RecipeEditorDraftForm, draftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore(), photoCommand: RecipeEditorPhotoCommand = .mockLocalPlaceholder, onPhotoHookInvoked: @escaping (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus = { $0.invoke() }) {
+        let temporaryDraftKey = Self.makeTemporaryDraftKey()
+        let draftKey = Self.visibilityDraftKey(for: form, temporaryDraftKey: temporaryDraftKey)
         _form = State(initialValue: form)
+        _selectedVisibilityOption = State(initialValue: visibilityChangeStore.loadVisibility(draftKey: draftKey))
+        _communityShareSetup = State(initialValue: communityShareStore.loadSetup(draftKey: draftKey))
+        self.temporaryDraftKey = temporaryDraftKey
         self.draftStore = draftStore
+        self.communityShareStore = communityShareStore
+        self.visibilityChangeStore = visibilityChangeStore
         self.photoCommand = photoCommand
         self.onPhotoHookInvoked = onPhotoHookInvoked
     }
@@ -613,9 +866,20 @@ public struct RecipeEditorPlaceholderView: View {
         .navigationTitle(form.draftId == nil ? "New recipe" : "Edit draft")
         .sheet(isPresented: $isShowingVisibilityOptions) {
             RecipeVisibilityOptionSheetView(selectedOption: $selectedVisibilityOption) { option in
-                selectedVisibilityOption = option
-                actionStatusCopy = "Selected visibility: \(option.title). This is local mock state only; no backend publish or social post started."
+                applyVisibilityChange(option)
                 isShowingVisibilityOptions = false
+                if option == .shareToCommunity && !communityShareStore.hasSetup(draftKey: currentDraftKey) {
+                    actionStatusCopy = "Share to community selected locally. Choose a mock community and optional caption next; no backend post starts."
+                    DispatchQueue.main.async { isShowingCommunityShareSetup = true }
+                } else {
+                    actionStatusCopy = currentVisibilityMatrix.statusCopy
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingCommunityShareSetup) {
+            RecipeCommunityShareSetupSheetView(shareSetup: $communityShareSetup) { setup in
+                saveCommunityShareSetup(setup)
+                isShowingCommunityShareSetup = false
             }
         }
     }
@@ -821,17 +1085,53 @@ public struct RecipeEditorPlaceholderView: View {
                 Text("Visibility")
                     .font(SavoroTypography.headline)
                     .foregroundStyle(SavoroColor.textStrong)
-                Text(RecipeVisibilityOptionSheetModel.privacyNote)
+                Text(RecipeVisibilityMatrixState.localOnlyNotice)
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textBody)
                     .accessibilityIdentifier("recipe-visibility-privacy-note")
-                Label("Selected: \(selectedVisibilityOption.title)", systemImage: selectedVisibilityOption.systemImage)
+                Label("Current: \(selectedVisibilityOption.title)", systemImage: selectedVisibilityOption.systemImage)
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textBody)
-                SavoroButton("Choose visibility", systemImage: "eye", variant: .secondary) {
-                    isShowingVisibilityOptions = true
+                Text(currentVisibilityMatrix.statusCopy)
+                    .font(SavoroTypography.callout)
+                    .foregroundStyle(SavoroColor.textBody)
+                    .accessibilityIdentifier("recipe-visibility-matrix-status")
+                if selectedVisibilityOption == .shareToCommunity {
+                    if communityShareStore.hasSetup(draftKey: currentDraftKey) {
+                        Text("Mock community saved locally: \(communityShareSetup.selectedCommunity?.name ?? "Choose a community")")
+                            .font(SavoroTypography.callout)
+                            .foregroundStyle(SavoroColor.textBody)
+                            .accessibilityIdentifier("recipe-community-share-selected-community")
+                        Text("Caption: \(communityShareSetup.captionPreview)")
+                            .font(SavoroTypography.callout)
+                            .foregroundStyle(SavoroColor.textBody)
+                            .accessibilityIdentifier("recipe-community-share-caption-preview")
+                    } else {
+                        Text("No mock community setup saved yet. Choose a community and optional caption before this is treated as community-listed locally.")
+                            .font(SavoroTypography.callout)
+                            .foregroundStyle(SavoroColor.textBody)
+                            .accessibilityIdentifier("recipe-community-share-setup-needed")
+                    }
+                    Text(RecipeCommunityShareSetup.localOnlyNotice)
+                        .font(SavoroTypography.callout)
+                        .foregroundStyle(SavoroColor.textMuted)
+                    SavoroButton("Edit community setup", systemImage: "person.3", variant: .secondary) {
+                        isShowingCommunityShareSetup = true
+                    }
+                    .accessibilityHint("Opens local mock community and caption setup. No backend community post starts.")
                 }
-                .accessibilityHint("Opens local mock visibility options. No publish, backend request, or community post starts.")
+                HStack(spacing: SavoroSpacing.sm) {
+                    SavoroButton("Change visibility", systemImage: "eye", variant: .secondary) {
+                        isShowingVisibilityOptions = true
+                    }
+                    .accessibilityHint("Opens local mock visibility options. No publish, backend request, or community post starts.")
+                    if selectedVisibilityOption != .keepPrivate {
+                        SavoroButton("Revert to private", systemImage: "lock", variant: .secondary) {
+                            revertVisibilityToPrivate()
+                        }
+                        .accessibilityHint("Unpublishes this local mock visibility state back to private. No backend unpublish request starts.")
+                    }
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -871,9 +1171,51 @@ public struct RecipeEditorPlaceholderView: View {
         }
     }
 
+    private var currentDraftKey: String {
+        Self.visibilityDraftKey(for: form, temporaryDraftKey: temporaryDraftKey)
+    }
+
+    private var currentVisibilityMatrix: RecipeVisibilityMatrixState {
+        RecipeVisibilityMatrixState(
+            option: selectedVisibilityOption,
+            hasPersistedCommunitySetup: communityShareStore.hasSetup(draftKey: currentDraftKey)
+        )
+    }
+
     private func saveDraft() {
+        let previousKey = currentDraftKey
         form = draftStore.saveDraft(form)
+        let savedKey = currentDraftKey
+        communityShareStore.moveSetup(from: previousKey, to: savedKey)
+        visibilityChangeStore.moveVisibility(from: previousKey, to: savedKey)
         actionStatusCopy = "Draft saved locally for this app session only; no backend sync or public publish started."
+    }
+
+    private func applyVisibilityChange(_ option: RecipeVisibilityOption) {
+        selectedVisibilityOption = option
+        visibilityChangeStore.saveVisibility(option, draftKey: currentDraftKey)
+    }
+
+    private func revertVisibilityToPrivate() {
+        selectedVisibilityOption = .keepPrivate
+        visibilityChangeStore.unpublishToPrivate(draftKey: currentDraftKey)
+        actionStatusCopy = "Visibility reverted to private in local mock state. The recipe is not profile-listed, community-listed, discoverable, or link-ready; no backend unpublish request starts."
+    }
+
+    private func saveCommunityShareSetup(_ setup: RecipeCommunityShareSetup) {
+        communityShareSetup = setup
+        selectedVisibilityOption = .shareToCommunity
+        communityShareStore.saveSetup(setup, draftKey: currentDraftKey)
+        visibilityChangeStore.saveVisibility(.shareToCommunity, draftKey: currentDraftKey)
+        actionStatusCopy = setup.statusCopy + ". This is mock-only; no backend community post is created."
+    }
+
+    static func makeTemporaryDraftKey() -> String {
+        "new-recipe-draft-\(UUID().uuidString)"
+    }
+
+    static func visibilityDraftKey(for form: RecipeEditorDraftForm, temporaryDraftKey: String) -> String {
+        form.draftId ?? temporaryDraftKey
     }
 
     private func previewPublicPublish() {
@@ -1008,6 +1350,121 @@ struct RecipeVisibilityOptionSheetView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Apply") {
                         onApply(pendingSelection)
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct RecipeCommunityShareSetupSheetView: View {
+    @Binding private var shareSetup: RecipeCommunityShareSetup
+    @State private var pendingSetup: RecipeCommunityShareSetup
+    let choices: [RecipeCommunityChoice]
+    let onApply: (RecipeCommunityShareSetup) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    init(shareSetup: Binding<RecipeCommunityShareSetup>, choices: [RecipeCommunityChoice] = RecipeCommunityChoice.mockChoices, onApply: @escaping (RecipeCommunityShareSetup) -> Void = { _ in }) {
+        _shareSetup = shareSetup
+        _pendingSetup = State(initialValue: shareSetup.wrappedValue)
+        self.choices = choices
+        self.onApply = onApply
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+                    SavoroCard(style: .elevated) {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            SavoroChip(title: "Local mock", systemImage: "person.3", variant: .accent)
+                            Text("Community share setup")
+                                .font(SavoroTypography.title2)
+                                .foregroundStyle(SavoroColor.textStrong)
+                            Text(RecipeCommunityShareSetup.localOnlyNotice)
+                                .font(SavoroTypography.body)
+                                .foregroundStyle(SavoroColor.textBody)
+                                .accessibilityIdentifier("recipe-community-share-local-only-notice")
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        Text("Choose a mock community")
+                            .font(SavoroTypography.headline)
+                            .foregroundStyle(SavoroColor.textStrong)
+                        ForEach(choices) { community in
+                            Button { pendingSetup.selectedCommunityId = community.id } label: {
+                                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                                    Image(systemName: "person.3.fill")
+                                        .foregroundStyle(SavoroColor.accentStrong)
+                                        .frame(width: 24)
+                                    VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+                                        Text(community.name)
+                                            .font(SavoroTypography.bodyEmphasized)
+                                            .foregroundStyle(SavoroColor.textStrong)
+                                        Text(community.summary)
+                                            .font(SavoroTypography.callout)
+                                            .foregroundStyle(SavoroColor.textBody)
+                                    }
+                                    Spacer()
+                                    if pendingSetup.selectedCommunityId == community.id {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .foregroundStyle(SavoroColor.positive)
+                                    }
+                                }
+                                .padding(SavoroSpacing.md)
+                                .background(SavoroColor.cardStrong)
+                                .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                                        .stroke(pendingSetup.selectedCommunityId == community.id ? SavoroColor.accent : SavoroColor.glassBorder, lineWidth: 1)
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityIdentifier("recipe-community-share-option-\(community.id)")
+                            .accessibilityLabel("\(community.name). \(community.summary)")
+                            .accessibilityValue(pendingSetup.selectedCommunityId == community.id ? "Selected" : "Not selected")
+                            .accessibilityHint("Sets the pending local mock community choice. Use Save setup to keep it for this app session.")
+                        }
+                    }
+
+                    SavoroCard(style: .glass) {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            Text("Caption")
+                                .font(SavoroTypography.headline)
+                                .foregroundStyle(SavoroColor.textStrong)
+                            Text("Optional public-facing recipe caption for this mock setup. It stays local and is not posted.")
+                                .font(SavoroTypography.callout)
+                                .foregroundStyle(SavoroColor.textBody)
+                            TextField("Add an optional caption", text: $pendingSetup.caption, axis: .vertical)
+                                .textFieldStyle(.roundedBorder)
+                                .lineLimit(3...5)
+                                .accessibilityLabel("Community share caption")
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+
+                    Text("Selected community: \(pendingSetup.selectedCommunity?.name ?? "None"). Caption: \(pendingSetup.captionPreview)")
+                        .font(SavoroTypography.callout)
+                        .foregroundStyle(SavoroColor.textMuted)
+                        .accessibilityIdentifier("recipe-community-share-selected-status")
+                }
+                .padding(SavoroSpacing.lg)
+            }
+            .background(SavoroColor.page.ignoresSafeArea())
+            .navigationTitle("Community setup")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save setup") {
+                        shareSetup = pendingSetup
+                        onApply(pendingSetup)
                         dismiss()
                     }
                 }

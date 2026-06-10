@@ -196,6 +196,119 @@ struct RecipeDetailActionBarViewModel: Equatable {
     }
 }
 
+struct ForkRemixConfirmationSheetModel: Equatable {
+    let recipeId: String
+    let sourceTitle: String
+    let title: String = "Remix as a private copy"
+    let subtitle: String
+    let privacyCopy: String = "Your copy will start private and editable in this local mock app. You can make changes before choosing any visibility later."
+    let sourceProtectionCopy: String = "The source recipe stays unchanged. This action does not republish, post, sync, or modify the original recipe."
+    let localOnlyCopy: String = "For this MVP slice, Confirm records the remix choice locally only; SAV-78 will create the attributed private copy."
+    let cancelLabel: String = "Cancel"
+    let confirmLabel: String = "Confirm private copy"
+
+    init(recipeId: String, sourceTitle: String = "this recipe") {
+        self.recipeId = recipeId
+        self.sourceTitle = sourceTitle
+        subtitle = "Create your own version of \(sourceTitle)."
+    }
+
+    var visibleCopy: String {
+        [title, subtitle, privacyCopy, sourceProtectionCopy, localOnlyCopy, cancelLabel, confirmLabel].joined(separator: " ")
+    }
+
+    var confirmationToast: SavoroToast {
+        SavoroToast(
+            title: "Remix choice noted locally",
+            message: "Your private editable copy flow is confirmed for \(recipeId). No source recipe changes. No backend sync, post, or publish action started.",
+            style: .success
+        )
+    }
+
+    var routeMetadata: [String: String] {
+        [
+            "recipeId": recipeId,
+            "sheetRoute": SavoroSheetRoute.forkRemix(recipeId: recipeId).id,
+            "startsBackendRequest": "false",
+            "mutatesSourceRecipe": "false",
+            "createsPublicPost": "false"
+        ]
+    }
+}
+
+struct ForkRemixConfirmationSheetView: View {
+    let model: ForkRemixConfirmationSheetModel
+    let onConfirm: (ForkRemixConfirmationSheetModel) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    init(model: ForkRemixConfirmationSheetModel, onConfirm: @escaping (ForkRemixConfirmationSheetModel) -> Void = { _ in }) {
+        self.model = model
+        self.onConfirm = onConfirm
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+            SavoroCard(style: .elevated) {
+                VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+                    SavoroChip(title: "Private remix", systemImage: "arrow.triangle.branch", variant: .accent)
+                    Text(model.title)
+                        .font(SavoroTypography.title2)
+                        .foregroundStyle(SavoroColor.textStrong)
+                    Text(model.subtitle)
+                        .font(SavoroTypography.body)
+                        .foregroundStyle(SavoroColor.textBody)
+                }
+            }
+
+            VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+                confirmationRow(systemImage: "lock.fill", text: model.privacyCopy)
+                confirmationRow(systemImage: "doc.on.doc", text: model.sourceProtectionCopy)
+                confirmationRow(systemImage: "shippingbox", text: model.localOnlyCopy)
+            }
+
+            Spacer(minLength: SavoroSpacing.lg)
+
+            VStack(spacing: SavoroSpacing.sm) {
+                Button {
+                    onConfirm(model)
+                    dismiss()
+                } label: {
+                    Text(model.confirmLabel)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("fork-remix-confirm-button")
+
+                Button(model.cancelLabel) { dismiss() }
+                    .buttonStyle(.bordered)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("fork-remix-cancel-button")
+            }
+        }
+        .padding(SavoroSpacing.lg)
+        .background(SavoroColor.page.ignoresSafeArea())
+        .navigationTitle("Fork / Remix")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button(model.cancelLabel) { dismiss() }
+            }
+        }
+    }
+
+    private func confirmationRow(systemImage: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+            Image(systemName: systemImage)
+                .foregroundStyle(SavoroColor.accentStrong)
+                .frame(width: 24)
+            Text(text)
+                .font(SavoroTypography.callout)
+                .foregroundStyle(SavoroColor.textBody)
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
 struct RecipeDetailUnavailableViewModel: Equatable {
     enum Reason: Equatable { case privateRecipe, unauthorized }
 

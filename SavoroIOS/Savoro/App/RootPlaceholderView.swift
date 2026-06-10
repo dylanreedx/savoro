@@ -37,6 +37,7 @@ enum SavoroSheetRoute: Hashable, Identifiable {
     case forkRemix(recipeId: String)
     case shareRecipe(recipeId: String)
     case publishVisibility(recipeId: String?)
+    case communityShareSetup(recipeId: String?)
     case recipeActions(recipeId: String)
 
     var id: String {
@@ -51,6 +52,7 @@ enum SavoroSheetRoute: Hashable, Identifiable {
         case let .forkRemix(recipeId): return "fork-remix:\(recipeId)"
         case let .shareRecipe(recipeId): return "share-recipe:\(recipeId)"
         case let .publishVisibility(recipeId): return "publish-visibility:\(recipeId ?? "new")"
+        case let .communityShareSetup(recipeId): return "community-share-setup:\(recipeId ?? "new")"
         case let .recipeActions(recipeId): return "recipe-actions:\(recipeId)"
         }
     }
@@ -63,6 +65,7 @@ enum SavoroSheetRoute: Hashable, Identifiable {
         case .forkRemix: return "Fork / Remix"
         case .shareRecipe: return "Share Recipe"
         case .publishVisibility: return "Publish & Visibility"
+        case .communityShareSetup: return "Community Setup"
         case .recipeActions: return "Recipe Actions"
         }
     }
@@ -76,11 +79,13 @@ enum SavoroSheetRoute: Hashable, Identifiable {
         case .logPicker:
             return "Mock picker with recents, saved, mine, local mixed food/recipe search results, and preserved meal context for recipe handoff. Persistence and backend calls are not implemented."
         case .forkRemix:
-            return "Placeholder sheet route for future fork/remix decisions and draft creation. No draft is persisted."
+            return "Confirmation sheet for remixing as a private editable copy. Confirm records local mock status only; attributed copy creation is not implemented in this slice."
         case .shareRecipe:
             return "Placeholder sheet route for future native sharing and community distribution. No external share, post, or publish action is performed."
         case .publishVisibility:
-            return "Placeholder sheet route for future private, unlisted, and public recipe visibility controls."
+            return "Local mock recipe visibility controls. Share to community continues to a mock community and caption setup."
+        case .communityShareSetup:
+            return "Local mock community selector and caption setup. No backend post, public listing, or social activity is created."
         case .recipeActions:
             return "Placeholder sheet route for future Save, Log, Fork, Share, and Publish actions."
         }
@@ -173,41 +178,55 @@ struct SavoroTabNavigationState {
 struct RootPlaceholderView: View {
     @StateObject private var cookbookLocalStore: CookbookMockLocalStore
     @StateObject private var recipeDraftStore: RecipeEditorDraftStore
+    @StateObject private var communityShareStore: RecipeCommunityShareStore
+    @StateObject private var visibilityChangeStore: RecipeVisibilityChangeStore
 
     init() {
         _cookbookLocalStore = StateObject(wrappedValue: CookbookMockLocalStore())
         _recipeDraftStore = StateObject(wrappedValue: RecipeEditorDraftStore())
+        _communityShareStore = StateObject(wrappedValue: RecipeCommunityShareStore())
+        _visibilityChangeStore = StateObject(wrappedValue: RecipeVisibilityChangeStore())
     }
 
-    init(cookbookLocalStore: CookbookMockLocalStore, recipeDraftStore: RecipeEditorDraftStore = RecipeEditorDraftStore()) {
+    init(cookbookLocalStore: CookbookMockLocalStore, recipeDraftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore()) {
         _cookbookLocalStore = StateObject(wrappedValue: cookbookLocalStore)
         _recipeDraftStore = StateObject(wrappedValue: recipeDraftStore)
+        _communityShareStore = StateObject(wrappedValue: communityShareStore)
+        _visibilityChangeStore = StateObject(wrappedValue: visibilityChangeStore)
     }
 
     var body: some View {
-        SavoroTabShellView(cookbookLocalStore: cookbookLocalStore, recipeDraftStore: recipeDraftStore)
+        SavoroTabShellView(cookbookLocalStore: cookbookLocalStore, recipeDraftStore: recipeDraftStore, communityShareStore: communityShareStore, visibilityChangeStore: visibilityChangeStore)
     }
 }
 
 struct SavoroTabShellView: View {
     @ObservedObject private var cookbookLocalStore: CookbookMockLocalStore
     @ObservedObject private var recipeDraftStore: RecipeEditorDraftStore
+    @ObservedObject private var communityShareStore: RecipeCommunityShareStore
+    @ObservedObject private var visibilityChangeStore: RecipeVisibilityChangeStore
     @State private var selectedTab: SavoroTab = .today
     @State private var navigationState = SavoroTabNavigationState()
     @State private var activeSheet: SavoroSheetRoute?
     @State private var activeToast: SavoroToast?
     @State private var selectedVisibilityOption: RecipeVisibilityOption = .keepPrivate
+    @State private var communityShareSetup = RecipeCommunityShareSetup()
+    @State private var temporaryVisibilityDraftKey = RecipeEditorPlaceholderView.makeTemporaryDraftKey()
     @State private var dayLog: DayLog = .todayFixture
     private let apiClient: APIClient = MockAPIClient.localLogRecipeSuccess()
 
     init() {
         _cookbookLocalStore = ObservedObject(wrappedValue: CookbookMockLocalStore())
         _recipeDraftStore = ObservedObject(wrappedValue: RecipeEditorDraftStore())
+        _communityShareStore = ObservedObject(wrappedValue: RecipeCommunityShareStore())
+        _visibilityChangeStore = ObservedObject(wrappedValue: RecipeVisibilityChangeStore())
     }
 
-    init(cookbookLocalStore: CookbookMockLocalStore, recipeDraftStore: RecipeEditorDraftStore = RecipeEditorDraftStore()) {
+    init(cookbookLocalStore: CookbookMockLocalStore, recipeDraftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore()) {
         _cookbookLocalStore = ObservedObject(wrappedValue: cookbookLocalStore)
         _recipeDraftStore = ObservedObject(wrappedValue: recipeDraftStore)
+        _communityShareStore = ObservedObject(wrappedValue: communityShareStore)
+        _visibilityChangeStore = ObservedObject(wrappedValue: visibilityChangeStore)
     }
 
     var body: some View {
@@ -312,19 +331,67 @@ struct SavoroTabShellView: View {
                     onDismiss: { activeSheet = nil }
                 )
             }
-        case .publishVisibility:
-            RecipeVisibilityOptionSheetView(selectedOption: $selectedVisibilityOption) { option in
+        case let .publishVisibility(recipeId):
+            let draftKey = visibilityDraftKey(for: recipeId)
+            let visibilityBinding = Binding(
+                get: { visibilityChangeStore.loadVisibility(draftKey: draftKey) },
+                set: { option in
+                    selectedVisibilityOption = option
+                    visibilityChangeStore.saveVisibility(option, draftKey: draftKey)
+                }
+            )
+            RecipeVisibilityOptionSheetView(selectedOption: visibilityBinding) { option in
                 selectedVisibilityOption = option
+                visibilityChangeStore.saveVisibility(option, draftKey: draftKey)
+                if option == .shareToCommunity && !communityShareStore.hasSetup(draftKey: draftKey) {
+                    activeToast = SavoroToast(
+                        title: "Choose a mock community",
+                        message: "Share to community continues to local community and caption setup; no backend post starts.",
+                        style: .info
+                    )
+                    DispatchQueue.main.async { activeSheet = .communityShareSetup(recipeId: recipeId) }
+                } else {
+                    activeToast = SavoroToast(
+                        title: option == .keepPrivate ? "Visibility reverted to private" : "Visibility noted locally",
+                        message: RecipeVisibilityMatrixState(option: option, hasPersistedCommunitySetup: communityShareStore.hasSetup(draftKey: draftKey)).statusCopy,
+                        style: .info
+                    )
+                    activeSheet = nil
+                }
+            }
+        case let .communityShareSetup(recipeId):
+            let draftKey = visibilityDraftKey(for: recipeId)
+            let setupBinding = Binding(
+                get: { communityShareStore.loadSetup(draftKey: draftKey) },
+                set: { setup in
+                    communityShareSetup = setup
+                    communityShareStore.saveSetup(setup, draftKey: draftKey)
+                }
+            )
+            RecipeCommunityShareSetupSheetView(shareSetup: setupBinding) { setup in
+                communityShareStore.saveSetup(setup, draftKey: draftKey)
+                visibilityChangeStore.saveVisibility(.shareToCommunity, draftKey: draftKey)
                 activeToast = SavoroToast(
-                    title: "Visibility noted locally",
-                    message: "\(option.title) is selected for this mock session only; no backend publish or social post started.",
-                    style: .info
+                    title: "Community setup saved locally",
+                    message: "\(setup.selectedCommunity?.name ?? "Mock community") and caption are saved for this app session only; no backend community post is created.",
+                    style: .success
                 )
                 activeSheet = nil
             }
-        case .addMeal, .forkRemix, .shareRecipe, .recipeActions:
+        case let .forkRemix(recipeId):
+            NavigationStack {
+                ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: recipeId)) { model in
+                    activeToast = model.confirmationToast
+                    activeSheet = nil
+                }
+            }
+        case .addMeal, .shareRecipe, .recipeActions:
             SavoroPlaceholderSheetView(route: route)
         }
+    }
+
+    private func visibilityDraftKey(for recipeId: String?) -> String {
+        recipeId ?? temporaryVisibilityDraftKey
     }
 
     @MainActor
@@ -380,7 +447,7 @@ struct SavoroTabShellView: View {
                 onSaveRecipe: handleRecipeDetailSave
             )
         case let .recipeEditor(draftId):
-            RecipeEditorPlaceholderView(draftId: draftId, draftStore: recipeDraftStore)
+            RecipeEditorPlaceholderView(draftId: draftId, draftStore: recipeDraftStore, communityShareStore: communityShareStore, visibilityChangeStore: visibilityChangeStore)
         case .communityDetail, .publicProfile:
             PlaceholderFeatureView(
                 title: route.title,
