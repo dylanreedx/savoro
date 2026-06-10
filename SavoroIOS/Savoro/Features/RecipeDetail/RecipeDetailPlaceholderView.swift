@@ -183,9 +183,9 @@ struct RecipeDetailActionBarViewModel: Equatable {
         guard actions.contains(action) else { return nil }
         switch action {
         case .save:
-            return SavoroToast(title: "Saved to local mock", message: "This recipe is saved on this device for the demo only; no backend posting or sync was started.", style: .success)
+            return SavoroToast(title: "Saved on this device", message: "This recipe is saved locally for the demo only; nothing was published or shared.", style: .success)
         case .edit:
-            return SavoroToast(title: "Owner edit placeholder", message: "This screen shows local owner-only copy; no editor, backend request, or visibility change was started.", style: .info)
+            return SavoroToast(title: "Owner edit placeholder", message: "This screen shows local owner-only copy; no editor or visibility change was started.", style: .info)
         case .fork, .log, .share:
             return nil
         }
@@ -205,7 +205,7 @@ struct ForkRemixConfirmationSheetModel: Equatable {
     let privacyCopy: String = "Your copy will start private and editable in this local mock app. You can make changes before choosing any visibility later."
     let sourceProtectionCopy: String = "The source recipe stays unchanged. This action does not republish, post, sync, or modify the original recipe."
     let attributionCopy: String
-    let localOnlyCopy: String = "For this MVP slice, Confirm records the remix choice locally only; SAV-78 will create the attributed private copy."
+    let localOnlyCopy: String = "Confirm saves this choice locally for now. It prepares a private editable copy in this mock app only; it does not publish, share, or create a server-side copy."
     let cancelLabel: String = "Cancel"
     let confirmLabel: String = "Confirm private copy"
 
@@ -214,7 +214,7 @@ struct ForkRemixConfirmationSheetModel: Equatable {
         self.sourceVersionId = sourceVersionId
         self.sourceTitle = sourceTitle
         subtitle = "Create your own version of \(sourceTitle)."
-        attributionCopy = "The future fork flow will preserve attribution and the source version so credit and provenance stay attached."
+        attributionCopy = "Attribution and the source version stay attached so credit and provenance are preserved."
     }
 
     var visibleCopy: String {
@@ -223,8 +223,8 @@ struct ForkRemixConfirmationSheetModel: Equatable {
 
     var confirmationToast: SavoroToast {
         SavoroToast(
-            title: "Remix choice noted locally",
-            message: "Your private editable copy flow is confirmed for \(recipeId). No source recipe changes. Source version and attribution are kept for the future fork flow. No backend sync, post, or publish action started.",
+            title: "Private remix saved locally",
+            message: "Your private editable copy is noted locally. The original stays unchanged, and attribution/source version are preserved. Nothing was published or shared.",
             style: .success
         )
     }
@@ -290,7 +290,7 @@ struct ForkRemixConfirmationSheetView: View {
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("fork-remix-confirm-button")
                 .accessibilityLabel("Confirm private editable copy")
-                .accessibilityHint("Records this remix choice locally without changing the source recipe.")
+                .accessibilityHint("Saves this choice locally, preserving attribution and source version without changing the original.")
 
                 Button(model.cancelLabel) { dismiss() }
                     .buttonStyle(.bordered)

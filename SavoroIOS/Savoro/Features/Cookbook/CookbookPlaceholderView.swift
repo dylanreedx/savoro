@@ -140,7 +140,7 @@ struct RootCookbookSaveCoordinator {
         store.save(recipeId: recipeId)
         return SavoroToast(
             title: "Saved to local mock",
-            message: "This recipe is saved on this device for the demo only; no backend posting or sync was started.",
+            message: "This recipe is saved locally for the demo only; nothing was published or shared.",
             style: .success
         )
     }
@@ -205,7 +205,7 @@ struct CookbookLibraryViewModel: Equatable {
     static var createRecipeRoute: SavoroRoute { .recipeEditor(draftId: nil) }
 
     var privacyNotice: String { "Drafts are private, local-only mock items. Public cookbook surfaces show recipe library details only, not personal health records." }
-    var scaffoldNotice: String { "Cookbook uses fixture data only; search and filters run on local fixtures only. No backend sync or publishing is implemented in this slice." }
+    var scaffoldNotice: String { "Cookbook uses fixture data only; search and filters run on local fixtures. Nothing is published or shared from this mock library." }
     var visibleCopy: String { [privacyNotice, scaffoldNotice, searchPrompt, filterShellTitle, emptySearchTitle, emptySearchBody, createRecipeTitle, createRecipeSubtitle, selectedSection.visibleCopy].joined(separator: " ") }
 
     func selecting(_ segment: CookbookLibrarySegment) -> CookbookLibraryViewModel {

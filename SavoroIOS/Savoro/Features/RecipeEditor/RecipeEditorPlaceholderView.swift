@@ -450,7 +450,7 @@ public struct RecipeEditorDraftForm: Equatable {
     }
 
     public var privacyCopy: String {
-        "This draft stays local in the mock app. Photo selection is a scaffold only; no image upload, backend sync, or real publishing starts here."
+        "This draft stays local in the mock app. Photo selection is a scaffold only; no image upload, sharing, or real publishing starts here."
     }
 
     public var draftContextCopy: String {
@@ -1151,7 +1151,7 @@ public struct RecipeEditorPlaceholderView: View {
                         saveDraft()
                     }
                     .accessibilityLabel("Save Draft")
-                    .accessibilityHint("Saves this recipe draft to the local in-session mock store only. No backend sync or public publish starts.")
+                    .accessibilityHint("Saves this recipe draft to the local in-session mock store only. No public publish or sharing starts.")
                     SavoroButton("Preview public publish", systemImage: "checklist", variant: .secondary) {
                         previewPublicPublish()
                     }
@@ -1188,7 +1188,7 @@ public struct RecipeEditorPlaceholderView: View {
         let savedKey = currentDraftKey
         communityShareStore.moveSetup(from: previousKey, to: savedKey)
         visibilityChangeStore.moveVisibility(from: previousKey, to: savedKey)
-        actionStatusCopy = "Draft saved locally for this app session only; no backend sync or public publish started."
+        actionStatusCopy = "Draft saved locally for this app session only; no public publish or sharing started."
     }
 
     private func applyVisibilityChange(_ option: RecipeVisibilityOption) {

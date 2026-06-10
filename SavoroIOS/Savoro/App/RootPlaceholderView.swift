@@ -83,7 +83,7 @@ enum SavoroSheetRoute: Hashable, Identifiable {
         case .logPicker:
             return "Mock picker with recents, saved, mine, local mixed food/recipe search results, and preserved meal context for recipe handoff. Persistence and backend calls are not implemented."
         case .forkRemix:
-            return "Confirmation sheet for remixing as a private editable copy. Confirm records local mock status only; attributed source-version copy creation is not implemented in this slice."
+            return "Confirmation sheet for remixing as a private editable copy. Confirm saves the choice locally for now, without publishing or changing the original. Attribution and source version stay preserved."
         case .shareRecipe:
             return "Placeholder sheet route for future native sharing and community distribution. No external share, post, or publish action is performed."
         case .publishVisibility:
