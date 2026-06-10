@@ -62,20 +62,48 @@ cd "$ROOT/../savoro-wt/sav-<id>"   # all work happens here
   (e.g. `feat/sav-122-date-validation`).
 - Worktrees don't share dependencies or build caches: run `bun install` in
   `apps/api`, and expect Xcode to rebuild DerivedData. That's the price of isolation.
-- Commit per green slice on your branch. When acceptance criteria pass, **squash-merge
-  into `main`** with the SAV id in the commit subject, then clean up:
+- Commit per green slice on your branch. When acceptance criteria pass, land it
+  using the protocol below.
+- Do not open PRs, deploy, or create external services unless the issue says so.
+  Feature branches are never pushed; `main` is pushed as part of landing (below).
+
+## Landing protocol — building is parallel, landing is serial
+
+Multiple sessions and agents run at once; **`origin/main` is the only shared truth**.
+A local `main` that is ahead of origin is invisible to every other session — two
+sessions landing locally without pushing is exactly how work collides ("unexpected
+changes got merged"). So landing always ends with a push, and git's push rejection
+is the lock:
 
 ```bash
+# 1. Sync: someone may have landed while you worked
+git -C "$ROOT" switch main && git -C "$ROOT" pull --ff-only origin main
+
+# 2. Rebase your branch onto current main (from your worktree)
+git -C "$ROOT/../savoro-wt/sav-<id>" rebase main
+
+# 3. If main moved since you branched, re-run your track's verification now
+
+# 4. Land: squash-merge, commit with SAV id, push IMMEDIATELY
 git -C "$ROOT" merge --squash feat/sav-<id>-<slug>
 git -C "$ROOT" commit -m "SAV-<id>: <summary>"
+git -C "$ROOT" push origin main
+
+# 5. Clean up
 git -C "$ROOT" worktree remove "$ROOT/../savoro-wt/sav-<id>"
 git -C "$ROOT" branch -D feat/sav-<id>-<slug>
 ```
 
-  Disjoint directories make conflicts impossible by construction; if you hit one
-  anyway, stop and comment on the issue.
-- Do not push to origin, open PRs, deploy, or create external services unless the
-  issue says so.
+- **If the push is rejected (non-fast-forward), you raced and lost.** Recover
+  mechanically: drop your squash commit with `git -C "$ROOT" reset --hard origin/main`
+  (safe — your work still lives on the feature branch), then start again from step 1.
+- **Never resolve divergence with `git merge --no-ff`.** A merge knot on `main` is
+  always the wrong answer; rebase the feature branch instead.
+- Disjoint directories make content conflicts impossible by construction; if the
+  rebase conflicts anyway, stop and comment on the issue.
+- This makes cross-session communication structural rather than conversational:
+  Linear claims say who is doing what, `origin/main` says what has landed, and a
+  push rejection says you must re-sync. No agent needs to know another agent exists.
 
 ## Frontend ↔ backend coordination
 
