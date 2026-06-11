@@ -6,6 +6,7 @@ import { ApiError } from '../errors'
 import { requireAuth } from '../middleware/auth'
 import {
   createRecipe,
+  getRecipeDetailForViewer,
   updateRecipe,
   type RecipeContentInput,
   type RecipeIngredientInput,
@@ -27,6 +28,13 @@ recipes.post('/', async (c) => {
   const db = createDb(c.env.DB)
   const rows = await createRecipe(db, userId, content)
   return c.json({ recipe: mapRecipeDetail(rows, userId) }, 201)
+})
+
+recipes.get('/:id', async (c) => {
+  const userId = c.get('userId')
+  const db = createDb(c.env.DB)
+  const rows = await getRecipeDetailForViewer(db, userId, c.req.param('id'))
+  return c.json({ recipe: mapRecipeDetail(rows, userId) })
 })
 
 recipes.patch('/:id', async (c) => {

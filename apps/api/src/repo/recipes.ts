@@ -288,6 +288,26 @@ async function loadVersionContent(db: Db, recipe: RecipeRow) {
   return { version, ingredients, steps, content }
 }
 
+/**
+ * Loads a recipe for a viewer, enforcing visibility: owners see everything;
+ * everyone else needs visibility != private AND status = published (unlisted
+ * stays reachable by id, just never listed). Hidden and missing recipes are
+ * the same not_found — no existence leak.
+ */
+export async function getRecipeDetailForViewer(
+  db: Db,
+  viewerUserId: string,
+  recipeId: string,
+): Promise<RecipeDetailRows> {
+  const recipe = await db.query.recipes.findFirst({ where: eq(recipes.id, recipeId) })
+  const isOwner = recipe?.ownerUserId === viewerUserId
+  const isVisible = recipe && recipe.visibility !== 'private' && recipe.status === 'published'
+  if (!recipe || (!isOwner && !isVisible)) {
+    throw new ApiError('not_found', 'Recipe not found.')
+  }
+  return loadRecipeDetail(db, recipeId)
+}
+
 /** Loads everything the RecipeDetail DTO needs. No visibility gating here. */
 export async function loadRecipeDetail(db: Db, recipeId: string): Promise<RecipeDetailRows> {
   const recipe = await db.query.recipes.findFirst({ where: eq(recipes.id, recipeId) })

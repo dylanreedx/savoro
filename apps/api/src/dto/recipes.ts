@@ -42,8 +42,8 @@ export function mapRecipeDetail(rows: RecipeDetailRows, viewerUserId: string) {
       },
       perServingMacros,
       tags: [],
-      // Viewer-state for the session viewer. SAV-128 (GET with visibility
-      // gating) generalizes this; isSaved becomes real with cookbook (SAV-131).
+      // Viewer-state for the session viewer (visibility gating happens in the
+      // repo layer); isSaved becomes real with cookbook (SAV-131).
       viewerState: {
         isOwner,
         isSaved: false,
