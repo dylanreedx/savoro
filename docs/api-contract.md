@@ -195,6 +195,122 @@ Request:
 Response `201`: same shape as `POST /v1/logs/recipes` — `{ "entry": ..., "dayLog": ... }`
 with `itemType: "food"`, `sourceType: "manual"`. Client-supplied `userId` is ignored.
 
+---
+
+# Phase 2+ domains
+
+Everything below maps the remaining UI surfaces to endpoints. DTO field names match
+the iOS models in `SavoroIOS/Savoro/Core/Models/RecipeModels.swift` and
+`SocialModels.swift` — those files are the canonical field lists; this section defines
+endpoint semantics, auth, and privacy rules. All endpoints require auth unless noted.
+Pagination: list endpoints accept `?cursor=&limit=` (default 20, max 50) and return
+`{ "items": [...], "nextCursor": "..." | null }`.
+
+## Recipes — lifecycle
+
+DTOs: `RecipeSummary`, `RecipeVersion`, `Ingredient`, `Step`, `RecipeDetail`
+(summary + currentVersion + ingredients + steps), `RecipeViewerState`
+(`isOwner/isSaved/canFork/canLog`, computed server-side per viewer).
+
+- `POST /v1/recipes` — create a draft (visibility `private`, status `draft`). Body:
+  title, description?, servings, ingredients[], steps[], perServingMacros. Creates
+  recipe + version 1. → `201 { "recipe": RecipeDetail }`
+- `PATCH /v1/recipes/:id` — owner only. Editing a *draft* mutates version 1 in place;
+  editing a *published* recipe creates a new version (append-only — published
+  versions are immutable, logs keep pointing at the version they logged).
+  → `{ "recipe": RecipeDetail }`
+- `GET /v1/recipes/:id` — visible if owner, or `visibility != private` and
+  `status = published`. Includes viewer-computed `viewerState`. Unlisted = reachable
+  by id/link, never listed. → `{ "recipe": RecipeDetail }`
+- `POST /v1/recipes/:id/publish` — owner only. Body: `{ "visibility": "public" | "unlisted" }`.
+  Freezes current version (immutable), sets status `published`. → `{ "recipe": RecipeDetail }`
+- `POST /v1/recipes/:id/unpublish` — owner only; back to `private`/`draft`. Existing
+  logs and forks keep their version references.
+- `POST /v1/recipes/:id/archive` — owner only; hides from all lists, keeps versions
+  for historical logs.
+- `POST /v1/recipes/:id/fork` — viewer must be able to see the recipe. Creates a new
+  *private draft* copy owned by the caller with `forkedFromRecipeId` +
+  `forkedFromVersionId` preserved. Source recipe is never modified. → `201 { "recipe": RecipeDetail }`
+
+## Cookbook — save/lists
+
+- `POST /v1/recipes/:id/save` / `DELETE /v1/recipes/:id/save` — viewer-scoped
+  `saved_recipes` row. Saving requires visibility.
+- `GET /v1/cookbook/mine` — own recipes (any status), newest first.
+- `GET /v1/cookbook/saved` — saved recipes still visible to the viewer.
+- `GET /v1/cookbook/drafts` — own drafts only.
+
+## Logs — management (extends Phase 1)
+
+- `GET /v1/logs/recents?limit=` — the viewer's most recent distinct logged items
+  (for the log picker), newest first.
+- `DELETE /v1/logs/:entryId` — owner only.
+- `PATCH /v1/logs/:entryId` — owner only; may change `date`, `mealType`, `quantity`.
+  Changing quantity rescales the frozen snapshot proportionally **from the stored
+  snapshot values** — never re-reads current recipe/food data.
+
+## Discover & search
+
+Public surfaces: only `visibility = public` + `status = published` recipes ever
+appear. No logs, goals, or private data in any response (server-enforced DTO mappers).
+
+- `GET /v1/discover/recipes?rail=featured|recent|trending&cursor=` — public recipe
+  rails. → `{ "items": [RecipeSummary] }`
+- `GET /v1/search?q=&kind=recipes|profiles|communities|all` — combined search.
+  → `{ "query": "...", "results": [SearchResult] }` (`SearchResult` = kind + one of
+  recipe/profile/community). First implementation may be SQL LIKE; FTS later.
+- `GET /v1/foods/search?q=` — food database search (sparse cache-on-use backed by
+  Open Food Facts; per-100g vs per-serving semantics must be explicit in the DTO).
+- `GET /v1/foods/:id` — food detail with servings.
+
+## Profiles & social
+
+DTOs: `UserProfile`, `PublicProfile` (profile + isSelf + followState + publicRecipes),
+`UserRelationship`.
+
+- `GET /v1/me` — current user + own profile + settings.
+- `PATCH /v1/me/profile` — username, displayName, bio, avatarUrl, links, visibility.
+- `GET /v1/profiles/:username` — public profile. **Never includes** logs, goals, body
+  metrics, day progress, or adherence — tested denylist.
+- `GET /v1/profiles/:username/recipes` — that user's public published recipes.
+- `POST /v1/users/:id/follow` / `DELETE /v1/users/:id/follow`
+- `POST /v1/friends/requests` (body: targetUserId), `POST /v1/friends/requests/:id/accept`,
+  `POST /v1/friends/requests/:id/decline`, `GET /v1/friends`
+- `GET /v1/activity?scope=friends|communities` — activity feed. Event types are
+  recipe/community/profile events ONLY (`recipe_published`, `recipe_forked`,
+  `joined_community`, ...). **Logging food is never an activity event.**
+
+## Communities
+
+DTOs: `Community` (with `viewerMembership`), `CommunityMember`, `CommunityRecipeShare`.
+
+- `GET /v1/communities/mine` — joined + pending.
+- `POST /v1/communities` — create (caller becomes owner).
+- `GET /v1/communities/:idOrSlug` — detail + viewer membership state.
+- `PATCH /v1/communities/:id` — owner/admin only.
+- `POST /v1/communities/:id/join` — respects joinPolicy (open → active,
+  request → pending, invite_only → 403 without invite).
+- `POST /v1/communities/:id/leave`
+- `GET /v1/communities/:id/members` — members only. **Exposes username/displayName/
+  avatar — never email** (the WIP-branch email leak is explicitly rejected).
+- `GET /v1/communities/:id/recipes` — community share feed (members, or anyone if
+  community is public).
+- `POST /v1/communities/:id/recipes` — share a recipe + caption. Recipe must be
+  public+published (or the sharer's own unlisted — pick stricter: public only for MVP).
+- `DELETE /v1/communities/:id/recipes/:shareId` — sharer or admin.
+
+## Images (R2)
+
+- `POST /v1/images/upload-url` — body: `{ "kind": "recipe" | "profile" | "community", "ownerId": "...", "contentType": "image/jpeg|png|webp" }`.
+  Returns short-lived presigned PUT URL + final public URL. Keys per the R2 path
+  model in `SAVORO-ZERO-COST-BACKEND-PLAN.md`. Size limit enforced; private log
+  attachments are NOT in scope.
+
+## Explicitly deferred (no tickets until re-decided)
+
+Collections, recipe reactions/comments, barcode lookup, body metrics endpoints,
+AI/chat anything, offline sync, monetization.
+
 ## Privacy guarantees (tested invariants)
 
 - All `/v1/logs/*` data is scoped to the session user; there is no parameter that reads another user's logs.
