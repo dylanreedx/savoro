@@ -15,6 +15,7 @@
     }
   ],
   "vars": {
-    "ENVIRONMENT": "development"
+    "ENVIRONMENT": "development",
+    "APPLE_BUNDLE_ID": "com.savoro.app"
   }
 }

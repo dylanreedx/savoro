@@ -1,12 +1,17 @@
 import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
-export const users = sqliteTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email').unique(),
-  displayName: text('display_name'),
-  createdAt: text('created_at').notNull(),
-  updatedAt: text('updated_at').notNull(),
-})
+export const users = sqliteTable(
+  'users',
+  {
+    id: text('id').primaryKey(),
+    email: text('email').unique(),
+    appleSub: text('apple_sub'),
+    displayName: text('display_name'),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [uniqueIndex('uq_users_apple_sub').on(t.appleSub)],
+)
 
 export const sessions = sqliteTable(
   'sessions',
