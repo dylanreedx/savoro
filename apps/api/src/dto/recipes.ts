@@ -30,9 +30,8 @@ export function mapRecipeDetail(rows: RecipeDetailRows, viewerUserId: string) {
       visibility: recipe.visibility,
       status: recipe.status,
       currentVersionId: version.id,
-      // Forking lands with SAV-130; until then nothing is a fork.
-      forkedFromRecipeId: null,
-      forkedFromVersionId: null,
+      forkedFromRecipeId: recipe.forkedFromRecipeId,
+      forkedFromVersionId: recipe.forkedFromVersionId,
       creator: {
         userId: owner.id,
         // Real usernames arrive with profiles (SAV-133). The user id is a safe

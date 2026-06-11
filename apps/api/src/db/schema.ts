@@ -40,6 +40,8 @@ export const recipes = sqliteTable(
     visibility: text('visibility', { enum: ['private', 'unlisted', 'public'] }).notNull(),
     status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull(),
     currentVersionId: text('current_version_id'),
+    forkedFromRecipeId: text('forked_from_recipe_id'),
+    forkedFromVersionId: text('forked_from_version_id'),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },

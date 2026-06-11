@@ -146,6 +146,15 @@ function versionValues(content: RecipeContentInput) {
 
 /** Creates a private draft recipe with version 1 and its ingredients/steps. */
 export async function createRecipe(db: Db, ownerUserId: string, content: RecipeContentInput): Promise<RecipeDetailRows> {
+  return createRecipeFromContent(db, ownerUserId, content, {})
+}
+
+async function createRecipeFromContent(
+  db: Db,
+  ownerUserId: string,
+  content: RecipeContentInput,
+  fork: { forkedFromRecipeId?: string; forkedFromVersionId?: string },
+): Promise<RecipeDetailRows> {
   const now = new Date().toISOString()
   const recipeId = `rec_${crypto.randomUUID()}`
   const versionId = `rcv_${crypto.randomUUID()}`
@@ -159,6 +168,8 @@ export async function createRecipe(db: Db, ownerUserId: string, content: RecipeC
       visibility: 'private',
       status: 'draft',
       currentVersionId: versionId,
+      forkedFromRecipeId: fork.forkedFromRecipeId ?? null,
+      forkedFromVersionId: fork.forkedFromVersionId ?? null,
       createdAt: now,
       updatedAt: now,
     }),
@@ -177,6 +188,22 @@ export async function createRecipe(db: Db, ownerUserId: string, content: RecipeC
 
   await db.batch(ops as SqliteBatch)
   return loadRecipeDetail(db, recipeId)
+}
+
+/** Creates a private draft copy of the visible recipe, preserving source attribution. */
+export async function forkRecipe(db: Db, viewerUserId: string, sourceRecipeId: string): Promise<RecipeDetailRows> {
+  const source = await db.query.recipes.findFirst({ where: eq(recipes.id, sourceRecipeId) })
+  const isOwner = source?.ownerUserId === viewerUserId
+  const isVisible = source && source.visibility !== 'private' && source.status === 'published'
+  if (!source || (!isOwner && !isVisible)) {
+    throw new ApiError('not_found', 'Recipe not found.')
+  }
+
+  const { version, content } = await loadVersionContent(db, source)
+  return createRecipeFromContent(db, viewerUserId, content, {
+    forkedFromRecipeId: source.id,
+    forkedFromVersionId: version.id,
+  })
 }
 
 /**
