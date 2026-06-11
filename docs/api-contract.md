@@ -132,6 +132,69 @@ Response `201`:
 { "entry": { "...": "FoodLogEntry" }, "dayLog": { "...": "as in GET /v1/logs/day" } }
 ```
 
+### POST /v1/auth/apple
+
+No auth. Exchanges an Apple identity token for an app session.
+
+Request: `{ "identityToken": "<jwt from Sign in with Apple>" }`
+
+Response `200`:
+
+```json
+{
+  "sessionToken": "<opaque bearer token — returned once, store in Keychain>",
+  "user": { "id": "usr_01J...", "email": "relay@privaterelay.appleid.com", "displayName": null }
+}
+```
+
+Server verifies the token against Apple's JWKS (issuer `https://appleid.apple.com`,
+audience = app bundle id), upserts the user by Apple `sub`, and stores only a hash of
+the session token. Invalid/expired identity token → `unauthorized`.
+
+### GET /v1/goals/current?date=YYYY-MM-DD
+
+Auth required. The goal active on `date` for the authenticated user, or `{ "goal": null }`.
+
+```json
+{ "goal": { "id": "goal_01J...", "dailyTargets": { "...": "MacroTotals" }, "startDate": "2026-06-01", "endDate": null } }
+```
+
+### POST /v1/goals
+
+Auth required. Creates a goal starting `startDate` (open-ended unless `endDate` given).
+Creating a goal that overlaps an existing open goal closes the old one at `startDate`.
+
+Request:
+
+```json
+{ "dailyTargets": { "...": "MacroTotals" }, "startDate": "2026-06-11", "endDate": null }
+```
+
+Response `201`: `{ "goal": { "...": "as above" } }`. Invalid dates or non-positive
+targets → `validation_failed`.
+
+### POST /v1/logs/foods
+
+Auth required. Logs a manually-entered food (no food database row required). The
+client supplies the nutrition for the logged amount; the server freezes it verbatim
+as the snapshot — it is never recomputed or shared.
+
+Request:
+
+```json
+{
+  "displayName": "Greek yogurt, 2% (manual)",
+  "macros": { "...": "MacroTotals for the logged amount" },
+  "date": "2026-06-10",
+  "mealType": "breakfast",
+  "quantity": 1,
+  "quantityUnit": "serving"
+}
+```
+
+Response `201`: same shape as `POST /v1/logs/recipes` — `{ "entry": ..., "dayLog": ... }`
+with `itemType: "food"`, `sourceType: "manual"`. Client-supplied `userId` is ignored.
+
 ## Privacy guarantees (tested invariants)
 
 - All `/v1/logs/*` data is scoped to the session user; there is no parameter that reads another user's logs.
