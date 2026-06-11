@@ -29,9 +29,9 @@ export async function seedRecipe(db: D1Database, opts: SeedRecipeOptions): Promi
   const versionId = `rcv_${opts.recipeId}_v1`
   await db
     .prepare(
-      'insert into recipes (id, owner_user_id, visibility, status, current_version_id, created_at, updated_at) values (?, ?, ?, ?, ?, ?, ?)',
+      'insert into recipes (id, owner_user_id, slug, visibility, status, current_version_id, created_at, updated_at) values (?, ?, ?, ?, ?, ?, ?, ?)',
     )
-    .bind(opts.recipeId, opts.ownerUserId, opts.visibility ?? 'private', 'draft', versionId, NOW, NOW)
+    .bind(opts.recipeId, opts.ownerUserId, opts.recipeId, opts.visibility ?? 'private', 'draft', versionId, NOW, NOW)
     .run()
   await db
     .prepare(

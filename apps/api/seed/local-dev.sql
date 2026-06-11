@@ -51,10 +51,11 @@ on conflict(id) do update set
   end_date = excluded.end_date,
   updated_at = excluded.updated_at;
 
-insert into recipes (id, owner_user_id, visibility, status, current_version_id, created_at, updated_at)
+insert into recipes (id, owner_user_id, slug, visibility, status, current_version_id, created_at, updated_at)
 values (
   'rec_dev_bowl',
   'usr_dev_alice',
+  'dev-burrito-bowl',
   'public',
   'published',
   'rcv_dev_bowl_v1',
@@ -63,6 +64,7 @@ values (
 )
 on conflict(id) do update set
   owner_user_id = excluded.owner_user_id,
+  slug = excluded.slug,
   visibility = excluded.visibility,
   status = excluded.status,
   current_version_id = excluded.current_version_id,

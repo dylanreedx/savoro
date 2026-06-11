@@ -31,13 +31,17 @@ export const recipes = sqliteTable(
     ownerUserId: text('owner_user_id')
       .notNull()
       .references(() => users.id),
+    slug: text('slug').notNull(),
     visibility: text('visibility', { enum: ['private', 'unlisted', 'public'] }).notNull(),
     status: text('status', { enum: ['draft', 'published', 'archived'] }).notNull(),
     currentVersionId: text('current_version_id'),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },
-  (t) => [index('idx_recipes_owner_status').on(t.ownerUserId, t.status)],
+  (t) => [
+    index('idx_recipes_owner_status').on(t.ownerUserId, t.status),
+    uniqueIndex('uq_recipes_owner_slug').on(t.ownerUserId, t.slug),
+  ],
 )
 
 export const recipeVersions = sqliteTable(
@@ -49,6 +53,7 @@ export const recipeVersions = sqliteTable(
       .references(() => recipes.id),
     versionNumber: integer('version_number').notNull(),
     title: text('title').notNull(),
+    description: text('description'),
     servings: real('servings').notNull(),
     calories: real('calories').notNull(),
     proteinGrams: real('protein_grams').notNull(),
@@ -59,6 +64,37 @@ export const recipeVersions = sqliteTable(
     createdAt: text('created_at').notNull(),
   },
   (t) => [uniqueIndex('uq_recipe_versions_number').on(t.recipeId, t.versionNumber)],
+)
+
+export const recipeIngredients = sqliteTable(
+  'recipe_ingredients',
+  {
+    id: text('id').primaryKey(),
+    recipeVersionId: text('recipe_version_id')
+      .notNull()
+      .references(() => recipeVersions.id),
+    foodId: text('food_id'),
+    servingId: text('serving_id'),
+    quantity: real('quantity'),
+    unit: text('unit').notNull(),
+    label: text('label').notNull(),
+    note: text('note'),
+    sortOrder: integer('sort_order').notNull(),
+  },
+  (t) => [index('idx_recipe_ingredients_version').on(t.recipeVersionId, t.sortOrder)],
+)
+
+export const recipeSteps = sqliteTable(
+  'recipe_steps',
+  {
+    id: text('id').primaryKey(),
+    recipeVersionId: text('recipe_version_id')
+      .notNull()
+      .references(() => recipeVersions.id),
+    body: text('body').notNull(),
+    sortOrder: integer('sort_order').notNull(),
+  },
+  (t) => [index('idx_recipe_steps_version').on(t.recipeVersionId, t.sortOrder)],
 )
 
 export const foodLogEntries = sqliteTable(
@@ -116,5 +152,9 @@ export const goals = sqliteTable(
 )
 
 export type FoodLogEntryRow = typeof foodLogEntries.$inferSelect
+export type RecipeRow = typeof recipes.$inferSelect
 export type RecipeVersionRow = typeof recipeVersions.$inferSelect
+export type RecipeIngredientRow = typeof recipeIngredients.$inferSelect
+export type RecipeStepRow = typeof recipeSteps.$inferSelect
 export type GoalRow = typeof goals.$inferSelect
+export type UserRow = typeof users.$inferSelect
