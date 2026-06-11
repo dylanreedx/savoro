@@ -1443,6 +1443,78 @@ final class ScaffoldTests: XCTestCase {
         window.rootViewController = nil
     }
 
+    func testForkAndEditFlowLeavesSourceRecipeUnchanged() throws {
+        let sourceBefore = RecipeDetail.mockFixture(forRoutedId: "recipe_shawarma_bowl")
+
+        // Walk the fork confirmation surface for the source recipe.
+        let confirmation = ForkRemixConfirmationSheetModel(
+            recipeId: "recipe_shawarma_bowl",
+            sourceVersionId: "recipe_version_20260606",
+            sourceTitle: "Chicken Shawarma Bowl"
+        )
+        XCTAssertEqual(confirmation.routeMetadata["mutatesSourceRecipe"], "false")
+        _ = confirmation.confirmationToast
+
+        // Open the forked copy, then edit it through the local draft store.
+        let fork = RecipeDetail.mockFixture(forRoutedId: "recipe_lentil_soup")
+        let draftStore = RecipeEditorDraftStore()
+        var draft = draftStore.loadDraft(id: fork.summary.id)
+        draft.title = "Extra Lemony Lentil Soup"
+        draft.servingsText = "8"
+        draftStore.saveDraft(draft)
+
+        // Regression: the source recipe remains unchanged after fork + edit.
+        let sourceAfter = RecipeDetail.mockFixture(forRoutedId: "recipe_shawarma_bowl")
+        XCTAssertEqual(sourceAfter, sourceBefore)
+        XCTAssertEqual(sourceAfter.summary.title, "Chicken Shawarma Bowl")
+        XCTAssertEqual(sourceAfter.currentVersion.servings, 4)
+        XCTAssertEqual(sourceAfter.currentVersion.perServingMacros.calories, 520)
+        XCTAssertEqual(sourceAfter.summary.currentVersionId, "recipe_version_20260606")
+        XCTAssertNil(sourceAfter.summary.forkedFromRecipeId)
+    }
+
+    func testForkedCopyDivergesWhileSourceVersionPointerStaysFrozen() {
+        let source = RecipeDetail.mockFixture(forRoutedId: "recipe_shawarma_bowl")
+        let fork = RecipeDetail.mockFixture(forRoutedId: "recipe_lentil_soup")
+
+        // The fork is a distinct private copy, not a view of the source.
+        XCTAssertNotEqual(fork.summary.id, source.summary.id)
+        XCTAssertNotEqual(fork.currentVersion.id, source.currentVersion.id)
+        XCTAssertNotEqual(fork.summary.perServingMacros, source.summary.perServingMacros)
+        XCTAssertNotEqual(fork.currentVersion.servings, source.currentVersion.servings)
+        XCTAssertEqual(fork.summary.visibility, .private)
+        XCTAssertEqual(fork.summary.status, .draft)
+
+        // Attribution pins the exact source version, and that pin matches the
+        // source's still-current version: forking froze it, editing the fork
+        // cannot move it.
+        XCTAssertEqual(fork.summary.forkedFromRecipeId, source.summary.id)
+        XCTAssertEqual(fork.summary.forkedFromVersionId, source.summary.currentVersionId)
+        XCTAssertEqual(source.summary.visibility, .public)
+        XCTAssertEqual(source.summary.status, .published)
+    }
+
+    func testCookbookSourceItemUnchangedAfterForkEditFlow() {
+        let cookbookStore = CookbookMockLocalStore()
+        let sourceItem: (CookbookLibraryViewModel) -> CookbookLibraryItem? = { viewModel in
+            viewModel.sections.first { $0.segment == .mine }?.items.first { $0.id == "mine_shawarma" }
+        }
+        let before = sourceItem(cookbookStore.refreshViewModel(selectedSegment: .mine))
+
+        // Edit the forked copy's draft and mutate the cookbook store.
+        let draftStore = RecipeEditorDraftStore()
+        var draft = draftStore.loadDraft(id: "recipe_lentil_soup")
+        draft.title = "Extra Lemony Lentil Soup"
+        draftStore.saveDraft(draft)
+        cookbookStore.save(recipeId: "recipe_lentil_soup")
+
+        let after = sourceItem(cookbookStore.refreshViewModel(selectedSegment: .mine))
+        XCTAssertNotNil(before)
+        XCTAssertEqual(after, before)
+        XCTAssertEqual(after?.badges, [])
+        XCTAssertTrue(after?.subtitle.contains("4 servings") ?? false)
+    }
+
     func testRecipeDetailSocialContextExposesNoSAV62Actions() throws {
         let recipe = try FixtureLoader.decode(
             RecipeDetail.self,
