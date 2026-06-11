@@ -28,7 +28,7 @@ struct RecipeDetailContentViewModel: Equatable {
     init(recipe: RecipeDetail, selectedServings: Double? = nil) {
         recipeId = recipe.summary.id
         currentVersionId = recipe.currentVersion.id
-        versionText = "Recipe version \(recipe.currentVersion.versionNumber) · \(recipe.currentVersion.id)"
+        versionText = Self.versionText(for: recipe.currentVersion)
         baseServings = recipe.currentVersion.servings
         servingOptions = Self.options(around: recipe.currentVersion.servings)
         let requestedServings = selectedServings ?? recipe.currentVersion.servings
@@ -65,6 +65,24 @@ struct RecipeDetailContentViewModel: Equatable {
         ([versionText, servingSelectorHelpText] + macros.map(\.displayValue) + ingredients.flatMap { [$0.title, $0.amountText, $0.sourceText ?? ""] } + instructions.map(\.body))
             .joined(separator: " ")
     }
+
+    private static func versionText(for version: RecipeVersion) -> String {
+        var parts = ["Recipe version \(version.versionNumber)"]
+        if let publishedAt = version.publishedAt {
+            parts.append("published \(Self.shortDateFormatter.string(from: publishedAt))")
+        } else {
+            parts.append("created \(Self.shortDateFormatter.string(from: version.createdAt))")
+        }
+        return parts.joined(separator: " · ")
+    }
+
+    private static let shortDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter
+    }()
 
     func selectingServings(_ servings: Double, recipe: RecipeDetail) -> RecipeDetailContentViewModel {
         RecipeDetailContentViewModel(recipe: recipe, selectedServings: servings)
@@ -117,7 +135,7 @@ enum RecipeDetailActionKind: String, CaseIterable, Equatable, Identifiable {
     var label: String {
         switch self {
         case .save: return "Save"
-        case .fork: return "Fork"
+        case .fork: return "Remix"
         case .log: return "Log"
         case .share: return "Share"
         case .edit: return "Edit"
@@ -152,11 +170,11 @@ struct RecipeDetailActionBarViewModel: Equatable {
         let isPublic = recipe.summary.visibility == .public
         if isOwner {
             scaffoldCopy = isPublic
-                ? "Owner mock state. Save updates the local mock on this device; Edit is placeholder copy only, and actions do not post, sync, or open external sharing."
-                : "Private owner mock state. Save updates the local mock on this device; Share and Fork stay hidden until visibility is changed intentionally."
+                ? "Save keeps this recipe on your device for now; Edit lets you keep shaping it before you choose any visibility. Nothing posts, syncs, or opens external sharing."
+                : "This private recipe stays editable by you. Share and Remix stay hidden until visibility is changed intentionally."
             actions = isPublic ? [.edit, .save, .log, .share] : [.edit, .save, .log]
         } else {
-            scaffoldCopy = "Recipe actions use local mock routes only. Save updates the local mock on this device; Fork and Share do not post, sync, or open external sharing."
+            scaffoldCopy = "Recipe actions stay private to this app for now. Save notes the recipe on this device; Remix and Share do not post, sync, or open external sharing."
             actions = RecipeDetailActionKind.allCases.filter { action in
                 switch action {
                 case .save: return true
@@ -202,10 +220,10 @@ struct ForkRemixConfirmationSheetModel: Equatable {
     let sourceTitle: String
     let title: String = "Remix as a private copy"
     let subtitle: String
-    let privacyCopy: String = "Your copy will start private and editable in this local mock app. You can make changes before choosing any visibility later."
-    let sourceProtectionCopy: String = "The source recipe stays unchanged. This action does not republish, post, sync, or modify the original recipe."
+    let privacyCopy: String = "Your private remix is ready to edit before you choose any visibility later."
+    let sourceProtectionCopy: String = "The original recipe stays unchanged. This action does not republish, post, sync, or modify the original recipe."
     let attributionCopy: String
-    let localOnlyCopy: String = "Confirm saves this choice locally for now. It prepares a private editable copy in this mock app only; it does not publish, share, or create a server-side copy."
+    let localOnlyCopy: String = "Confirm prepares a private editable copy for you. Nothing is published, shared, or sent to public cookbook surfaces."
     let cancelLabel: String = "Cancel"
     let confirmLabel: String = "Confirm private copy"
 
@@ -229,6 +247,23 @@ struct ForkRemixConfirmationSheetModel: Equatable {
         )
     }
 
+    /// Toast for a remix created as a private editable copy.
+    func successToast(forkedRecipe recipe: RecipeDetail) -> SavoroToast {
+        SavoroToast(
+            title: "Private remix created",
+            message: "\(recipe.summary.title) is now a private editable remix. The original stays unchanged, and attribution/source version are preserved. Nothing was published or shared.",
+            style: .success
+        )
+    }
+
+    var forkErrorToast: SavoroToast {
+        SavoroToast(
+            title: "Private copy was not created",
+            message: "The original recipe is unchanged and nothing was published or shared. Please try again in a moment.",
+            style: .warning
+        )
+    }
+
     var routeMetadata: [String: String] {
         var metadata = [
             "recipeId": recipeId,
@@ -248,10 +283,11 @@ struct ForkRemixConfirmationSheetModel: Equatable {
 
 struct ForkRemixConfirmationSheetView: View {
     let model: ForkRemixConfirmationSheetModel
-    let onConfirm: (ForkRemixConfirmationSheetModel) -> Void
+    let onConfirm: (ForkRemixConfirmationSheetModel) async -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var isSubmitting = false
 
-    init(model: ForkRemixConfirmationSheetModel, onConfirm: @escaping (ForkRemixConfirmationSheetModel) -> Void = { _ in }) {
+    init(model: ForkRemixConfirmationSheetModel, onConfirm: @escaping (ForkRemixConfirmationSheetModel) async -> Void = { _ in }) {
         self.model = model
         self.onConfirm = onConfirm
     }
@@ -281,16 +317,24 @@ struct ForkRemixConfirmationSheetView: View {
 
             VStack(spacing: SavoroSpacing.sm) {
                 Button {
-                    onConfirm(model)
-                    dismiss()
+                    guard !isSubmitting else { return }
+                    isSubmitting = true
+                    Task {
+                        await onConfirm(model)
+                        await MainActor.run {
+                            isSubmitting = false
+                            dismiss()
+                        }
+                    }
                 } label: {
-                    Text(model.confirmLabel)
+                    Text(isSubmitting ? "Creating private copy…" : model.confirmLabel)
                         .frame(maxWidth: .infinity)
                 }
+                .disabled(isSubmitting)
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("fork-remix-confirm-button")
                 .accessibilityLabel("Confirm private editable copy")
-                .accessibilityHint("Saves this choice locally, preserving attribution and source version without changing the original.")
+                .accessibilityHint("Creates a private editable remix, preserving attribution and source version without changing the original.")
 
                 Button(model.cancelLabel) { dismiss() }
                     .buttonStyle(.bordered)
@@ -302,7 +346,7 @@ struct ForkRemixConfirmationSheetView: View {
         }
         .padding(SavoroSpacing.lg)
         .background(SavoroColor.page.ignoresSafeArea())
-        .navigationTitle("Fork / Remix")
+        .navigationTitle("Private remix")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
@@ -335,10 +379,10 @@ struct RecipeForkAttributionBannerViewModel: Equatable {
         guard let sourceRecipeId = recipe.summary.forkedFromRecipeId else { return nil }
         self.sourceRecipeId = sourceRecipeId
         sourceVersionId = recipe.summary.forkedFromVersionId
-        if let sourceVersionId = recipe.summary.forkedFromVersionId {
-            sourceReferenceText = "Source: \(sourceRecipeId) · source version preserved: \(sourceVersionId)"
+        if recipe.summary.forkedFromVersionId != nil {
+            sourceReferenceText = "Source version preserved from the original recipe."
         } else {
-            sourceReferenceText = "Source: \(sourceRecipeId) · source version preserved"
+            sourceReferenceText = "Source attribution preserved from the original recipe."
         }
     }
 
@@ -383,10 +427,10 @@ struct RecipeDetailUnavailableViewModel: Equatable {
         case .privateRecipe:
             title = "This recipe is private"
             message = "Recipe details are visible only to the owner. Hidden ingredients, instructions, macros, and creator-only notes are not shown here."
-            supportText = "Your personal nutrition details stay private, and no public recipe action is available in this mock state."
+            supportText = "Your personal nutrition details stay private, and no public recipe action is available here."
         case .unauthorized:
             title = "Recipe unavailable"
-            message = "We can’t show this recipe from the local mock route. No recipe details or personal nutrition data are loaded."
+            message = "We can’t show this recipe right now. No recipe details or personal nutrition data are loaded."
             supportText = "Try another public recipe placeholder. Nothing was posted, shared, or changed."
         }
     }
@@ -674,7 +718,7 @@ struct RecipeDetailPlaceholderView: View {
 
     private var routeContextCard: some View {
         SavoroCard(style: .glass) {
-            Label("Opened recipe route: \(routedRecipeId)", systemImage: "link")
+            Label("Recipe opened privately for review", systemImage: "lock.doc")
                 .font(SavoroTypography.callout)
                 .foregroundStyle(SavoroColor.textBody)
         }
@@ -1168,7 +1212,7 @@ extension RecipeDetail {
         return try! decoder.decode(RecipeDetail.self, from: Data(json.utf8))
     }()
 
-    /// Local mock copy created by the fork/remix flow: private draft owned by the
+    /// Local copy created by the fork/remix flow: private draft owned by the
     /// viewer, with attribution back to the source recipe and its frozen version.
     static let mockForkedFixture: RecipeDetail = {
         let json = """
@@ -1249,9 +1293,9 @@ extension RecipeDetail {
         return try! decoder.decode(RecipeDetail.self, from: Data(json.utf8))
     }()
 
-    /// Resolves the local mock recipe for a routed id so forked copies keep their
+    /// Resolves the local recipe for an opened id so forked copies keep their
     /// attribution across navigation and refresh. Unknown ids fall back to the
-    /// public source fixture, matching the existing placeholder behavior.
+    /// public source recipe, matching the existing preview behavior.
     static func mockFixture(forRoutedId routedRecipeId: String?) -> RecipeDetail {
         routedRecipeId == mockForkedFixture.summary.id ? mockForkedFixture : mockHeaderFixture
     }

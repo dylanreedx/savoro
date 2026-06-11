@@ -20,13 +20,13 @@ public enum RecipeVisibilityOption: String, CaseIterable, Identifiable, Equatabl
     public var subtitle: String {
         switch self {
         case .keepPrivate:
-            return "Only you can open this recipe in the mock app."
+            return "Only you can open this recipe."
         case .unlistedLink:
-            return "Prepare a link-style state without adding it to profile or community surfaces."
+            return "Prepare private link access without adding it to profile or community surfaces."
         case .publishToProfile:
-            return "Show recipe details on your public profile when publishing is implemented."
+            return "Preview how this recipe would appear on your public profile."
         case .shareToCommunity:
-            return "Prepare this recipe for a future community selection step."
+            return "Prepare this recipe for a community selection step."
         }
     }
 
@@ -41,7 +41,7 @@ public enum RecipeVisibilityOption: String, CaseIterable, Identifiable, Equatabl
 }
 
 public struct RecipeVisibilityOptionSheetModel: Equatable {
-    public static let privacyNote = "Privacy note: private logs, goals, and nutrition logs are never shared by visibility changes. This MVP flow is local mock state only; no backend publish, profile update, community post, or public listing is created."
+    public static let privacyNote = "Privacy note: private logs, goals, and nutrition logs are never shared by visibility changes. This preview stays on this device; no profile update, community post, or public listing is created."
 
     public var selectedOption: RecipeVisibilityOption
 
@@ -50,7 +50,7 @@ public struct RecipeVisibilityOptionSheetModel: Equatable {
     }
 
     public var options: [RecipeVisibilityOption] { RecipeVisibilityOption.allCases }
-    public var selectedStatusCopy: String { "Selected visibility: \(selectedOption.title). Local mock state only." }
+    public var selectedStatusCopy: String { "Selected visibility: \(selectedOption.title). Preview only." }
 
     public var visibleCopy: String {
         ([Self.privacyNote, selectedStatusCopy] + options.flatMap { [$0.title, $0.subtitle] }).joined(separator: " ")
@@ -85,7 +85,7 @@ public struct RecipeVisibilityOptionSheetDraftState: Equatable {
 }
 
 public struct RecipeVisibilityMatrixState: Equatable {
-    public static let localOnlyNotice = "Visibility changes are saved in local mock app-session state only. No backend publish, unpublish, public listing, profile update, community post, or social activity is created. Private logs, goals, nutrition logs, and body metrics are not included."
+    public static let localOnlyNotice = "Visibility changes are saved for this app session only. No public listing, profile update, community post, or social activity is created. Private logs, goals, nutrition logs, and body metrics are not included."
 
     public var option: RecipeVisibilityOption
     public var hasPersistedCommunitySetup: Bool
@@ -108,14 +108,14 @@ public struct RecipeVisibilityMatrixState: Equatable {
         case .keepPrivate:
             return "Private visibility is active locally. This recipe is not profile-listed, community-listed, searchable, discoverable, or link-ready."
         case .unlistedLink:
-            return "Unlisted link visibility is active locally. A mock link-style state is ready, but the recipe is not listed on profile, search, community, or Discover surfaces."
+            return "Unlisted link visibility is active locally. Link access is previewed, but the recipe is not listed on profile, search, community, or Discover surfaces."
         case .publishToProfile:
-            return "Publish to profile visibility is active locally. The recipe is marked for a mock public profile and search only, not Discover or community surfaces."
+            return "Publish to profile visibility is active locally. The recipe is marked for profile and search preview only, not Discover or community surfaces."
         case .shareToCommunity:
             if hasPersistedCommunitySetup {
-                return "Share to community visibility is active locally with saved mock community setup. No backend post is created."
+                return "Share to community visibility is active locally with a saved community choice. No community post is created."
             }
-            return "Share to community needs a saved mock community and optional caption before the recipe is treated as community-listed locally. No backend post is created."
+            return "Share to community needs a saved community and optional caption before the recipe is treated as community-listed locally. No community post is created."
         }
     }
 
@@ -203,7 +203,7 @@ public struct RecipeVisibilityMatrixFixture: Identifiable, Equatable {
             id: "recipe_community_saved_setup",
             title: "Community lentil skillet",
             matrix: RecipeVisibilityMatrixState(option: .shareToCommunity, hasPersistedCommunitySetup: true),
-            communitySetup: RecipeCommunityShareSetup(selectedCommunityId: "community_weeknight", caption: "Cozy dinner idea for the mock group.")
+            communitySetup: RecipeCommunityShareSetup(selectedCommunityId: "community_weeknight", caption: "Cozy dinner idea for the group.")
         ),
         RecipeVisibilityMatrixFixture(
             id: "recipe_community_needs_setup",
@@ -259,12 +259,12 @@ public struct RecipeCommunityChoice: Identifiable, Equatable {
     ]
 
     public var visibleCopy: String {
-        ([name, summary] + metadata.map { "\($0.key): \($0.value)" }).joined(separator: " ")
+        [name, summary].joined(separator: " ")
     }
 }
 
 public struct RecipeCommunityShareSetup: Equatable {
-    public static let localOnlyNotice = "Community share setup is saved in local mock app-session state only. It does not create a backend community post, public listing, profile update, or social activity. Private logs, goals, nutrition logs, and body metrics are not included."
+    public static let localOnlyNotice = "Community share setup is saved for this app session only. It does not create a community post, public listing, profile update, or social activity. Private logs, goals, nutrition logs, and body metrics are not included."
 
     public var selectedCommunityId: String
     public var caption: String
@@ -284,7 +284,7 @@ public struct RecipeCommunityShareSetup: Equatable {
     }
 
     public var statusCopy: String {
-        "Community setup saved locally for \(selectedCommunity?.name ?? "a mock community") with caption: \(captionPreview)"
+        "Community setup saved locally for \(selectedCommunity?.name ?? "a community") with caption: \(captionPreview)"
     }
 
     public var visibleCopy: String {
@@ -335,8 +335,10 @@ public struct RecipeEditorDraftForm: Equatable {
     public var photoStatus: RecipeEditorPhotoStatus
     public var ingredients: [RecipeEditorIngredientRow]
     public var instructions: [RecipeEditorInstructionStep]
+    public var sourceRecipeId: String?
+    public var sourceVersionId: String?
 
-    public init(draftId: String? = nil, title: String = "", description: String = "", servingsText: String = "", yieldText: String = "", photoHook: RecipeEditorPhotoHook = .mockPlaceholder, photoStatus: RecipeEditorPhotoStatus = .idle, ingredients: [RecipeEditorIngredientRow] = [], instructions: [RecipeEditorInstructionStep] = []) {
+    public init(draftId: String? = nil, title: String = "", description: String = "", servingsText: String = "", yieldText: String = "", photoHook: RecipeEditorPhotoHook = .mockPlaceholder, photoStatus: RecipeEditorPhotoStatus = .idle, ingredients: [RecipeEditorIngredientRow] = [], instructions: [RecipeEditorInstructionStep] = [], sourceRecipeId: String? = nil, sourceVersionId: String? = nil) {
         self.draftId = draftId
         self.title = title
         self.description = description
@@ -346,12 +348,47 @@ public struct RecipeEditorDraftForm: Equatable {
         self.photoStatus = photoStatus
         self.ingredients = ingredients
         self.instructions = Self.renumbered(instructions)
+        self.sourceRecipeId = sourceRecipeId
+        self.sourceVersionId = sourceVersionId
     }
 
     public static func newDraft() -> Self { RecipeEditorDraftForm() }
 
     public static func localDraft(id: String) -> Self {
         RecipeEditorDraftForm(draftId: id, title: "", description: "", servingsText: "", yieldText: "")
+    }
+
+    static func remixDraft(from recipe: RecipeDetail) -> Self {
+        let yieldText: String
+        if let yieldAmount = recipe.currentVersion.yieldAmount, let yieldUnit = recipe.currentVersion.yieldUnit, !yieldUnit.isEmpty {
+            yieldText = "\(Self.formatRecipeNumber(yieldAmount)) \(yieldUnit)"
+        } else {
+            yieldText = "\(Self.formatRecipeNumber(recipe.currentVersion.servings)) servings"
+        }
+        return RecipeEditorDraftForm(
+            draftId: recipe.summary.id,
+            title: recipe.currentVersion.title,
+            description: recipe.currentVersion.description ?? recipe.summary.description ?? "",
+            servingsText: Self.formatRecipeNumber(recipe.currentVersion.servings),
+            yieldText: yieldText,
+            ingredients: recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }.map { ingredient in
+                RecipeEditorIngredientRow.freeText(
+                    id: ingredient.id,
+                    quantityText: ingredient.quantity.map(Self.formatRecipeNumber) ?? "",
+                    unit: ingredient.unit,
+                    name: ingredient.label
+                )
+            },
+            instructions: recipe.steps.sorted { $0.sortOrder < $1.sortOrder }.map { step in
+                RecipeEditorInstructionStep(id: step.id, order: step.sortOrder + 1, body: step.body)
+            },
+            sourceRecipeId: recipe.summary.forkedFromRecipeId,
+            sourceVersionId: recipe.summary.forkedFromVersionId
+        )
+    }
+
+    private static func formatRecipeNumber(_ value: Double) -> String {
+        value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
     }
 
     public var basicsValidationIssues: [ValidationIssue] {
@@ -374,12 +411,14 @@ public struct RecipeEditorDraftForm: Equatable {
     public var isValidDraftSlice: Bool { basicsValidationIssues.isEmpty }
     public var canMockPublishPublicly: Bool { publicPublishValidationIssues.isEmpty }
 
-    public var mockPublicPublishResultCopy: String {
+    public var publishPreviewCopy: String {
         if canMockPublishPublicly {
-            return "Public publish preview is ready for this complete local draft. This is mock-only; no backend, social post, or public listing is created."
+            return "Public publish preview is ready for this complete local draft. No social post or public listing is created."
         }
-        return "Public publish preview needs a little more detail before it can continue. Review the recipe details below; this mock app does not post publicly."
+        return "Public publish preview needs a little more detail before it can continue. Review the recipe details below; nothing posts publicly."
     }
+
+    public var mockPublicPublishResultCopy: String { publishPreviewCopy }
 
     public mutating func addIngredient(_ ingredient: RecipeEditorIngredientRow = .empty()) {
         ingredients.append(ingredient)
@@ -450,23 +489,28 @@ public struct RecipeEditorDraftForm: Equatable {
     }
 
     public var privacyCopy: String {
-        "This draft stays local in the mock app. Photo selection is a scaffold only; no image upload, sharing, or real publishing starts here."
+        "This draft stays private while you edit. Photo selection is a preview only; no image upload, sharing, or publishing starts here."
     }
+
+    public var isRemixDraft: Bool { sourceRecipeId != nil || sourceVersionId != nil }
 
     public var draftContextCopy: String {
-        if let draftId {
-            return "Mock draft \(draftId) opened from the local in-session draft store."
+        if isRemixDraft {
+            return "Private remix ready to edit. The original stays unchanged, source version note stays attached, and nothing was published or shared."
         }
-        return "New local scaffold draft. Save Draft keeps fields in this app session only."
+        if draftId != nil {
+            return "Private draft ready to edit. Save Draft keeps fields in this app session only; nothing was published or shared."
+        }
+        return "New private draft. Save Draft keeps fields in this app session only."
     }
 
-    public static let headerContextCopy = "Build a local recipe draft with basics, ingredients, ordered instructions, and a macro preview. Save Draft keeps fields in this app session only. Public publish is a mock validation preview."
-    public static let instructionHelperCopy = "Write ordered cooking steps for this local form. Reordering updates step numbers in this form only. Draft saving is in-session only and publish remains a mock preview."
+    public static let headerContextCopy = "Build a private recipe draft with basics, ingredients, ordered instructions, and a macro preview. Save Draft keeps fields in this app session only. Public publish is a validation preview only."
+    public static let instructionHelperCopy = "Write ordered cooking steps for this local form. Reordering updates step numbers in this form only. Draft saving is in-session only and publish remains a preview."
     public static let emptyInstructionsCopy = "No instructions yet. Add a step when you're ready; it stays in this local form only until you save this in-session draft."
 
     public var visibleCopy: String {
         let instructionStateCopy = instructions.isEmpty ? Self.emptyInstructionsCopy : ""
-        return ([Self.headerContextCopy, privacyCopy, draftContextCopy, mockPublicPublishResultCopy, photoHook.title, photoHook.body, photoHook.actionTitle, photoStatus.message, title, description, servingsText, yieldText, incompleteNutritionNotice ?? "", macroPreview.statusText, macroPreview.totalSummaryText, macroPreview.perServingSummaryText, Self.instructionHelperCopy, instructionStateCopy] + ingredients.flatMap(\.visibleCopyParts) + instructions.flatMap(\.visibleCopyParts) + validationIssues.map(\.rawValue)).joined(separator: " ")
+        return ([Self.headerContextCopy, privacyCopy, draftContextCopy, publishPreviewCopy, photoHook.title, photoHook.body, photoHook.actionTitle, photoStatus.message, title, description, servingsText, yieldText, incompleteNutritionNotice ?? "", macroPreview.statusText, macroPreview.totalSummaryText, macroPreview.perServingSummaryText, Self.instructionHelperCopy, instructionStateCopy] + ingredients.flatMap(\.visibleCopyParts) + instructions.flatMap(\.visibleCopyParts) + validationIssues.map(\.rawValue)).joined(separator: " ")
     }
 }
 
@@ -506,7 +550,7 @@ public struct RecipeEditorMacroPreview: Equatable {
     public var statusText: String {
         if needsServings { return "Partial macro preview: add valid servings to show per-serving macros." }
         if isPartial { return "Partial macro preview: ingredients without computable local nutrition are not included." }
-        return "Macro preview uses local mock ingredient metadata."
+        return "Macro preview uses available ingredient nutrition details."
     }
 
     public var totalSummaryText: String { "Total: \(Self.format(totalMacros.calories)) cal · \(Self.format(totalMacros.proteinGrams))g protein · \(Self.format(totalMacros.carbsGrams))g carbs · \(Self.format(totalMacros.fatGrams))g fat" }
@@ -680,18 +724,18 @@ public struct RecipeEditorIngredientRow: Identifiable, Equatable {
             return Self.incompleteNutritionNotice
         case .mockFood(_, _, true):
             if RecipeEditorMacroCalculator.macros(for: self) != nil {
-                return "Nutrition is seeded from local mock food metadata."
+                return "Nutrition is seeded from available food details."
             }
             return Self.nonComputableMockNutritionNotice
         case .mockFood(_, _, false):
             return Self.incompleteNutritionNotice
         case .empty:
-            return "Add a custom ingredient or choose a local mock food to preview nutrition status."
+            return "Add a custom ingredient or choose a suggested food to preview nutrition status."
         }
     }
 
     public static let incompleteNutritionNotice = "Nutrition details are incomplete because this ingredient has no local nutrition metadata. It is excluded from the partial macro preview."
-    public static let nonComputableMockNutritionNotice = "This local mock food is not included in the partial macro preview until quantity and unit are supported."
+    public static let nonComputableMockNutritionNotice = "This food is not included in the partial macro preview until quantity and unit are supported."
 
     private mutating func markEditedEmptyRowAsFreeText() {
         guard case .empty = source else { return }
@@ -716,8 +760,8 @@ public struct RecipeEditorMockFoodSearchResult: Identifiable, Equatable {
     public let metadata: [String: String]
 
     public static let fixtureResults: [Self] = [
-        RecipeEditorMockFoodSearchResult(foodId: "mock_food_chicken", name: "Chicken breast", defaultQuantityText: "100", defaultUnit: "g", sourceLabel: "Local mock food", macrosKnown: true, metadata: ["mode": "mock-local-fixture", "startsBackendSearch": "false"]),
-        RecipeEditorMockFoodSearchResult(foodId: "mock_food_yogurt", name: "Greek yogurt", defaultQuantityText: "170", defaultUnit: "g", sourceLabel: "Local mock food", macrosKnown: true, metadata: ["mode": "mock-local-fixture", "startsBackendSearch": "false"])
+        RecipeEditorMockFoodSearchResult(foodId: "mock_food_chicken", name: "Chicken breast", defaultQuantityText: "100", defaultUnit: "g", sourceLabel: "Suggested food", macrosKnown: true, metadata: ["mode": "mock-local-fixture", "startsBackendSearch": "false"]),
+        RecipeEditorMockFoodSearchResult(foodId: "mock_food_yogurt", name: "Greek yogurt", defaultQuantityText: "170", defaultUnit: "g", sourceLabel: "Suggested food", macrosKnown: true, metadata: ["mode": "mock-local-fixture", "startsBackendSearch": "false"])
     ]
 
     public static func search(_ query: String) -> [Self] {
@@ -751,7 +795,7 @@ public struct RecipeEditorPhotoCommand: Equatable {
         identifier: "mock-local-photo-placeholder",
         startsBackendUpload: false,
         storesPrivateImage: false,
-        feedbackMessage: "Photo placeholder noted locally. Picker, upload, and storage are not active in this mock slice."
+        feedbackMessage: "Photo noted locally. Picker, upload, and storage are not active in this preview."
     )
 
     public func invoke() -> RecipeEditorPhotoStatus {
@@ -768,8 +812,8 @@ public struct RecipeEditorPhotoHook: Equatable {
 
     public static let mockPlaceholder = RecipeEditorPhotoHook(
         title: "Recipe photo",
-        body: "Add photo is wired as a local placeholder for a future picker. Nothing is uploaded from this mock editor.",
-        actionTitle: "Add photo placeholder",
+        body: "Add photo is a local preview for a picker. Nothing is uploaded from this editor.",
+        actionTitle: "Add photo",
         systemImage: "photo.badge.plus",
         mockUploadMetadata: [
             "mode": "mock-local-placeholder",
@@ -790,6 +834,11 @@ final class RecipeEditorDraftStore: ObservableObject {
 
     func loadDraft(id: String) -> RecipeEditorDraftForm {
         draftsById[id] ?? RecipeEditorDraftForm.localDraft(id: id)
+    }
+
+    @discardableResult
+    func seedRemixDraft(from recipe: RecipeDetail) -> RecipeEditorDraftForm {
+        saveDraft(.remixDraft(from: recipe))
     }
 
     @discardableResult
@@ -869,7 +918,7 @@ public struct RecipeEditorPlaceholderView: View {
                 applyVisibilityChange(option)
                 isShowingVisibilityOptions = false
                 if option == .shareToCommunity && !communityShareStore.hasSetup(draftKey: currentDraftKey) {
-                    actionStatusCopy = "Share to community selected locally. Choose a mock community and optional caption next; no backend post starts."
+                    actionStatusCopy = "Share to community selected locally. Choose a community and optional caption next; nothing posts publicly."
                     DispatchQueue.main.async { isShowingCommunityShareSetup = true }
                 } else {
                     actionStatusCopy = currentVisibilityMatrix.statusCopy
@@ -914,7 +963,7 @@ public struct RecipeEditorPlaceholderView: View {
                 SavoroButton(form.photoHook.actionTitle, systemImage: "photo", variant: .secondary) {
                     form.photoStatus = onPhotoHookInvoked(photoCommand)
                 }
-                .accessibilityHint("Mock-only photo seam. No upload starts.")
+                .accessibilityHint("Photo preview only. No upload starts.")
                 if form.photoStatus != .idle {
                     Label(form.photoStatus.message, systemImage: "checkmark.circle")
                         .font(SavoroTypography.callout)
@@ -956,7 +1005,7 @@ public struct RecipeEditorPlaceholderView: View {
                         form.addIngredient()
                     }
                 }
-                Text("Add foods from local mock results or type a free-text ingredient. Known mock foods update the macro preview as quantity, unit, or servings change.")
+                Text("Add foods from suggestions or type a free-text ingredient. Foods with nutrition details update the macro preview as quantity, unit, or servings change.")
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textBody)
 
@@ -966,7 +1015,7 @@ public struct RecipeEditorPlaceholderView: View {
                     ForEach(RecipeEditorMockFoodSearchResult.fixtureResults) { food in
                         Button(food.name) { form.addMockFood(food) }
                             .buttonStyle(.bordered)
-                            .accessibilityHint("Adds a local mock food result; no backend search starts.")
+                            .accessibilityHint("Adds a suggested food; no public search starts.")
                     }
                 }
 
@@ -1118,18 +1167,18 @@ public struct RecipeEditorPlaceholderView: View {
                     SavoroButton("Edit community setup", systemImage: "person.3", variant: .secondary) {
                         isShowingCommunityShareSetup = true
                     }
-                    .accessibilityHint("Opens local mock community and caption setup. No backend community post starts.")
+                    .accessibilityHint("Opens community and caption setup. No community post starts.")
                 }
                 HStack(spacing: SavoroSpacing.sm) {
                     SavoroButton("Change visibility", systemImage: "eye", variant: .secondary) {
                         isShowingVisibilityOptions = true
                     }
-                    .accessibilityHint("Opens local mock visibility options. No publish, backend request, or community post starts.")
+                    .accessibilityHint("Opens visibility options. No publish or community post starts.")
                     if selectedVisibilityOption != .keepPrivate {
                         SavoroButton("Revert to private", systemImage: "lock", variant: .secondary) {
                             revertVisibilityToPrivate()
                         }
-                        .accessibilityHint("Unpublishes this local mock visibility state back to private. No backend unpublish request starts.")
+                        .accessibilityHint("Returns this visibility preview to private. No public update starts.")
                     }
                 }
             }
@@ -1151,12 +1200,12 @@ public struct RecipeEditorPlaceholderView: View {
                         saveDraft()
                     }
                     .accessibilityLabel("Save Draft")
-                    .accessibilityHint("Saves this recipe draft to the local in-session mock store only. No public publish or sharing starts.")
+                    .accessibilityHint("Saves this recipe draft for this app session only. No public publish or sharing starts.")
                     SavoroButton("Preview public publish", systemImage: "checklist", variant: .secondary) {
                         previewPublicPublish()
                     }
                     .accessibilityLabel("Preview public publish")
-                    .accessibilityHint("Checks required recipe details for a mock public publish preview. Nothing is posted or listed publicly.")
+                    .accessibilityHint("Checks required recipe details for a public publish preview. Nothing is posted or listed publicly.")
                 }
                 if let actionStatusCopy {
                     Label(actionStatusCopy, systemImage: form.canMockPublishPublicly ? "checkmark.circle" : "info.circle")
@@ -1199,7 +1248,7 @@ public struct RecipeEditorPlaceholderView: View {
     private func revertVisibilityToPrivate() {
         selectedVisibilityOption = .keepPrivate
         visibilityChangeStore.unpublishToPrivate(draftKey: currentDraftKey)
-        actionStatusCopy = "Visibility reverted to private in local mock state. The recipe is not profile-listed, community-listed, discoverable, or link-ready; no backend unpublish request starts."
+        actionStatusCopy = "Visibility reverted to private locally. The recipe is not profile-listed, community-listed, discoverable, or link-ready; no public update starts."
     }
 
     private func saveCommunityShareSetup(_ setup: RecipeCommunityShareSetup) {
@@ -1207,7 +1256,7 @@ public struct RecipeEditorPlaceholderView: View {
         selectedVisibilityOption = .shareToCommunity
         communityShareStore.saveSetup(setup, draftKey: currentDraftKey)
         visibilityChangeStore.saveVisibility(.shareToCommunity, draftKey: currentDraftKey)
-        actionStatusCopy = setup.statusCopy + ". This is mock-only; no backend community post is created."
+        actionStatusCopy = setup.statusCopy + ". No community post is created."
     }
 
     static func makeTemporaryDraftKey() -> String {
@@ -1219,7 +1268,7 @@ public struct RecipeEditorPlaceholderView: View {
     }
 
     private func previewPublicPublish() {
-        actionStatusCopy = form.mockPublicPublishResultCopy
+        actionStatusCopy = form.publishPreviewCopy
     }
 
     private func labeledTextField(label: String, text: Binding<String>, isRequired: Bool = false, axis: Axis = .horizontal) -> some View {
@@ -1329,7 +1378,7 @@ struct RecipeVisibilityOptionSheetView: View {
                             .accessibilityIdentifier("recipe-visibility-option-\(option.rawValue)")
                             .accessibilityLabel("\(option.title). \(option.subtitle)")
                             .accessibilityValue(pendingSelection == option ? "Selected" : "Not selected")
-                            .accessibilityHint("Sets the pending local mock visibility choice. Use Apply to save it or Close to discard it.")
+                            .accessibilityHint("Sets the pending visibility choice. Use Apply to save it or Close to discard it.")
                         }
                     }
 
@@ -1427,7 +1476,7 @@ struct RecipeCommunityShareSetupSheetView: View {
                             .accessibilityIdentifier("recipe-community-share-option-\(community.id)")
                             .accessibilityLabel("\(community.name). \(community.summary)")
                             .accessibilityValue(pendingSetup.selectedCommunityId == community.id ? "Selected" : "Not selected")
-                            .accessibilityHint("Sets the pending local mock community choice. Use Save setup to keep it for this app session.")
+                            .accessibilityHint("Sets the pending community choice. Use Save setup to keep it for this app session.")
                         }
                     }
 

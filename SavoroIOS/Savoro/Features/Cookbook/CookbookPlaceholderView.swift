@@ -34,7 +34,7 @@ struct CookbookLibraryItem: Identifiable, Equatable {
             switch self {
             case .saved: return "Saved"
             case .draft: return "Draft"
-            case .forked: return "Forked"
+            case .forked: return "Remixed"
             }
         }
 
@@ -65,7 +65,7 @@ struct CookbookLibraryItem: Identifiable, Equatable {
     }
 
     var accessibilityHint: String {
-        guard destinationRoute != nil else { return "Local mock item" }
+        guard destinationRoute != nil else { return "Local item" }
         return visibility == .localDraft ? "Opens draft editor" : "Opens recipe details"
     }
 
@@ -112,9 +112,9 @@ struct CookbookLibrarySection: Equatable {
     var emptyTitle: String { "Nothing here yet" }
     var emptyBody: String {
         switch segment {
-        case .mine: return "Recipes you create or fork will appear here in this local mock library."
+        case .mine: return "Recipes you create or remix will appear here in your library."
         case .saved: return "Saved public recipes will appear here for quick access on this device."
-        case .drafts: return "Local drafts stay on this device in the mock app until you choose what to do next."
+        case .drafts: return "Local drafts stay on this device until you choose what to do next."
         }
     }
 
@@ -139,8 +139,8 @@ struct RootCookbookSaveCoordinator {
     static func save(recipeId: String, in store: CookbookMockLocalStore) -> SavoroToast {
         store.save(recipeId: recipeId)
         return SavoroToast(
-            title: "Saved to local mock",
-            message: "This recipe is saved locally for the demo only; nothing was published or shared.",
+            title: "Saved to cookbook",
+            message: "This recipe is saved to your cookbook on this device; nothing was published or shared.",
             style: .success
         )
     }
@@ -148,17 +148,24 @@ struct RootCookbookSaveCoordinator {
 
 final class CookbookMockLocalStore: ObservableObject {
     @Published private(set) var savedRecipeIDs: Set<String>
+    @Published private(set) var forkedDraftRecipes: [RecipeDetail]
 
-    init(savedRecipeIDs: Set<String> = CookbookLibraryViewModel.defaultSavedRecipeIDs) {
+    init(savedRecipeIDs: Set<String> = CookbookLibraryViewModel.defaultSavedRecipeIDs, forkedDraftRecipes: [RecipeDetail] = []) {
         self.savedRecipeIDs = savedRecipeIDs
+        self.forkedDraftRecipes = forkedDraftRecipes
     }
 
     func save(recipeId: String) {
         savedRecipeIDs.insert(recipeId)
     }
 
+    func addForkedDraft(_ recipe: RecipeDetail) {
+        forkedDraftRecipes.removeAll { $0.summary.id == recipe.summary.id }
+        forkedDraftRecipes.insert(recipe, at: 0)
+    }
+
     func refreshViewModel(selectedSegment: CookbookLibrarySegment = .saved, searchText: String = "", selectedFilter: CookbookLibraryFilter = .all) -> CookbookLibraryViewModel {
-        CookbookLibraryViewModel(selectedSegment: selectedSegment, searchText: searchText, selectedFilter: selectedFilter, savedRecipeIDs: savedRecipeIDs)
+        CookbookLibraryViewModel(selectedSegment: selectedSegment, searchText: searchText, selectedFilter: selectedFilter, savedRecipeIDs: savedRecipeIDs, forkedDraftRecipes: forkedDraftRecipes)
     }
 }
 
@@ -167,14 +174,16 @@ struct CookbookLibraryViewModel: Equatable {
     let searchText: String
     let selectedFilter: CookbookLibraryFilter
     let savedRecipeIDs: Set<String>
+    let forkedDraftRecipes: [RecipeDetail]
     let sections: [CookbookLibrarySection]
 
-    init(selectedSegment: CookbookLibrarySegment = .mine, searchText: String = "", selectedFilter: CookbookLibraryFilter = .all, savedRecipeIDs: Set<String> = Self.defaultSavedRecipeIDs) {
+    init(selectedSegment: CookbookLibrarySegment = .mine, searchText: String = "", selectedFilter: CookbookLibraryFilter = .all, savedRecipeIDs: Set<String> = Self.defaultSavedRecipeIDs, forkedDraftRecipes: [RecipeDetail] = []) {
         self.selectedSegment = selectedSegment
         self.searchText = searchText
         self.selectedFilter = selectedFilter
         self.savedRecipeIDs = savedRecipeIDs
-        self.sections = Self.makeSections(savedRecipeIDs: savedRecipeIDs)
+        self.forkedDraftRecipes = forkedDraftRecipes
+        self.sections = Self.makeSections(savedRecipeIDs: savedRecipeIDs, forkedDraftRecipes: forkedDraftRecipes)
     }
 
     var selectedSection: CookbookLibrarySection {
@@ -199,34 +208,52 @@ struct CookbookLibraryViewModel: Equatable {
     var searchPrompt: String { "Search this cookbook" }
     var filterShellTitle: String { "Filter" }
     var emptySearchTitle: String { "No recipes match" }
-    var emptySearchBody: String { "Adjust the search or choose All for this segment. Search and filters only check local fixture items shown in the selected cookbook tab." }
+    var emptySearchBody: String { "Adjust the search or choose All for this segment. Search and filters only check recipes shown in the selected cookbook tab." }
     var createRecipeTitle: String { "Create recipe" }
-    var createRecipeSubtitle: String { "Start a private draft in the recipe editor scaffold." }
+    var createRecipeSubtitle: String { "Start a private draft you can edit before sharing." }
     static var createRecipeRoute: SavoroRoute { .recipeEditor(draftId: nil) }
 
-    var privacyNotice: String { "Drafts are private, local-only mock items. Public cookbook surfaces show recipe library details only, not personal health records." }
-    var scaffoldNotice: String { "Cookbook uses fixture data only; search and filters run on local fixtures. Nothing is published or shared from this mock library." }
+    var privacyNotice: String { "Drafts are private to you. Public cookbook surfaces show recipe library details only, not personal health records." }
+    var scaffoldNotice: String { "Search and filters only use the cookbook items shown here. Nothing is published or shared from this library." }
     var visibleCopy: String { [privacyNotice, scaffoldNotice, searchPrompt, filterShellTitle, emptySearchTitle, emptySearchBody, createRecipeTitle, createRecipeSubtitle, selectedSection.visibleCopy].joined(separator: " ") }
 
     func selecting(_ segment: CookbookLibrarySegment) -> CookbookLibraryViewModel {
-        CookbookLibraryViewModel(selectedSegment: segment, searchText: searchText, selectedFilter: selectedFilter, savedRecipeIDs: savedRecipeIDs)
+        CookbookLibraryViewModel(selectedSegment: segment, searchText: searchText, selectedFilter: selectedFilter, savedRecipeIDs: savedRecipeIDs, forkedDraftRecipes: forkedDraftRecipes)
     }
 
     static let defaultSavedRecipeIDs: Set<String> = ["recipe_berry_oats", "recipe_citrus_fish_tacos"]
 
-    private static func makeSections(savedRecipeIDs: Set<String>) -> [CookbookLibrarySection] {
+    private static func forkedDraftItem(from recipe: RecipeDetail) -> CookbookLibraryItem {
+        let source = recipe.summary.creator.username == "home_cook" ? "source version preserved" : "source preserved"
+        return CookbookLibraryItem(
+            id: "forked_\(recipe.summary.id)",
+            recipeId: recipe.summary.id,
+            title: recipe.summary.title,
+            subtitle: "Private editable remix · \(source) · not published or shared",
+            badges: [.draft, .forked],
+            systemImage: "lock.doc",
+            visibility: .localDraft,
+            updatedText: "Created in this session",
+            tags: Array((recipe.summary.tags + ["private"]).prefix(3)),
+            isLocalOnly: true
+        )
+    }
+
+    private static func makeSections(savedRecipeIDs: Set<String>, forkedDraftRecipes: [RecipeDetail] = []) -> [CookbookLibrarySection] {
         let savedCatalog = [
             CookbookLibraryItem(id: "saved_oats", recipeId: "recipe_berry_oats", title: "Berry Oat Breakfast Bowl", subtitle: "Saved public recipe · Maya Reed", badges: [.saved], systemImage: "bookmark.fill", visibility: .savedPublic, updatedText: "Saved today", tags: ["breakfast", "fiber"], isLocalOnly: false),
             CookbookLibraryItem(id: "saved_tacos", recipeId: "recipe_citrus_fish_tacos", title: "Citrus Fish Tacos", subtitle: "Saved public recipe · Savoro Kitchen", badges: [.saved], systemImage: "bookmark.fill", visibility: .savedPublic, updatedText: "Saved Monday", tags: ["weeknight", "fresh"], isLocalOnly: false),
             CookbookLibraryItem(id: "saved_shawarma", recipeId: "recipe_shawarma_bowl", title: "Chicken Shawarma Bowl", subtitle: "Saved public recipe · Maya Reed", badges: [.saved], systemImage: "bookmark.fill", visibility: .savedPublic, updatedText: "Saved on this device", tags: ["high-protein", "meal prep"], isLocalOnly: false)
         ]
 
+        let forkedDraftItems = forkedDraftRecipes.map(forkedDraftItem)
+
         return [
             CookbookLibrarySection(
                 segment: .mine,
                 title: "My recipes",
-                subtitle: "Recipes you created or forked in the mock cookbook.",
-                items: [
+                subtitle: "Recipes you created or remixed privately.",
+                items: forkedDraftItems + [
                     CookbookLibraryItem(id: "mine_shawarma", recipeId: "recipe_shawarma_bowl", title: "Chicken Shawarma Bowl", subtitle: "Published recipe · 4 servings", badges: [], systemImage: "person.crop.circle", visibility: .published, updatedText: "Updated yesterday", tags: ["high-protein", "meal prep"], isLocalOnly: false),
                     CookbookLibraryItem(id: "mine_lentil", recipeId: "recipe_lentil_soup", title: "Lemony Lentil Soup", subtitle: "Remixed from @maya · source version preserved", badges: [.forked], systemImage: "arrow.triangle.branch", visibility: .published, updatedText: "Updated this week", tags: ["cozy", "batch cook"], isLocalOnly: false)
                 ]
@@ -240,8 +267,8 @@ struct CookbookLibraryViewModel: Equatable {
             CookbookLibrarySection(
                 segment: .drafts,
                 title: "Drafts",
-                subtitle: "Private recipes kept local in this mock app.",
-                items: [
+                subtitle: "Private recipes kept for you until you choose what to do next.",
+                items: forkedDraftItems + [
                     CookbookLibraryItem(id: "draft_green_curry", recipeId: "draft_green_curry", title: "Green Curry Notes", subtitle: "Private local draft · not published", badges: [.draft], systemImage: "lock.doc", visibility: .localDraft, updatedText: "Edited today", tags: ["private", "recipe notes"], isLocalOnly: true),
                     CookbookLibraryItem(id: "draft_snack_box", recipeId: "draft_snack_box", title: "Snack Box Template", subtitle: "Private local draft · not shared", badges: [.draft], systemImage: "lock.doc", visibility: .localDraft, updatedText: "Edited yesterday", tags: ["private", "template"], isLocalOnly: true)
                 ]

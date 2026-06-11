@@ -66,7 +66,7 @@ enum SavoroSheetRoute: Hashable, Identifiable {
         case .addMeal: return "Add Meal"
         case .logRecipe: return "Log Recipe"
         case .logPicker: return "Log Picker"
-        case .forkRemix: return "Fork / Remix"
+        case .forkRemix: return "Private remix"
         case .shareRecipe: return "Share Recipe"
         case .publishVisibility: return "Publish & Visibility"
         case .communityShareSetup: return "Community Setup"
@@ -77,21 +77,21 @@ enum SavoroSheetRoute: Hashable, Identifiable {
     var placeholderSubtitle: String {
         switch self {
         case .addMeal:
-            return "Placeholder sheet route for future private meal logging. No picker, mutation, persistence, or backend call is implemented."
+            return "Private meal logging preview. Nothing is saved beyond this app session."
         case .logRecipe:
-            return "Mock recipe logging scaffold. Logs are private in-memory updates for this app session only; no backend persistence is implemented."
+            return "Recipe logging preview. Logs stay private for this app session only."
         case .logPicker:
-            return "Mock picker with recents, saved, mine, local mixed food/recipe search results, and preserved meal context for recipe handoff. Persistence and backend calls are not implemented."
+            return "Picker preview with recents, saved recipes, your recipes, search results, and preserved meal context."
         case .forkRemix:
-            return "Confirmation sheet for remixing as a private editable copy. Confirm saves the choice locally for now, without publishing or changing the original. Attribution and source version stay preserved."
+            return "Confirmation sheet for making a private editable remix. Confirm keeps the original unchanged, preserves attribution and source version, and publishes or shares nothing."
         case .shareRecipe:
-            return "Placeholder sheet route for future native sharing and community distribution. No external share, post, or publish action is performed."
+            return "Sharing preview for recipe and community options. No external share, post, or publish action is performed."
         case .publishVisibility:
-            return "Local mock recipe visibility controls. Share to community continues to a mock community and caption setup."
+            return "Recipe visibility controls. Share to community continues to community and caption setup."
         case .communityShareSetup:
-            return "Local mock community selector and caption setup. No backend post, public listing, or social activity is created."
+            return "Community selector and caption setup. No public listing or social activity is created."
         case .recipeActions:
-            return "Placeholder sheet route for future Save, Log, Fork, Share, and Publish actions."
+            return "Recipe actions preview for Save, Log, Remix, Share, and Publish choices."
         }
     }
 }
@@ -120,7 +120,7 @@ struct SavoroToast: Equatable, Identifiable {
     static let scaffoldDemo = SavoroToast(
         id: UUID(uuidString: "00000000-0000-0000-0000-000000000039")!,
         title: "Savoro shell ready",
-        message: "Toast host is scaffolded for future actions.",
+        message: "Toast messages are ready for app actions.",
         style: .info,
         duration: 2.5
     )
@@ -153,13 +153,13 @@ enum SavoroRoute: Hashable, Identifiable {
     var placeholderSubtitle: String {
         switch self {
         case .recipeDetail:
-            return "Placeholder route for a future recipe detail screen with macros, provenance, Save/Fork/Log, and sharing contracts."
+            return "Recipe detail with macros, source details, saving, remixing, logging, and sharing options."
         case .communityDetail:
-            return "Placeholder route for a future community space with public recipe shares, members, and invitation contracts."
+            return "Community space with public recipe shares, members, and invitations."
         case .publicProfile:
-            return "Placeholder route for a future public profile surface with public recipes, collections, and social context."
+            return "Public profile with public recipes, collections, and social context."
         case .recipeEditor:
-            return "Placeholder route for a future recipe editor destination for drafts, ingredients, macro preview, and publishing decisions."
+            return "Recipe editor for drafts, ingredients, macro preview, and publishing decisions."
         }
     }
 }
@@ -217,7 +217,7 @@ struct SavoroTabShellView: View {
     @State private var communityShareSetup = RecipeCommunityShareSetup()
     @State private var temporaryVisibilityDraftKey = RecipeEditorPlaceholderView.makeTemporaryDraftKey()
     @State private var dayLog: DayLog = .todayFixture
-    private let apiClient: APIClient = MockAPIClient.localLogRecipeSuccess()
+    private let apiClient: APIClient = MockAPIClient.localMockSuccessRoutes()
 
     init() {
         _cookbookLocalStore = ObservedObject(wrappedValue: CookbookMockLocalStore())
@@ -279,7 +279,7 @@ struct SavoroTabShellView: View {
             activeSheet = .logRecipe(recipeId: item.recipeId, recipeVersionId: item.recipeVersionId, mealType: mealType)
         case .food:
             activeToast = SavoroToast(
-                title: "Food handoff is scaffolded",
+                title: "Food handoff ready",
                 message: "\(item.title) was not added to Today. Recipe logging can continue with the selected meal preset.",
                 style: .info
             )
@@ -288,7 +288,7 @@ struct SavoroTabShellView: View {
 
     private func handleTodayLogAgain(_ item: TodayRecentLogAgainItem) {
         activeToast = SavoroToast(
-            title: "Log again is scaffolded",
+            title: "Log again ready",
             message: "\(item.title) was not added to your private log.",
             style: .info
         )
@@ -349,8 +349,8 @@ struct SavoroTabShellView: View {
                 visibilityChangeStore.saveVisibility(option, draftKey: draftKey)
                 if option == .shareToCommunity && !communityShareStore.hasSetup(draftKey: draftKey) {
                     activeToast = SavoroToast(
-                        title: "Choose a mock community",
-                        message: "Share to community continues to local community and caption setup; no backend post starts.",
+                        title: "Choose a community",
+                        message: "Share to community continues to community and caption setup; nothing posts publicly.",
                         style: .info
                     )
                     DispatchQueue.main.async { activeSheet = .communityShareSetup(recipeId: recipeId) }
@@ -377,17 +377,14 @@ struct SavoroTabShellView: View {
                 visibilityChangeStore.saveVisibility(.shareToCommunity, draftKey: draftKey)
                 activeToast = SavoroToast(
                     title: "Community setup saved locally",
-                    message: "\(setup.selectedCommunity?.name ?? "Mock community") and caption are saved for this app session only; no backend community post is created.",
+                    message: "\(setup.selectedCommunity?.name ?? "Community") and caption are saved for this app session only; no community post is created.",
                     style: .success
                 )
                 activeSheet = nil
             }
         case let .forkRemix(recipeId, sourceVersionId):
             NavigationStack {
-                ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: recipeId, sourceVersionId: sourceVersionId)) { model in
-                    activeToast = model.confirmationToast
-                    activeSheet = nil
-                }
+                ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: recipeId, sourceVersionId: sourceVersionId), onConfirm: handleForkRecipe)
             }
         case .addMeal, .shareRecipe, .recipeActions:
             SavoroPlaceholderSheetView(route: route)
@@ -396,6 +393,22 @@ struct SavoroTabShellView: View {
 
     private func visibilityDraftKey(for recipeId: String?) -> String {
         recipeId ?? temporaryVisibilityDraftKey
+    }
+
+    @MainActor
+    private func handleForkRecipe(_ model: ForkRemixConfirmationSheetModel) async {
+        do {
+            let result = try await RootRecipeForkCoordinator.createPrivateCopy(model: model, apiClient: apiClient)
+            cookbookLocalStore.addForkedDraft(result.recipe)
+            recipeDraftStore.seedRemixDraft(from: result.recipe)
+            activeToast = result.toast
+            activeSheet = nil
+            selectedTab = .cookbook
+            navigationState[.cookbook].append(result.route)
+        } catch {
+            activeToast = model.forkErrorToast
+            activeSheet = nil
+        }
     }
 
     @MainActor
@@ -412,18 +425,18 @@ struct SavoroTabShellView: View {
             }
             activeToast = SavoroToast(
                 title: "Added to Today privately",
-                message: "Frozen recipe snapshot added for this mock session only; no backend persistence.",
+                message: "Frozen recipe snapshot added for this app session only.",
                 style: .success
             )
             activeSheet = nil
-            return .succeeded("Frozen recipe snapshot added for this mock session only; no backend persistence.")
+            return .succeeded("Frozen recipe snapshot added for this app session only.")
         } catch {
             activeToast = SavoroToast(
-                title: "Mock log was not added",
-                message: "Today is unchanged. Please try again when the mock route is ready.",
+                title: "Log was not added",
+                message: "Today is unchanged. Please try again.",
                 style: .warning
             )
-            return .errored("Today is unchanged. Please try again when the mock route is ready.")
+            return .errored("Today is unchanged. Please try again.")
         }
     }
 
@@ -457,13 +470,30 @@ struct SavoroTabShellView: View {
                 title: route.title,
                 subtitle: route.placeholderSubtitle,
                 foundationNotes: [
-                    "Route is registered now so each tab can push this destination independently later.",
-                    "No backend, persistence, sheet, toast, or real feature flow is implemented.",
+                    "Each tab can open this destination independently.",
+                    "No public sharing or posting starts from this preview.",
                     "Keep private nutrition logs, goals, daily progress, and body metrics out of public surfaces."
                 ],
                 accent: placeholderAccent(for: route)
             )
         }
+    }
+}
+
+struct RootRecipeForkResult: Equatable {
+    let recipe: RecipeDetail
+    let toast: SavoroToast
+    let route: SavoroRoute
+}
+
+struct RootRecipeForkCoordinator {
+    static func createPrivateCopy(model: ForkRemixConfirmationSheetModel, apiClient: APIClient) async throws -> RootRecipeForkResult {
+        let response = try await apiClient.send(ForkRecipeRequest(recipeId: model.recipeId))
+        return RootRecipeForkResult(
+            recipe: response.recipe,
+            toast: model.successToast(forkedRecipe: response.recipe),
+            route: .recipeEditor(draftId: response.recipe.summary.id)
+        )
     }
 }
 
@@ -476,7 +506,7 @@ struct SavoroPlaceholderSheetView: View {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
                 SavoroCard(style: .elevated) {
                     VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                        SavoroChip(title: "App-level sheet route", systemImage: "rectangle.portrait.bottomhalf.inset.filled", variant: .accent)
+                        SavoroChip(title: "App sheet", systemImage: "rectangle.portrait.bottomhalf.inset.filled", variant: .accent)
                         Text(route.title)
                             .font(SavoroTypography.title2)
                             .foregroundStyle(SavoroColor.textStrong)
@@ -486,7 +516,7 @@ struct SavoroPlaceholderSheetView: View {
                     }
                 }
 
-                Text("This host is intentionally lightweight: it centralizes presentation contracts for future MVP flows without adding backend, persistence, or real feature behavior.")
+                Text("This sheet keeps preview actions contained while protecting private recipe and nutrition data.")
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textMuted)
 

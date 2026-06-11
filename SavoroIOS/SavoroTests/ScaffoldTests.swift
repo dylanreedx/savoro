@@ -267,8 +267,8 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("goals"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("nutrition logs"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("never shared"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local mock"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("no backend"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("preview"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("no profile update"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
@@ -278,8 +278,8 @@ final class ScaffoldTests: XCTestCase {
         model.select(.shareToCommunity)
 
         XCTAssertEqual(model.selectedOption, .shareToCommunity)
-        XCTAssertEqual(model.selectedStatusCopy, "Selected visibility: Share to community. Local mock state only.")
-        XCTAssertTrue(model.visibleCopy.localizedCaseInsensitiveContains("future community selection step"))
+        XCTAssertEqual(model.selectedStatusCopy, "Selected visibility: Share to community. Preview only.")
+        XCTAssertTrue(model.visibleCopy.localizedCaseInsensitiveContains("community selection step"))
     }
 
     func testRecipeVisibilitySheetDraftStateSeparatesCancelFromApply() {
@@ -407,7 +407,7 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertTrue(publicPayloads.contains { $0["recipeId"] == "recipe_public_profile" && $0["surface"] == "publicProfile" })
         XCTAssertTrue(publicPayloads.contains { $0["recipeId"] == "recipe_public_profile" && $0["surface"] == "search" })
         XCTAssertEqual(communityPayload["communityId"], "community_weeknight")
-        XCTAssertEqual(communityPayload["caption"], "Cozy dinner idea for the mock group.")
+        XCTAssertEqual(communityPayload["caption"], "Cozy dinner idea for the group.")
         XCTAssertTrue(deniedTerms.allSatisfy { !publicPayloadCopy.localizedCaseInsensitiveContains($0) })
     }
 
@@ -470,9 +470,9 @@ final class ScaffoldTests: XCTestCase {
         ].joined(separator: " ")
         let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "calorie goal"]
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local mock"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("No backend publish"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("unpublish"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("app session"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("No public listing"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("not profile-listed"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("Private logs"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("body metrics are not included"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
@@ -495,13 +495,13 @@ final class ScaffoldTests: XCTestCase {
         var setup = RecipeCommunityShareSetup(selectedCommunityId: "community_meal_prep", caption: "Excited to share this cozy dinner idea.")
 
         store.saveSetup(setup, draftKey: "draft_1")
-        setup.caption = "Updated caption for the mock community."
+        setup.caption = "Updated caption for the community."
         store.saveSetup(setup, draftKey: "draft_1")
 
         let reloaded = store.loadSetup(draftKey: "draft_1")
         XCTAssertEqual(reloaded.selectedCommunityId, "community_meal_prep")
         XCTAssertEqual(reloaded.selectedCommunity?.name, "Meal prep ideas")
-        XCTAssertEqual(reloaded.caption, "Updated caption for the mock community.")
+        XCTAssertEqual(reloaded.caption, "Updated caption for the community.")
         XCTAssertTrue(reloaded.statusCopy.localizedCaseInsensitiveContains("Meal prep ideas"))
         XCTAssertTrue(reloaded.statusCopy.localizedCaseInsensitiveContains("Updated caption"))
     }
@@ -511,8 +511,8 @@ final class ScaffoldTests: XCTestCase {
         let copy = setup.visibleCopy
         let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "calorie goal"]
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local mock app-session"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("does not create a backend community post"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("app session"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("does not create a community post"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("Private logs"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("body metrics are not included"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
@@ -549,7 +549,7 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(row.source, .freeText)
         XCTAssertTrue(row.hasIncompleteNutrition)
         XCTAssertTrue(row.nutritionStatusText.localizedCaseInsensitiveContains("no local nutrition metadata"))
-        XCTAssertFalse(row.nutritionStatusText.localizedCaseInsensitiveContains("seeded from local mock food"))
+        XCTAssertFalse(row.nutritionStatusText.localizedCaseInsensitiveContains("seeded from available food details"))
     }
 
     func testRecipeEditorAggregateWarningAppearsForEditedManualRows() {
@@ -601,7 +601,7 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(food.metadata["startsBackendSearch"], "false")
         XCTAssertEqual(row.name, "Chicken breast")
         XCTAssertFalse(row.hasIncompleteNutrition)
-        XCTAssertEqual(row.nutritionStatusText, "Nutrition is seeded from local mock food metadata.")
+        XCTAssertEqual(row.nutritionStatusText, "Nutrition is seeded from available food details.")
     }
 
     func testRecipeEditorMacroMathUsesKnownMockIngredientQuantityAndUnit() {
@@ -661,7 +661,7 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(invalid.nutritionStatusText, RecipeEditorIngredientRow.nonComputableMockNutritionNotice)
         XCTAssertTrue(invalid.nutritionStatusText.localizedCaseInsensitiveContains("not included"))
         XCTAssertTrue(invalid.nutritionStatusText.localizedCaseInsensitiveContains("partial macro preview"))
-        XCTAssertFalse(invalid.nutritionStatusText.localizedCaseInsensitiveContains("seeded from local mock food"))
+        XCTAssertFalse(invalid.nutritionStatusText.localizedCaseInsensitiveContains("seeded from available food details"))
     }
 
     func testRecipeEditorKnownMockFoodUnsupportedUnitStatusSaysNotIncludedInPartialPreview() {
@@ -671,7 +671,7 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(unsupportedUnit.nutritionStatusText, RecipeEditorIngredientRow.nonComputableMockNutritionNotice)
         XCTAssertTrue(unsupportedUnit.nutritionStatusText.localizedCaseInsensitiveContains("not included"))
         XCTAssertTrue(unsupportedUnit.nutritionStatusText.localizedCaseInsensitiveContains("quantity and unit"))
-        XCTAssertFalse(unsupportedUnit.nutritionStatusText.localizedCaseInsensitiveContains("seeded from local mock food"))
+        XCTAssertFalse(unsupportedUnit.nutritionStatusText.localizedCaseInsensitiveContains("seeded from available food details"))
     }
 
     func testRecipeEditorInvalidOrBlankServingsNeedServingsCopyInsteadOfPerServingTotals() {
@@ -740,7 +740,7 @@ final class ScaffoldTests: XCTestCase {
         let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "daily goal", "calorie goal", "body metric", "private log", "food log"]
 
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("partial macro preview"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local mock"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("available food details"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
@@ -752,7 +752,7 @@ final class ScaffoldTests: XCTestCase {
         let deniedTerms = ["private log", "food log", "daily goal", "calorie goal", "body metric", "adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "starts backend"]
 
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("local"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("mock"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("available food details"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
@@ -895,7 +895,7 @@ final class ScaffoldTests: XCTestCase {
         ].joined(separator: " ")
         let deniedTerms = ["private log", "food log", "daily goal", "calorie goal", "body metric", "adherence", "compliance", "failed", "over limit"]
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("fixture data"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("cookbook items shown here"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
@@ -934,7 +934,7 @@ final class ScaffoldTests: XCTestCase {
 
         let savedFilterInsideMine = CookbookLibraryViewModel(selectedSegment: .mine, selectedFilter: .saved)
         XCTAssertTrue(savedFilterInsideMine.filteredItems.isEmpty)
-        XCTAssertTrue(savedFilterInsideMine.emptySearchBody.localizedCaseInsensitiveContains("local fixture"))
+        XCTAssertTrue(savedFilterInsideMine.emptySearchBody.localizedCaseInsensitiveContains("recipes shown"))
     }
 
     func testCookbookEmptyStateMetadataDistinguishesTrueEmptyFromNoResults() throws {
@@ -949,7 +949,7 @@ final class ScaffoldTests: XCTestCase {
         let noResultState = try XCTUnwrap(noResults.emptyState)
         XCTAssertEqual(noResultState.kind, .noResults(.mine))
         XCTAssertEqual(noResultState.title, "No recipes match")
-        XCTAssertTrue(noResultState.body.localizedCaseInsensitiveContains("local fixture"))
+        XCTAssertTrue(noResultState.body.localizedCaseInsensitiveContains("recipes shown"))
         XCTAssertEqual(noResultState.systemImage, "magnifyingglass")
     }
 
@@ -962,7 +962,7 @@ final class ScaffoldTests: XCTestCase {
         let copy = states.flatMap { [$0.title, $0.body] }.joined(separator: " ")
         let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "food log", "daily goal", "calorie goal", "body metric", "sync"]
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("recipes"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
@@ -1029,7 +1029,7 @@ final class ScaffoldTests: XCTestCase {
             .joined(separator: " ")
         let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "food log", "daily goal", "calorie goal", "body metric", "progress"]
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local fixtures"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("cookbook items shown here"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("private"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
@@ -1051,7 +1051,7 @@ final class ScaffoldTests: XCTestCase {
 
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("Draft"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("Saved"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Forked"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Remixed"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
@@ -1104,7 +1104,8 @@ final class ScaffoldTests: XCTestCase {
         let viewModel = RecipeDetailContentViewModel(recipe: recipe)
 
         XCTAssertEqual(viewModel.currentVersionId, recipe.summary.currentVersionId)
-        XCTAssertEqual(viewModel.versionText, "Recipe version 1 · recipe_version_20260606")
+        XCTAssertTrue(viewModel.versionText.localizedCaseInsensitiveContains("Recipe version 1"))
+        XCTAssertFalse(viewModel.versionText.localizedCaseInsensitiveContains("recipe_version_20260606"))
         XCTAssertEqual(viewModel.baseServings, 4)
         XCTAssertEqual(viewModel.ingredients.map(\.id), ["ingredient_chicken", "ingredient_sauce"])
         XCTAssertEqual(viewModel.ingredients.first?.title, "Chicken Breast")
@@ -1187,7 +1188,7 @@ final class ScaffoldTests: XCTestCase {
         )
         let viewModel = RecipeDetailActionBarViewModel(recipe: recipe)
 
-        XCTAssertEqual(viewModel.actions.map(\.label), ["Save", "Fork", "Log", "Share"])
+        XCTAssertEqual(viewModel.actions.map(\.label), ["Save", "Remix", "Log", "Share"])
         XCTAssertEqual(viewModel.actions.map(\.accessibilityIdentifier), [
             "recipe-detail-action-save",
             "recipe-detail-action-fork",
@@ -1225,7 +1226,7 @@ final class ScaffoldTests: XCTestCase {
         let copy = [viewModel.visibleCopy, viewModel.toast(for: .save)?.message ?? ""].joined(separator: " ")
         let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "body metric", "calorie goal", "private log", "daily goal"]
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local mock"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("private to this app"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("saved locally"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("nothing was published or shared"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("backend"))
@@ -1242,12 +1243,17 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(model.confirmLabel, "Confirm private copy")
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("private"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("editable"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("source recipe stays unchanged"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("does not publish"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("original recipe stays unchanged"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Nothing is published"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("Attribution"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("preserved"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("source version"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("prepares a private editable copy"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("mock"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("backend"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("server-side"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("route"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("fixture"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("MVP slice"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("SAV-"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("future fork flow"))
@@ -1256,9 +1262,9 @@ final class ScaffoldTests: XCTestCase {
     func testForkRemixConfirmationCopyIsPrivacySafeNonShamingAndNoFalseBackendClaims() {
         let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl")
         let copy = [model.visibleCopy, model.confirmationToast.title, model.confirmationToast.message ?? ""].joined(separator: " ")
-        let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "food log", "daily goal", "calorie goal", "body metric", "starts backend", "backend sync", "MVP slice", "SAV-", "future fork flow", "recipe_shawarma_bowl", "recipeId"]
+        let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "food log", "daily goal", "calorie goal", "body metric", "starts backend", "backend", "server-side", "route", "mock", "fixture", "MVP", "SAV-", "future fork flow", "recipe_shawarma_bowl", "recipeId"]
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("private"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("original stays unchanged"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("attribution/source version are preserved"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("Nothing was published or shared"))
@@ -1270,7 +1276,7 @@ final class ScaffoldTests: XCTestCase {
         let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl", sourceVersionId: "recipe_version_20260606")
 
         XCTAssertEqual(route.id, "fork-remix:recipe_shawarma_bowl:recipe_version_20260606")
-        XCTAssertEqual(route.title, "Fork / Remix")
+        XCTAssertEqual(route.title, "Private remix")
         XCTAssertEqual(model.routeMetadata["sheetRoute"], route.id)
         XCTAssertEqual(model.routeMetadata["sourceVersionId"], "recipe_version_20260606")
         XCTAssertEqual(model.routeMetadata["preservesAttribution"], "true")
@@ -1278,6 +1284,127 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(model.routeMetadata["startsBackendRequest"], "false")
         XCTAssertEqual(model.routeMetadata["mutatesSourceRecipe"], "false")
         XCTAssertEqual(model.routeMetadata["createsPublicPost"], "false")
+    }
+
+    func testForkRecipeRequestShapeHasNoPublishShareOrBodyPayload() {
+        let request = ForkRecipeRequest(recipeId: "recipe_shawarma_bowl")
+
+        XCTAssertEqual(request.path, "/mock/recipes/recipe_shawarma_bowl/fork")
+        XCTAssertEqual(request.method, .post)
+        XCTAssertNil(request.body)
+        XCTAssertFalse(request.path.localizedCaseInsensitiveContains("publish"))
+        XCTAssertFalse(request.path.localizedCaseInsensitiveContains("share"))
+        XCTAssertFalse(request.path.localizedCaseInsensitiveContains("server"))
+    }
+
+    func testMockForkRecipeResponseCreatesPrivateDraftAttributedCopyAndLeavesSourceUnchanged() async throws {
+        let sourceBefore = RecipeDetail.mockFixture(forRoutedId: "recipe_shawarma_bowl")
+        let response = try await MockAPIClient.localForkRecipeSuccess().send(ForkRecipeRequest(recipeId: "recipe_shawarma_bowl"))
+        let fork = response.recipe
+        let sourceAfter = RecipeDetail.mockFixture(forRoutedId: "recipe_shawarma_bowl")
+
+        XCTAssertNotEqual(fork.summary.id, sourceBefore.summary.id)
+        XCTAssertNotEqual(fork.currentVersion.id, sourceBefore.currentVersion.id)
+        XCTAssertEqual(fork.summary.visibility, .private)
+        XCTAssertEqual(fork.summary.status, .draft)
+        XCTAssertTrue(fork.summary.viewerState.isOwner)
+        XCTAssertTrue(fork.summary.viewerState.canLog)
+        XCTAssertFalse(fork.summary.viewerState.canFork)
+        XCTAssertEqual(fork.summary.forkedFromRecipeId, sourceBefore.summary.id)
+        XCTAssertEqual(fork.summary.forkedFromVersionId, sourceBefore.currentVersion.id)
+        XCTAssertEqual(fork.currentVersion.recipeId, fork.summary.id)
+        XCTAssertTrue(fork.ingredients.allSatisfy { $0.recipeVersionId == fork.currentVersion.id })
+        XCTAssertTrue(fork.steps.allSatisfy { $0.recipeVersionId == fork.currentVersion.id })
+        XCTAssertTrue(fork.provenance.attributions.contains { $0.sourceType == .recipe && $0.sourceId == sourceBefore.summary.id && $0.sourceRevision == sourceBefore.currentVersion.id })
+        XCTAssertEqual(sourceAfter, sourceBefore)
+        XCTAssertNil(sourceAfter.summary.forkedFromRecipeId)
+        XCTAssertNil(sourceAfter.summary.forkedFromVersionId)
+        XCTAssertEqual(sourceAfter.summary.visibility, .public)
+        XCTAssertEqual(sourceAfter.summary.status, .published)
+    }
+
+    func testForkCoordinatorUsesForkResultForToastRouteAndCookbookDraftSeam() async throws {
+        let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl", sourceVersionId: "recipe_version_20260606")
+        let result = try await RootRecipeForkCoordinator.createPrivateCopy(model: model, apiClient: MockAPIClient.localForkRecipeSuccess())
+        let store = CookbookMockLocalStore(savedRecipeIDs: [])
+
+        store.addForkedDraft(result.recipe)
+        let cookbook = store.refreshViewModel(selectedSegment: .drafts)
+        let draftItem = try XCTUnwrap(cookbook.filteredItems.first { $0.recipeId == result.recipe.summary.id })
+
+        XCTAssertEqual(result.route, .recipeEditor(draftId: result.recipe.summary.id))
+        XCTAssertEqual(result.toast.title, "Private remix created")
+        XCTAssertTrue(result.toast.message?.localizedCaseInsensitiveContains(result.recipe.summary.title) == true)
+        XCTAssertTrue(result.toast.message?.localizedCaseInsensitiveContains("Nothing was published or shared") == true)
+        XCTAssertEqual(draftItem.visibility, .localDraft)
+        XCTAssertEqual(draftItem.badges, [.draft, .forked])
+        XCTAssertEqual(draftItem.destinationRoute, .recipeEditor(draftId: result.recipe.summary.id))
+        XCTAssertTrue(draftItem.visibleCopy.localizedCaseInsensitiveContains("Private editable remix"))
+        XCTAssertTrue(draftItem.visibleCopy.localizedCaseInsensitiveContains("source version preserved"))
+        XCTAssertTrue(draftItem.visibleCopy.localizedCaseInsensitiveContains("not published or shared"))
+        XCTAssertFalse(draftItem.visibleCopy.localizedCaseInsensitiveContains("mock"))
+        XCTAssertFalse(draftItem.visibleCopy.localizedCaseInsensitiveContains(result.recipe.summary.forkedFromRecipeId ?? "missing-source-id"))
+        XCTAssertFalse(draftItem.visibleCopy.localizedCaseInsensitiveContains(result.recipe.summary.forkedFromVersionId ?? "missing-version-id"))
+    }
+
+    func testForkResultVisibleCopyStaysPrivacySafeAndNonShaming() async throws {
+        let model = ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl")
+        let result = try await RootRecipeForkCoordinator.createPrivateCopy(model: model, apiClient: MockAPIClient.localForkRecipeSuccess())
+        let copy = [result.toast.title, result.toast.message ?? ""].joined(separator: " ")
+        let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "food log", "daily goal", "calorie goal", "body metric", "publish to profile", "share to community", "server copy", "SAV-"]
+
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("private"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("editable"))
+        XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
+    }
+
+    func testForkResponseSeedsEditorDraftWithCopiedRecipeFields() async throws {
+        let result = try await RootRecipeForkCoordinator.createPrivateCopy(
+            model: ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl"),
+            apiClient: MockAPIClient.localForkRecipeSuccess()
+        )
+        let store = RecipeEditorDraftStore()
+        store.seedRemixDraft(from: result.recipe)
+
+        let draft = store.loadDraft(id: result.recipe.summary.id)
+
+        XCTAssertEqual(draft.title, result.recipe.currentVersion.title)
+        XCTAssertEqual(draft.description, result.recipe.currentVersion.description)
+        XCTAssertEqual(draft.servingsText, "4")
+        XCTAssertEqual(draft.yieldText, "4 bowls")
+        XCTAssertEqual(draft.ingredients.map(\.name), result.recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }.map(\.label))
+        XCTAssertEqual(draft.instructions.map(\.body), result.recipe.steps.sorted { $0.sortOrder < $1.sortOrder }.map(\.body))
+        XCTAssertEqual(draft.sourceRecipeId, result.recipe.summary.forkedFromRecipeId)
+        XCTAssertEqual(draft.sourceVersionId, result.recipe.summary.forkedFromVersionId)
+        XCTAssertTrue(draft.isRemixDraft)
+    }
+
+    func testOrdinaryDraftDoesNotShowRemixSourceAttributionCopy() {
+        let draft = RecipeEditorDraftForm.localDraft(id: "draft_green_curry")
+        let copy = draft.draftContextCopy
+
+        XCTAssertFalse(draft.isRemixDraft)
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("private draft ready to edit"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("remix"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("original stays unchanged"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("source"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("attribution"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("draft_green_curry"))
+    }
+
+    func testRemixDraftShowsProductSafeSourcePreservationCopyWithoutIds() throws {
+        let recipe = RecipeDetail.mockForkedFixture
+        let draft = RecipeEditorDraftForm.remixDraft(from: recipe)
+        let copy = draft.draftContextCopy
+
+        XCTAssertTrue(draft.isRemixDraft)
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("private remix ready to edit"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("original stays unchanged"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("source version note stays attached"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains(recipe.summary.forkedFromRecipeId ?? "missing-source-id"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains(recipe.summary.forkedFromVersionId ?? "missing-version-id"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("recipe_"))
+        XCTAssertFalse(copy.localizedCaseInsensitiveContains("version_"))
     }
 
     @MainActor
@@ -1337,8 +1464,9 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertTrue(banner.visibleCopy.localizedCaseInsensitiveContains("Remixed"))
         XCTAssertTrue(banner.visibleCopy.localizedCaseInsensitiveContains("attribution"))
         XCTAssertTrue(banner.visibleCopy.localizedCaseInsensitiveContains("source version"))
-        XCTAssertTrue(banner.visibleCopy.contains("recipe_original_shawarma"))
-        XCTAssertTrue(banner.visibleCopy.contains("recipe_version_original_20260601"))
+        XCTAssertFalse(banner.visibleCopy.contains("recipe_original_shawarma"))
+        XCTAssertFalse(banner.visibleCopy.contains("recipe_version_original_20260601"))
+        XCTAssertFalse(banner.visibleCopy.localizedCaseInsensitiveContains("Source:"))
     }
 
     func testRecipeForkAttributionBannerIsHiddenForNonForkedRecipe() {
@@ -1522,7 +1650,7 @@ final class ScaffoldTests: XCTestCase {
             bundle: Bundle(for: Self.self)
         )
         let viewModel = RecipeDetailSocialContextViewModel(recipe: recipe)
-        let deniedActions = ["Save", "Fork", "Log", "Share"]
+        let deniedActions = ["Save", "Remix", "Log", "Share"]
 
         XCTAssertTrue(viewModel.exposedActionLabels.isEmpty)
         XCTAssertTrue(deniedActions.allSatisfy { !viewModel.exposedActionLabels.contains($0) })
@@ -1595,7 +1723,7 @@ final class ScaffoldTests: XCTestCase {
         let actionModel = RecipeDetailActionBarViewModel(recipe: recipe)
 
         XCTAssertEqual(RecipeDetailAccessState.from(recipe: recipe), .recipe(recipe))
-        XCTAssertEqual(actionModel.actions.map(\.label), ["Save", "Fork", "Log", "Share"])
+        XCTAssertEqual(actionModel.actions.map(\.label), ["Save", "Remix", "Log", "Share"])
         XCTAssertEqual(actionModel.route(for: .fork), .forkRemix(recipeId: "recipe_shawarma_bowl", sourceVersionId: "recipe_version_20260606"))
         XCTAssertEqual(actionModel.route(for: .log), .logRecipe(recipeId: "recipe_shawarma_bowl", recipeVersionId: "recipe_version_20260606"))
         XCTAssertEqual(actionModel.route(for: .share), .shareRecipe(recipeId: "recipe_shawarma_bowl"))
@@ -2254,25 +2382,25 @@ final class ScaffoldTests: XCTestCase {
             SavoroRoute.publicProfile(userId: "user_1").placeholderSubtitle,
             SavoroRoute.recipeEditor(draftId: nil).placeholderSubtitle
         ]
-        XCTAssertTrue(routeSubtitles.allSatisfy { $0.localizedCaseInsensitiveContains("Placeholder route") })
+        XCTAssertTrue(routeSubtitles.allSatisfy { $0.localizedCaseInsensitiveContains("with") || $0.localizedCaseInsensitiveContains("for") })
 
         let placeholderOnlySheetRoutes: [SavoroSheetRoute] = [
             .shareRecipe(recipeId: "recipe_1"),
             .recipeActions(recipeId: "recipe_1")
         ]
-        XCTAssertTrue(placeholderOnlySheetRoutes.allSatisfy { $0.placeholderSubtitle.localizedCaseInsensitiveContains("Placeholder sheet route") })
+        XCTAssertTrue(placeholderOnlySheetRoutes.allSatisfy { $0.placeholderSubtitle.localizedCaseInsensitiveContains("preview") })
         XCTAssertTrue(SavoroSheetRoute.forkRemix(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("Confirmation sheet"))
-        XCTAssertTrue(SavoroSheetRoute.forkRemix(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("private editable copy"))
+        XCTAssertTrue(SavoroSheetRoute.forkRemix(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("private editable remix"))
         XCTAssertTrue(SavoroSheetRoute.publishVisibility(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("community and caption setup"))
-        XCTAssertTrue(SavoroSheetRoute.communityShareSetup(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("No backend post"))
+        XCTAssertTrue(SavoroSheetRoute.communityShareSetup(recipeId: "recipe_1").placeholderSubtitle.localizedCaseInsensitiveContains("No public listing"))
         XCTAssertTrue(SavoroSheetRoute.logPicker().placeholderSubtitle.localizedCaseInsensitiveContains("recents"))
         XCTAssertTrue(SavoroSheetRoute.logPicker().placeholderSubtitle.localizedCaseInsensitiveContains("Search results"))
 
         let logRecipeRoute = SavoroSheetRoute.logRecipe(recipeId: "recipe_1")
-        XCTAssertTrue(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("mock recipe logging scaffold"))
-        XCTAssertTrue(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("private in-memory updates"))
+        XCTAssertTrue(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("Recipe logging preview"))
+        XCTAssertTrue(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("private"))
         XCTAssertTrue(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("app session only"))
-        XCTAssertTrue(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("no backend persistence"))
+        XCTAssertTrue(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("app session only"))
         XCTAssertFalse(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("public"))
         XCTAssertFalse(logRecipeRoute.placeholderSubtitle.localizedCaseInsensitiveContains("shared"))
 
@@ -3012,7 +3140,7 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(hook.mockUploadMetadata["startsBackendUpload"], "false")
         XCTAssertEqual(hook.mockUploadMetadata["storesPrivateImage"], "false")
         XCTAssertTrue(hook.body.localizedCaseInsensitiveContains("Nothing is uploaded"))
-        XCTAssertTrue(hook.actionTitle.localizedCaseInsensitiveContains("placeholder"))
+        XCTAssertTrue(hook.actionTitle.localizedCaseInsensitiveContains("photo"))
     }
 
     func testRecipeEditorPhotoCommandInvokesVisibleMockOnlyStatus() {
@@ -3023,7 +3151,7 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertFalse(command.storesPrivateImage)
         XCTAssertEqual(command.identifier, "mock-local-photo-placeholder")
         XCTAssertTrue(status.message.localizedCaseInsensitiveContains("not active"))
-        XCTAssertTrue(status.message.localizedCaseInsensitiveContains("mock"))
+        XCTAssertTrue(status.message.localizedCaseInsensitiveContains("preview"))
     }
 
     func testRecipeEditorPhotoStatusCanBeRecordedWithoutBackendState() {
@@ -3039,8 +3167,12 @@ final class ScaffoldTests: XCTestCase {
         let existingDraft = RecipeEditorDraftForm.localDraft(id: "draft_green_curry")
         let newDraft = RecipeEditorDraftForm.newDraft()
 
-        XCTAssertTrue(existingDraft.draftContextCopy.contains("draft_green_curry"))
-        XCTAssertTrue(existingDraft.draftContextCopy.localizedCaseInsensitiveContains("local in-session draft store"))
+        XCTAssertFalse(existingDraft.draftContextCopy.contains("draft_green_curry"))
+        XCTAssertTrue(existingDraft.draftContextCopy.localizedCaseInsensitiveContains("private draft ready to edit"))
+        XCTAssertFalse(existingDraft.draftContextCopy.localizedCaseInsensitiveContains("original stays unchanged"))
+        XCTAssertTrue(existingDraft.draftContextCopy.localizedCaseInsensitiveContains("nothing was published or shared"))
+        XCTAssertFalse(existingDraft.draftContextCopy.localizedCaseInsensitiveContains("mock"))
+        XCTAssertFalse(existingDraft.draftContextCopy.localizedCaseInsensitiveContains("route"))
         XCTAssertTrue(newDraft.draftContextCopy.localizedCaseInsensitiveContains("Save Draft keeps fields in this app session only"))
     }
 
@@ -3060,7 +3192,8 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(loaded.title, "Snack Box")
         XCTAssertEqual(loaded.ingredients.first?.name, "Carrots")
         XCTAssertEqual(loaded.instructions.first?.body, "Pack chilled.")
-        XCTAssertTrue(loaded.draftContextCopy.localizedCaseInsensitiveContains("local in-session"))
+        XCTAssertTrue(loaded.draftContextCopy.localizedCaseInsensitiveContains("private draft ready to edit"))
+        XCTAssertFalse(loaded.draftContextCopy.localizedCaseInsensitiveContains("mock"))
     }
 
     func testRecipeEditorInvalidPublicPublishPreviewIsBlockedWithNonShamingCopy() {
@@ -3072,7 +3205,7 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(form.publicPublishValidationIssues, [.ingredientRequired, .instructionRequired])
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("needs a little more detail"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("review the recipe details below"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("does not post publicly"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("nothing posts publicly"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("highlighted"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
@@ -3088,8 +3221,8 @@ final class ScaffoldTests: XCTestCase {
         let copy = form.mockPublicPublishResultCopy
 
         XCTAssertTrue(form.canMockPublishPublicly)
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("mock-only"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("no backend"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("preview"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("no social post"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("no") && copy.localizedCaseInsensitiveContains("public listing"))
     }
 
@@ -3100,6 +3233,36 @@ final class ScaffoldTests: XCTestCase {
         }
         XCTAssertTrue(copy.contains("local"))
         XCTAssertTrue(copy.contains("no image upload"))
+    }
+
+    func testReviewedSurfacesVisibleCopyAvoidsImplementationJargonAndRawIds() {
+        let rootCopy = [
+            SavoroSheetRoute.addMeal.placeholderSubtitle,
+            SavoroSheetRoute.logRecipe(recipeId: nil).placeholderSubtitle,
+            SavoroSheetRoute.logPicker().placeholderSubtitle,
+            SavoroSheetRoute.shareRecipe(recipeId: "recipe_shawarma_bowl").placeholderSubtitle,
+            SavoroSheetRoute.publishVisibility(recipeId: "recipe_shawarma_bowl").placeholderSubtitle,
+            SavoroSheetRoute.communityShareSetup(recipeId: "recipe_shawarma_bowl").placeholderSubtitle,
+            SavoroSheetRoute.recipeActions(recipeId: "recipe_shawarma_bowl").placeholderSubtitle,
+            SavoroRoute.recipeDetail(id: "recipe_shawarma_bowl").placeholderSubtitle,
+            SavoroRoute.communityDetail(id: "community_weeknight").placeholderSubtitle,
+            SavoroRoute.publicProfile(userId: "user_maya").placeholderSubtitle,
+            SavoroRoute.recipeEditor(draftId: "draft_green_curry").placeholderSubtitle
+        ].joined(separator: " ")
+        let copy = [
+            CookbookLibraryViewModel(selectedSegment: .mine).visibleCopy,
+            CookbookLibraryViewModel(selectedSegment: .drafts).visibleCopy,
+            RecipeEditorDraftForm.newDraft().visibleCopy,
+            RecipeEditorDraftForm.localDraft(id: "draft_green_curry").visibleCopy,
+            RecipeEditorDraftForm.remixDraft(from: RecipeDetail.mockForkedFixture).visibleCopy,
+            RecipeDetailContentViewModel(recipe: .mockHeaderFixture).visibleCopy,
+            rootCopy
+        ].joined(separator: " ")
+        let deniedTerms = ["mock", "backend", "server-side", "route", "fixture", "SAV-", "MVP", "recipe_version_", "draft_green_curry", "draft_snack_box", "recipe_shawarma_bowl", "recipe_lentil_soup"]
+
+        for denied in deniedTerms {
+            XCTAssertFalse(copy.localizedCaseInsensitiveContains(denied), "Visible copy should not contain \(denied)")
+        }
     }
 
     func testRecipeEditorViewConstructsForCreateDraftAndForm() {
