@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import type { AppEnv } from '../app-env'
+import { isCalendarDate } from '../dates'
 import { createDb } from '../db/client'
 import { mapDayLog, mapEntry } from '../dto/logs'
 import { ApiError } from '../errors'
@@ -8,21 +9,7 @@ import { getActiveGoal } from '../repo/goals'
 import { insertRecipeLog, listEntriesForDay } from '../repo/logs'
 import { getLoggableVersion } from '../repo/recipes'
 
-const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const
-
-function isCalendarDate(value: string): boolean {
-  const match = DATE_RE.exec(value)
-  if (!match) return false
-
-  const [, yearPart, monthPart, dayPart] = match
-  const year = Number(yearPart)
-  const month = Number(monthPart)
-  const day = Number(dayPart)
-  const date = new Date(Date.UTC(year, month - 1, day))
-
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
-}
 type MealType = (typeof MEAL_TYPES)[number]
 
 export const logs = new Hono<AppEnv>()
