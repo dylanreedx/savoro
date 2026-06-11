@@ -228,7 +228,7 @@ struct CookbookLibraryViewModel: Equatable {
                 subtitle: "Recipes you created or forked in the mock cookbook.",
                 items: [
                     CookbookLibraryItem(id: "mine_shawarma", recipeId: "recipe_shawarma_bowl", title: "Chicken Shawarma Bowl", subtitle: "Published recipe · 4 servings", badges: [], systemImage: "person.crop.circle", visibility: .published, updatedText: "Updated yesterday", tags: ["high-protein", "meal prep"], isLocalOnly: false),
-                    CookbookLibraryItem(id: "mine_lentil", recipeId: "recipe_lentil_soup", title: "Lemony Lentil Soup", subtitle: "Forked recipe · 6 servings", badges: [.forked], systemImage: "arrow.triangle.branch", visibility: .published, updatedText: "Updated this week", tags: ["cozy", "batch cook"], isLocalOnly: false)
+                    CookbookLibraryItem(id: "mine_lentil", recipeId: "recipe_lentil_soup", title: "Lemony Lentil Soup", subtitle: "Remixed from @maya · source version preserved", badges: [.forked], systemImage: "arrow.triangle.branch", visibility: .published, updatedText: "Updated this week", tags: ["cozy", "batch cook"], isLocalOnly: false)
                 ]
             ),
             CookbookLibrarySection(

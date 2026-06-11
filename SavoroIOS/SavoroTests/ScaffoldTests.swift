@@ -1324,6 +1324,125 @@ final class ScaffoldTests: XCTestCase {
         window.rootViewController = nil
     }
 
+    func testRecipeForkAttributionBannerDerivedFromForkMetadata() throws {
+        let recipe = try FixtureLoader.decode(
+            RecipeDetail.self,
+            named: "recipe-detail",
+            bundle: Bundle(for: Self.self)
+        )
+
+        let banner = try XCTUnwrap(RecipeForkAttributionBannerViewModel(recipe: recipe))
+        XCTAssertEqual(banner.sourceRecipeId, "recipe_original_shawarma")
+        XCTAssertEqual(banner.sourceVersionId, "recipe_version_original_20260601")
+        XCTAssertTrue(banner.visibleCopy.localizedCaseInsensitiveContains("Remixed"))
+        XCTAssertTrue(banner.visibleCopy.localizedCaseInsensitiveContains("attribution"))
+        XCTAssertTrue(banner.visibleCopy.localizedCaseInsensitiveContains("source version"))
+        XCTAssertTrue(banner.visibleCopy.contains("recipe_original_shawarma"))
+        XCTAssertTrue(banner.visibleCopy.contains("recipe_version_original_20260601"))
+    }
+
+    func testRecipeForkAttributionBannerIsHiddenForNonForkedRecipe() {
+        XCTAssertNil(RecipeForkAttributionBannerViewModel(recipe: .mockHeaderFixture))
+    }
+
+    func testRecipeForkAttributionSurvivesNavigationAndRefresh() throws {
+        // Refresh: re-decoding the same payload must reproduce the identical banner,
+        // because attribution derives only from frozen model fields, never view state.
+        let recipe = try FixtureLoader.decode(
+            RecipeDetail.self,
+            named: "recipe-detail",
+            bundle: Bundle(for: Self.self)
+        )
+        let refreshed = try JSONDecoder.savoro.decode(RecipeDetail.self, from: JSONEncoder.savoro.encode(recipe))
+        XCTAssertEqual(
+            RecipeForkAttributionBannerViewModel(recipe: recipe),
+            RecipeForkAttributionBannerViewModel(recipe: refreshed)
+        )
+
+        // Navigation: resolving the same routed id again yields the same attribution.
+        let first = try XCTUnwrap(RecipeForkAttributionBannerViewModel(recipe: .mockFixture(forRoutedId: "recipe_lentil_soup")))
+        let second = try XCTUnwrap(RecipeForkAttributionBannerViewModel(recipe: .mockFixture(forRoutedId: "recipe_lentil_soup")))
+        XCTAssertEqual(first, second)
+    }
+
+    func testRecipeDetailMockFixtureResolutionKeepsForkPrivateAndSourceUnchanged() {
+        let fork = RecipeDetail.mockFixture(forRoutedId: "recipe_lentil_soup")
+        XCTAssertEqual(fork.summary.id, "recipe_lentil_soup")
+        XCTAssertEqual(fork.summary.forkedFromRecipeId, "recipe_shawarma_bowl")
+        XCTAssertEqual(fork.summary.forkedFromVersionId, "recipe_version_20260606")
+        XCTAssertEqual(fork.summary.visibility, .private)
+        XCTAssertEqual(fork.summary.status, .draft)
+        XCTAssertTrue(fork.summary.viewerState.isOwner)
+
+        let source = RecipeDetail.mockFixture(forRoutedId: "recipe_shawarma_bowl")
+        XCTAssertEqual(source, .mockHeaderFixture)
+        XCTAssertNil(source.summary.forkedFromRecipeId)
+        XCTAssertEqual(RecipeDetail.mockFixture(forRoutedId: nil), .mockHeaderFixture)
+    }
+
+    func testForkAttributionBannerCopyIsPrivacySafeAndMakesNoBackendClaims() throws {
+        let recipe = try FixtureLoader.decode(
+            RecipeDetail.self,
+            named: "recipe-detail",
+            bundle: Bundle(for: Self.self)
+        )
+        let banner = try XCTUnwrap(RecipeForkAttributionBannerViewModel(recipe: recipe))
+        let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "food log", "daily goal", "calorie goal", "body metric", "starts backend", "backend sync", "MVP slice", "SAV-", "future fork flow"]
+
+        XCTAssertTrue(deniedTerms.allSatisfy { !banner.visibleCopy.localizedCaseInsensitiveContains($0) })
+    }
+
+    func testCookbookForkedItemCarriesAttributionThatSurvivesRefresh() {
+        let store = CookbookMockLocalStore()
+        let forkedItem: (CookbookLibraryViewModel) -> CookbookLibraryItem? = { viewModel in
+            viewModel.sections.first { $0.segment == .mine }?.items.first { $0.id == "mine_lentil" }
+        }
+
+        let initial = forkedItem(store.refreshViewModel(selectedSegment: .mine))
+        XCTAssertEqual(initial?.badges, [.forked])
+        XCTAssertTrue(initial?.subtitle.localizedCaseInsensitiveContains("Remixed from @maya") ?? false)
+        XCTAssertTrue(initial?.visibleCopy.localizedCaseInsensitiveContains("source version preserved") ?? false)
+
+        // Mutating the store (saving another recipe) and refreshing must not drop attribution.
+        store.save(recipeId: "recipe_berry_oats")
+        let refreshed = forkedItem(store.refreshViewModel(selectedSegment: .mine))
+        XCTAssertEqual(refreshed?.subtitle, initial?.subtitle)
+        XCTAssertEqual(refreshed?.badges, [.forked])
+    }
+
+    @MainActor
+    func testForkAttributionBannerScreenshotEvidence() {
+        let bounds = CGRect(x: 0, y: 0, width: 393, height: 852)
+        let controller = UIHostingController(
+            rootView: NavigationStack {
+                RecipeDetailPlaceholderView(routedRecipeId: "recipe_lentil_soup")
+            }
+            .frame(width: bounds.width, height: bounds.height)
+        )
+        controller.view.bounds = bounds
+        controller.view.backgroundColor = .systemBackground
+
+        let window = UIWindow(frame: bounds)
+        window.rootViewController = controller
+        window.makeKeyAndVisible()
+        controller.view.setNeedsLayout()
+        controller.view.layoutIfNeeded()
+
+        let image = UIGraphicsImageRenderer(bounds: bounds).image { _ in
+            controller.view.drawHierarchy(in: bounds, afterScreenUpdates: true)
+        }
+        let attachment = XCTAttachment(image: image)
+        attachment.name = "SAV-79 fork attribution banner on recipe detail"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        XCTAssertGreaterThan(image.size.width, 0)
+        XCTAssertGreaterThan(image.size.height, 0)
+
+        window.isHidden = true
+        window.rootViewController = nil
+    }
+
     func testRecipeDetailSocialContextExposesNoSAV62Actions() throws {
         let recipe = try FixtureLoader.decode(
             RecipeDetail.self,

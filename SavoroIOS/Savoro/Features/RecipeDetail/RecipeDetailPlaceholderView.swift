@@ -324,6 +324,48 @@ struct ForkRemixConfirmationSheetView: View {
     }
 }
 
+struct RecipeForkAttributionBannerViewModel: Equatable {
+    let sourceRecipeId: String
+    let sourceVersionId: String?
+    let title = "Remixed recipe"
+    let attributionCopy = "This copy keeps attribution to its source recipe, and the source version it was remixed from stays preserved."
+    let sourceReferenceText: String
+
+    init?(recipe: RecipeDetail) {
+        guard let sourceRecipeId = recipe.summary.forkedFromRecipeId else { return nil }
+        self.sourceRecipeId = sourceRecipeId
+        sourceVersionId = recipe.summary.forkedFromVersionId
+        if let sourceVersionId = recipe.summary.forkedFromVersionId {
+            sourceReferenceText = "Source: \(sourceRecipeId) · source version preserved: \(sourceVersionId)"
+        } else {
+            sourceReferenceText = "Source: \(sourceRecipeId) · source version preserved"
+        }
+    }
+
+    var visibleCopy: String { [title, attributionCopy, sourceReferenceText].joined(separator: " ") }
+}
+
+struct RecipeForkAttributionBannerView: View {
+    let viewModel: RecipeForkAttributionBannerViewModel
+
+    var body: some View {
+        SavoroCard(style: .glass) {
+            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                SavoroChip(title: viewModel.title, systemImage: "arrow.triangle.branch", variant: .accent)
+                Text(viewModel.attributionCopy)
+                    .font(SavoroTypography.callout)
+                    .foregroundStyle(SavoroColor.textBody)
+                Text(viewModel.sourceReferenceText)
+                    .font(SavoroTypography.micro)
+                    .foregroundStyle(SavoroColor.textMuted)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("recipe-detail-fork-attribution")
+    }
+}
+
 struct RecipeDetailUnavailableViewModel: Equatable {
     enum Reason: Equatable { case privateRecipe, unauthorized }
 
@@ -529,30 +571,33 @@ struct RecipeDetailPlaceholderView: View {
     private let headerViewModel: RecipeDetailHeaderViewModel?
     private let socialContextViewModel: RecipeDetailSocialContextViewModel?
     private let actionBarViewModel: RecipeDetailActionBarViewModel?
+    private let forkAttributionViewModel: RecipeForkAttributionBannerViewModel?
     private let onActionRoute: (SavoroSheetRoute) -> Void
     private let onActionToast: (SavoroToast) -> Void
     private let onSaveRecipe: (String) -> Void
     @State private var selectedServings: Double
 
     init(
-        recipe: RecipeDetail = .mockHeaderFixture,
+        recipe: RecipeDetail? = nil,
         routedRecipeId: String? = nil,
         now: Date = RecipeDetail.mockHeaderNow,
         onActionRoute: @escaping (SavoroSheetRoute) -> Void = { _ in },
         onActionToast: @escaping (SavoroToast) -> Void = { _ in }
     ) {
-        self.init(accessState: .from(recipe: recipe), routedRecipeId: routedRecipeId ?? recipe.summary.id, now: now, onActionRoute: onActionRoute, onActionToast: onActionToast, onSaveRecipe: { _ in })
+        let resolvedRecipe = recipe ?? RecipeDetail.mockFixture(forRoutedId: routedRecipeId)
+        self.init(accessState: .from(recipe: resolvedRecipe), routedRecipeId: routedRecipeId ?? resolvedRecipe.summary.id, now: now, onActionRoute: onActionRoute, onActionToast: onActionToast, onSaveRecipe: { _ in })
     }
 
     init(
-        recipe: RecipeDetail = .mockHeaderFixture,
+        recipe: RecipeDetail? = nil,
         routedRecipeId: String? = nil,
         now: Date = RecipeDetail.mockHeaderNow,
         onActionRoute: @escaping (SavoroSheetRoute) -> Void = { _ in },
         onActionToast: @escaping (SavoroToast) -> Void = { _ in },
         onSaveRecipe: @escaping (String) -> Void
     ) {
-        self.init(accessState: .from(recipe: recipe), routedRecipeId: routedRecipeId ?? recipe.summary.id, now: now, onActionRoute: onActionRoute, onActionToast: onActionToast, onSaveRecipe: onSaveRecipe)
+        let resolvedRecipe = recipe ?? RecipeDetail.mockFixture(forRoutedId: routedRecipeId)
+        self.init(accessState: .from(recipe: resolvedRecipe), routedRecipeId: routedRecipeId ?? resolvedRecipe.summary.id, now: now, onActionRoute: onActionRoute, onActionToast: onActionToast, onSaveRecipe: onSaveRecipe)
     }
 
     init(
@@ -574,12 +619,14 @@ struct RecipeDetailPlaceholderView: View {
             headerViewModel = RecipeDetailHeaderViewModel(recipe: recipe, now: now)
             socialContextViewModel = RecipeDetailSocialContextViewModel(recipe: recipe)
             actionBarViewModel = RecipeDetailActionBarViewModel(recipe: recipe)
+            forkAttributionViewModel = RecipeForkAttributionBannerViewModel(recipe: recipe)
             _selectedServings = State(initialValue: recipe.currentVersion.servings)
         case .unavailable:
             recipe = nil
             headerViewModel = nil
             socialContextViewModel = nil
             actionBarViewModel = nil
+            forkAttributionViewModel = nil
             _selectedServings = State(initialValue: 1)
         }
     }
@@ -592,6 +639,10 @@ struct RecipeDetailPlaceholderView: View {
                     if let headerViewModel, let socialContextViewModel {
                         routeContextCard
                             .padding(.horizontal, SavoroSpacing.md)
+                        if let forkAttributionViewModel {
+                            RecipeForkAttributionBannerView(viewModel: forkAttributionViewModel)
+                                .padding(.horizontal, SavoroSpacing.md)
+                        }
                         RecipeDetailHeaderView(viewModel: headerViewModel)
                         RecipeDetailContentSectionsView(
                             viewModel: RecipeDetailContentViewModel(recipe: recipe, selectedServings: selectedServings),
@@ -1116,6 +1167,94 @@ extension RecipeDetail {
         decoder.dateDecodingStrategy = .iso8601
         return try! decoder.decode(RecipeDetail.self, from: Data(json.utf8))
     }()
+
+    /// Local mock copy created by the fork/remix flow: private draft owned by the
+    /// viewer, with attribution back to the source recipe and its frozen version.
+    static let mockForkedFixture: RecipeDetail = {
+        let json = """
+        {
+          "summary": {
+            "id": "recipe_lentil_soup",
+            "ownerUserId": "user_1",
+            "slug": "lemony-lentil-soup",
+            "title": "Lemony Lentil Soup",
+            "description": "Private remix with brighter lemon, batch-cook portions, and a cozy broth.",
+            "imageUrl": null,
+            "visibility": "private",
+            "status": "draft",
+            "currentVersionId": "recipe_version_lentil_20260604",
+            "forkedFromRecipeId": "recipe_shawarma_bowl",
+            "forkedFromVersionId": "recipe_version_20260606",
+            "creator": { "userId": "user_1", "username": "home_cook", "displayName": "You", "avatarUrl": null },
+            "perServingMacros": { "calories": 340, "proteinGrams": 19, "carbsGrams": 47, "fatGrams": 9, "fiberGrams": 11, "sodiumMilligrams": 540 },
+            "tags": ["cozy", "batch cook"],
+            "viewerState": { "isOwner": true, "isSaved": false, "canFork": false, "canLog": true },
+            "createdAt": "2026-06-04T09:00:00Z",
+            "updatedAt": "2026-06-05T18:00:00Z"
+          },
+          "currentVersion": {
+            "id": "recipe_version_lentil_20260604",
+            "recipeId": "recipe_lentil_soup",
+            "versionNumber": 1,
+            "title": "Lemony Lentil Soup",
+            "description": "Private remix with brighter lemon, batch-cook portions, and a cozy broth.",
+            "instructionsMarkdown": "Simmer lentils with aromatics. Finish with lemon and herbs.",
+            "servings": 6,
+            "yieldAmount": 6,
+            "yieldUnit": "bowls",
+            "prepTimeMinutes": 10,
+            "cookTimeMinutes": 35,
+            "perServingMacros": { "calories": 340, "proteinGrams": 19, "carbsGrams": 47, "fatGrams": 9, "fiberGrams": 11, "sodiumMilligrams": 540 },
+            "createdByUserId": "user_1",
+            "publishedAt": null,
+            "createdAt": "2026-06-04T09:00:00Z"
+          },
+          "ingredients": [
+            {
+              "id": "ingredient_lentils",
+              "recipeVersionId": "recipe_version_lentil_20260604",
+              "quantity": 2,
+              "unit": "cups",
+              "label": "dried green lentils",
+              "note": "rinsed",
+              "sortOrder": 0,
+              "provenance": { "sourceType": "user", "displayName": "Creator provided", "isVerified": false }
+            },
+            {
+              "id": "ingredient_lemon",
+              "recipeVersionId": "recipe_version_lentil_20260604",
+              "quantity": 1,
+              "unit": "whole",
+              "label": "lemon",
+              "note": "juice and zest",
+              "sortOrder": 1,
+              "provenance": { "sourceType": "user", "displayName": "Creator provided", "isVerified": false }
+            }
+          ],
+          "steps": [
+            { "id": "step_simmer", "recipeVersionId": "recipe_version_lentil_20260604", "body": "Simmer lentils with aromatics until tender.", "sortOrder": 0 },
+            { "id": "step_finish", "recipeVersionId": "recipe_version_lentil_20260604", "body": "Finish with lemon juice, zest, and herbs before serving.", "sortOrder": 1 }
+          ],
+          "provenance": {
+            "trustLevel": "creator_provided",
+            "summary": "Remixed privately from a source recipe; macros are creator provided.",
+            "attributions": [
+              { "sourceType": "recipe", "sourceId": "recipe_shawarma_bowl", "sourceRevision": "recipe_version_20260606", "displayName": "Maya Reed", "isVerified": false }
+            ]
+          }
+        }
+        """
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try! decoder.decode(RecipeDetail.self, from: Data(json.utf8))
+    }()
+
+    /// Resolves the local mock recipe for a routed id so forked copies keep their
+    /// attribution across navigation and refresh. Unknown ids fall back to the
+    /// public source fixture, matching the existing placeholder behavior.
+    static func mockFixture(forRoutedId routedRecipeId: String?) -> RecipeDetail {
+        routedRecipeId == mockForkedFixture.summary.id ? mockForkedFixture : mockHeaderFixture
+    }
 }
 
 struct RecipeDetailPlaceholderView_Previews: PreviewProvider {
