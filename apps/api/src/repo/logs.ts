@@ -46,6 +46,60 @@ export async function insertRecipeLog(db: Db, input: InsertRecipeLogInput): Prom
   return inserted[0]
 }
 
+export interface InsertManualFoodLogInput {
+  userId: string
+  date: string
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+  displayName: string
+  macros: {
+    calories: number
+    proteinGrams: number
+    carbsGrams: number
+    fatGrams: number
+    fiberGrams: number | null
+    sodiumMilligrams: number | null
+  }
+  quantity: number
+  quantityUnit: string
+}
+
+/**
+ * Inserts a manually-entered food log entry. The client-supplied macros are
+ * for the logged amount and are frozen verbatim as the snapshot — never
+ * scaled, recomputed, or backed by a food database row.
+ */
+export async function insertManualFoodLog(db: Db, input: InsertManualFoodLogInput): Promise<FoodLogEntryRow> {
+  const now = new Date().toISOString()
+  const row: typeof foodLogEntries.$inferInsert = {
+    id: `log_${crypto.randomUUID()}`,
+    userId: input.userId,
+    logDate: input.date,
+    mealType: input.mealType,
+    itemType: 'food',
+    foodId: null,
+    servingId: null,
+    recipeId: null,
+    recipeVersionId: null,
+    quantity: input.quantity,
+    quantityUnit: input.quantityUnit,
+    snapshotDisplayName: input.displayName,
+    snapshotCalories: input.macros.calories,
+    snapshotProteinGrams: input.macros.proteinGrams,
+    snapshotCarbsGrams: input.macros.carbsGrams,
+    snapshotFatGrams: input.macros.fatGrams,
+    snapshotFiberGrams: input.macros.fiberGrams,
+    snapshotSodiumMilligrams: input.macros.sodiumMilligrams,
+    snapshotSourceLabel: null,
+    snapshotCapturedAt: now,
+    sourceType: 'manual',
+    privacyDomain: 'private_user_data',
+    createdAt: now,
+    updatedAt: now,
+  }
+  const inserted = await db.insert(foodLogEntries).values(row).returning()
+  return inserted[0]
+}
+
 /** All of one user's entries for a calendar day. Always scoped by userId. */
 export async function listEntriesForDay(db: Db, userId: string, date: string): Promise<FoodLogEntryRow[]> {
   return db.query.foodLogEntries.findMany({
