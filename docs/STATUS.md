@@ -123,6 +123,15 @@ Create Recipe epic, Batch D + Batch 0 complete:
 - RE-1 (`33e20cf`): Today card rhythm normalized — 12pt insets, 16pt gaps,
   geometry regression test. Rebased over RE-D3, reverified.
 
+**UPDATE (2026-07-18 ~10:15): RE-D4 landed (`475f081`) — the text-first
+conversion.** Dylan flagged the RE-D3 result as still button-heavy; a
+researched critical review (docs/epics/recipe-editor-design/CRITICAL-REVIEW.md,
+Mela/Paprika evidence) replaced the row-form model: ingredients and steps are
+now single free-text areas with quiet per-line parsing (# group headers,
+fractions, paste-a-list works natively), all per-row machinery folded into
+one tap-a-line sheet. Default-view control count: 56 → 6, enforced by a
+budget regression test. Editor references re-recorded; verified green.
+
 **WAITING ON DYLAN:** review the new editor —
 `SavoroIOS/SavoroTests/__Snapshots__/SnapshotTests/testRecipeEditorSnapshots.*.png`
 vs `docs/epics/recipe-editor-design/editor.png` (or run the app). Approve →
