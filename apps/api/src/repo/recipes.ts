@@ -1,4 +1,4 @@
-import { and, asc, eq, like } from 'drizzle-orm'
+import { and, asc, desc, eq, like, lt, ne, or } from 'drizzle-orm'
 import type { BatchItem } from 'drizzle-orm/batch'
 import type { Db } from '../db/client'
 import {
@@ -6,6 +6,7 @@ import {
   recipeSteps,
   recipeVersions,
   recipes,
+  savedRecipes,
   users,
   type RecipeIngredientRow,
   type RecipeRow,
@@ -79,15 +80,159 @@ export interface RecipeContentInput {
 /** A PATCH body: absent fields keep the current version's content. */
 export type RecipePatchInput = Partial<RecipeContentInput>
 
-export interface RecipeDetailRows {
+export interface RecipeSummaryRows {
   recipe: RecipeRow
   owner: UserRow
   version: RecipeVersionRow
+  isSaved: boolean
+}
+
+export interface RecipeDetailRows extends RecipeSummaryRows {
   ingredients: RecipeIngredientRow[]
   steps: RecipeStepRow[]
 }
 
+export interface RecipeListCursor {
+  sortAt: string
+  recipeId: string
+}
+
+export interface RecipeListOptions {
+  limit: number
+  cursor?: RecipeListCursor
+}
+
+export interface RecipeSummaryPage {
+  items: RecipeSummaryRows[]
+  nextCursor: RecipeListCursor | null
+}
+
 type SqliteBatch = [BatchItem<'sqlite'>, ...BatchItem<'sqlite'>[]]
+
+/** Saves a recipe only when the session viewer can currently see it. */
+export async function saveRecipeForViewer(db: Db, viewerUserId: string, recipeId: string): Promise<void> {
+  const recipe = await db.query.recipes.findFirst({ where: eq(recipes.id, recipeId) })
+  const isOwner = recipe?.ownerUserId === viewerUserId
+  const isVisible = recipe && recipe.visibility !== 'private' && recipe.status === 'published'
+  if (!recipe || (!isOwner && !isVisible)) {
+    throw new ApiError('not_found', 'Recipe not found.')
+  }
+
+  await db
+    .insert(savedRecipes)
+    .values({ userId: viewerUserId, recipeId, createdAt: new Date().toISOString() })
+    .onConflictDoNothing({ target: [savedRecipes.userId, savedRecipes.recipeId] })
+}
+
+/**
+ * Unsave deliberately does not load the recipe. Deleting a missing row is an
+ * idempotent no-op, including when a previously saved recipe is now hidden;
+ * this lets clients clear stale saves without revealing recipe existence.
+ */
+export async function unsaveRecipeForViewer(db: Db, viewerUserId: string, recipeId: string): Promise<void> {
+  await db
+    .delete(savedRecipes)
+    .where(and(eq(savedRecipes.userId, viewerUserId), eq(savedRecipes.recipeId, recipeId)))
+}
+
+/** Own recipes in any status, newest-created first. */
+export async function listOwnedRecipes(
+  db: Db,
+  viewerUserId: string,
+  options: RecipeListOptions,
+): Promise<RecipeSummaryPage> {
+  const cursorFilter = options.cursor
+    ? or(
+        lt(recipes.createdAt, options.cursor.sortAt),
+        and(eq(recipes.createdAt, options.cursor.sortAt), lt(recipes.id, options.cursor.recipeId)),
+      )
+    : undefined
+  const found = await db
+    .select()
+    .from(recipes)
+    .where(and(eq(recipes.ownerUserId, viewerUserId), cursorFilter))
+    .orderBy(desc(recipes.createdAt), desc(recipes.id))
+    .limit(options.limit + 1)
+  const pageRows = found.slice(0, options.limit)
+  const items = await Promise.all(pageRows.map((recipe) => loadRecipeSummary(db, recipe, viewerUserId)))
+  const last = pageRows.at(-1)
+  return {
+    items,
+    nextCursor: found.length > options.limit && last ? { sortAt: last.createdAt, recipeId: last.id } : null,
+  }
+}
+
+/** Own draft recipes, newest-created first. */
+export async function listDraftRecipes(
+  db: Db,
+  viewerUserId: string,
+  options: RecipeListOptions,
+): Promise<RecipeSummaryPage> {
+  const cursorFilter = options.cursor
+    ? or(
+        lt(recipes.createdAt, options.cursor.sortAt),
+        and(eq(recipes.createdAt, options.cursor.sortAt), lt(recipes.id, options.cursor.recipeId)),
+      )
+    : undefined
+  const found = await db
+    .select()
+    .from(recipes)
+    .where(and(eq(recipes.ownerUserId, viewerUserId), eq(recipes.status, 'draft'), cursorFilter))
+    .orderBy(desc(recipes.createdAt), desc(recipes.id))
+    .limit(options.limit + 1)
+  const pageRows = found.slice(0, options.limit)
+  const items = await Promise.all(pageRows.map((recipe) => loadRecipeSummary(db, recipe, viewerUserId)))
+  const last = pageRows.at(-1)
+  return {
+    items,
+    nextCursor: found.length > options.limit && last ? { sortAt: last.createdAt, recipeId: last.id } : null,
+  }
+}
+
+/**
+ * Viewer saves that remain visible, newest-saved first. A saved unlisted
+ * recipe remains visible here because the viewer reached and saved its link;
+ * unpublished recipes owned by someone else and all archived recipes are
+ * filtered at read time.
+ */
+export async function listSavedRecipes(
+  db: Db,
+  viewerUserId: string,
+  options: RecipeListOptions,
+): Promise<RecipeSummaryPage> {
+  const cursorFilter = options.cursor
+    ? or(
+        lt(savedRecipes.createdAt, options.cursor.sortAt),
+        and(eq(savedRecipes.createdAt, options.cursor.sortAt), lt(recipes.id, options.cursor.recipeId)),
+      )
+    : undefined
+  const isVisible = or(
+    eq(recipes.ownerUserId, viewerUserId),
+    and(eq(recipes.status, 'published'), ne(recipes.visibility, 'private')),
+  )
+  const found = await db
+    .select({ recipe: recipes, savedAt: savedRecipes.createdAt })
+    .from(savedRecipes)
+    .innerJoin(recipes, eq(savedRecipes.recipeId, recipes.id))
+    .where(
+      and(
+        eq(savedRecipes.userId, viewerUserId),
+        ne(recipes.status, 'archived'),
+        isVisible,
+        cursorFilter,
+      ),
+    )
+    .orderBy(desc(savedRecipes.createdAt), desc(recipes.id))
+    .limit(options.limit + 1)
+  const pageRows = found.slice(0, options.limit)
+  const items = await Promise.all(pageRows.map(({ recipe }) => loadRecipeSummary(db, recipe, viewerUserId)))
+  const last = pageRows.at(-1)
+  return {
+    items,
+    nextCursor:
+      found.length > options.limit && last ? { sortAt: last.savedAt, recipeId: last.recipe.id } : null,
+  }
+}
 
 function slugify(title: string): string {
   const slug = title
@@ -190,7 +335,7 @@ async function createRecipeFromContent(
   if (steps.length > 0) ops.push(db.insert(recipeSteps).values(steps))
 
   await db.batch(ops as SqliteBatch)
-  return loadRecipeDetail(db, recipeId)
+  return loadRecipeDetail(db, recipeId, ownerUserId)
 }
 
 /** Creates a private draft copy of the visible recipe, preserving source attribution. */
@@ -251,7 +396,7 @@ export async function publishRecipe(
       .where(eq(recipes.id, recipe.id)),
   )
   await db.batch(ops as SqliteBatch)
-  return loadRecipeDetail(db, recipe.id)
+  return loadRecipeDetail(db, recipe.id, ownerUserId)
 }
 
 /** Returns a published recipe to a private draft without changing its versions. */
@@ -265,7 +410,7 @@ export async function unpublishRecipe(db: Db, ownerUserId: string, recipeId: str
     .update(recipes)
     .set({ status: 'draft', visibility: 'private', updatedAt: new Date().toISOString() })
     .where(eq(recipes.id, recipe.id))
-  return loadRecipeDetail(db, recipe.id)
+  return loadRecipeDetail(db, recipe.id, ownerUserId)
 }
 
 /** Archives any active recipe; archived is a terminal lifecycle state. */
@@ -279,7 +424,7 @@ export async function archiveRecipe(db: Db, ownerUserId: string, recipeId: strin
     .update(recipes)
     .set({ status: 'archived', updatedAt: new Date().toISOString() })
     .where(eq(recipes.id, recipe.id))
-  return loadRecipeDetail(db, recipe.id)
+  return loadRecipeDetail(db, recipe.id, ownerUserId)
 }
 
 /**
@@ -347,7 +492,7 @@ export async function updateRecipe(
     await db.batch(ops as SqliteBatch)
   }
 
-  return loadRecipeDetail(db, recipeId)
+  return loadRecipeDetail(db, recipeId, ownerUserId)
 }
 
 async function loadVersionContent(db: Db, recipe: RecipeRow) {
@@ -410,15 +555,43 @@ export async function getRecipeDetailForViewer(
   if (!recipe || (!isOwner && !isVisible)) {
     throw new ApiError('not_found', 'Recipe not found.')
   }
-  return loadRecipeDetail(db, recipeId)
+  return loadRecipeDetail(db, recipeId, viewerUserId)
 }
 
 /** Loads everything the RecipeDetail DTO needs. No visibility gating here. */
-export async function loadRecipeDetail(db: Db, recipeId: string): Promise<RecipeDetailRows> {
+export async function loadRecipeDetail(
+  db: Db,
+  recipeId: string,
+  viewerUserId: string,
+): Promise<RecipeDetailRows> {
   const recipe = await db.query.recipes.findFirst({ where: eq(recipes.id, recipeId) })
   if (!recipe) throw new ApiError('not_found', 'Recipe not found.')
-  const owner = await db.query.users.findFirst({ where: eq(users.id, recipe.ownerUserId) })
+  const [owner, versionContent, isSaved] = await Promise.all([
+    db.query.users.findFirst({ where: eq(users.id, recipe.ownerUserId) }),
+    loadVersionContent(db, recipe),
+    recipeIsSaved(db, viewerUserId, recipe.id),
+  ])
   if (!owner) throw new ApiError('internal', 'Recipe owner is missing.')
-  const { version, ingredients, steps } = await loadVersionContent(db, recipe)
-  return { recipe, owner, version, ingredients, steps }
+  const { version, ingredients, steps } = versionContent
+  return { recipe, owner, version, ingredients, steps, isSaved }
+}
+
+async function loadRecipeSummary(db: Db, recipe: RecipeRow, viewerUserId: string): Promise<RecipeSummaryRows> {
+  if (!recipe.currentVersionId) throw new ApiError('internal', 'Recipe has no current version.')
+  const [owner, version, isSaved] = await Promise.all([
+    db.query.users.findFirst({ where: eq(users.id, recipe.ownerUserId) }),
+    db.query.recipeVersions.findFirst({ where: eq(recipeVersions.id, recipe.currentVersionId) }),
+    recipeIsSaved(db, viewerUserId, recipe.id),
+  ])
+  if (!owner) throw new ApiError('internal', 'Recipe owner is missing.')
+  if (!version || version.recipeId !== recipe.id) throw new ApiError('internal', 'Recipe has no current version.')
+  return { recipe, owner, version, isSaved }
+}
+
+async function recipeIsSaved(db: Db, viewerUserId: string, recipeId: string): Promise<boolean> {
+  const row = await db.query.savedRecipes.findFirst({
+    where: and(eq(savedRecipes.userId, viewerUserId), eq(savedRecipes.recipeId, recipeId)),
+    columns: { recipeId: true },
+  })
+  return row !== undefined
 }

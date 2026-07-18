@@ -1,4 +1,4 @@
-import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import { index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 export const users = sqliteTable(
   'users',
@@ -48,6 +48,23 @@ export const recipes = sqliteTable(
   (t) => [
     index('idx_recipes_owner_status').on(t.ownerUserId, t.status),
     uniqueIndex('uq_recipes_owner_slug').on(t.ownerUserId, t.slug),
+  ],
+)
+
+export const savedRecipes = sqliteTable(
+  'saved_recipes',
+  {
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id),
+    recipeId: text('recipe_id')
+      .notNull()
+      .references(() => recipes.id),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [
+    primaryKey({ name: 'pk_saved_recipes', columns: [t.userId, t.recipeId] }),
+    index('idx_saved_recipes_user_created').on(t.userId, t.createdAt),
   ],
 )
 
@@ -161,6 +178,7 @@ export const goals = sqliteTable(
 
 export type FoodLogEntryRow = typeof foodLogEntries.$inferSelect
 export type RecipeRow = typeof recipes.$inferSelect
+export type SavedRecipeRow = typeof savedRecipes.$inferSelect
 export type RecipeVersionRow = typeof recipeVersions.$inferSelect
 export type RecipeIngredientRow = typeof recipeIngredients.$inferSelect
 export type RecipeStepRow = typeof recipeSteps.$inferSelect

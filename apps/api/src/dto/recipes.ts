@@ -1,9 +1,8 @@
-import type { RecipeDetailRows } from '../repo/recipes'
+import type { RecipeDetailRows, RecipeSummaryRows } from '../repo/recipes'
 
-// RecipeDetail DTO per docs/api-contract.md 'Recipes — lifecycle'; field names
-// follow the canonical iOS models (SavoroIOS .../Models/RecipeModels.swift).
-// Privacy: this mapper never emits email, logs, goals, body metrics, day
-// progress, or adherence — recipes are the only domain it can see.
+// Recipe DTOs per docs/api-contract.md; field names follow the canonical iOS
+// models (SavoroIOS .../Models/RecipeModels.swift). Privacy: these mappers
+// never emit email, logs, goals, body metrics, day progress, or adherence.
 
 interface MacroTotalsDTO {
   calories: number
@@ -14,44 +13,48 @@ interface MacroTotalsDTO {
   sodiumMilligrams?: number
 }
 
-export function mapRecipeDetail(rows: RecipeDetailRows, viewerUserId: string) {
-  const { recipe, owner, version, ingredients, steps } = rows
-  const perServingMacros = macros(version)
+export function mapRecipeSummary(rows: RecipeSummaryRows, viewerUserId: string) {
+  const { recipe, owner, version, isSaved } = rows
   const isOwner = viewerUserId === recipe.ownerUserId
   const isPublished = recipe.status === 'published'
 
   return {
-    summary: {
-      id: recipe.id,
-      ownerUserId: recipe.ownerUserId,
-      slug: recipe.slug,
-      title: version.title,
-      ...(version.description !== null && { description: version.description }),
-      visibility: recipe.visibility,
-      status: recipe.status,
-      currentVersionId: version.id,
-      forkedFromRecipeId: recipe.forkedFromRecipeId,
-      forkedFromVersionId: recipe.forkedFromVersionId,
-      creator: {
-        userId: owner.id,
-        // Real usernames arrive with profiles (SAV-133). The user id is a safe
-        // placeholder; never derive this from email.
-        username: owner.id,
-        displayName: owner.displayName ?? owner.id,
-      },
-      perServingMacros,
-      tags: [],
-      // Viewer-state for the session viewer (visibility gating happens in the
-      // repo layer); isSaved becomes real with cookbook (SAV-131).
-      viewerState: {
-        isOwner,
-        isSaved: false,
-        canFork: isOwner || (isPublished && recipe.visibility !== 'private'),
-        canLog: isOwner || (isPublished && recipe.visibility === 'public'),
-      },
-      createdAt: recipe.createdAt,
-      updatedAt: recipe.updatedAt,
+    id: recipe.id,
+    ownerUserId: recipe.ownerUserId,
+    slug: recipe.slug,
+    title: version.title,
+    ...(version.description !== null && { description: version.description }),
+    visibility: recipe.visibility,
+    status: recipe.status,
+    currentVersionId: version.id,
+    forkedFromRecipeId: recipe.forkedFromRecipeId,
+    forkedFromVersionId: recipe.forkedFromVersionId,
+    creator: {
+      userId: owner.id,
+      // Real usernames arrive with profiles (SAV-133). The user id is a safe
+      // placeholder; never derive this from email.
+      username: owner.id,
+      displayName: owner.displayName ?? owner.id,
     },
+    perServingMacros: macros(version),
+    tags: [],
+    viewerState: {
+      isOwner,
+      isSaved,
+      canFork: isOwner || (isPublished && recipe.visibility !== 'private'),
+      canLog: isOwner || (isPublished && recipe.visibility === 'public'),
+    },
+    createdAt: recipe.createdAt,
+    updatedAt: recipe.updatedAt,
+  }
+}
+
+export function mapRecipeDetail(rows: RecipeDetailRows, viewerUserId: string) {
+  const { recipe, version, ingredients, steps } = rows
+  const perServingMacros = macros(version)
+
+  return {
+    summary: mapRecipeSummary(rows, viewerUserId),
     currentVersion: {
       id: version.id,
       recipeId: version.recipeId,

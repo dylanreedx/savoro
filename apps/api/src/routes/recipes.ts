@@ -10,7 +10,9 @@ import {
   forkRecipe,
   getRecipeDetailForViewer,
   publishRecipe,
+  saveRecipeForViewer,
   unpublishRecipe,
+  unsaveRecipeForViewer,
   updateRecipe,
   type RecipeContentInput,
   type RecipeIngredientInput,
@@ -39,6 +41,18 @@ recipes.get('/:id', async (c) => {
   const db = createDb(c.env.DB)
   const rows = await getRecipeDetailForViewer(db, userId, c.req.param('id'))
   return c.json({ recipe: mapRecipeDetail(rows, userId) })
+})
+
+recipes.post('/:id/save', async (c) => {
+  const db = createDb(c.env.DB)
+  await saveRecipeForViewer(db, c.get('userId'), c.req.param('id'))
+  return c.body(null, 204)
+})
+
+recipes.delete('/:id/save', async (c) => {
+  const db = createDb(c.env.DB)
+  await unsaveRecipeForViewer(db, c.get('userId'), c.req.param('id'))
+  return c.body(null, 204)
 })
 
 recipes.post('/:id/publish', async (c) => {

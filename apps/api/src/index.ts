@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import type { AppEnv } from './app-env'
 import { ApiError, errorResponse } from './errors'
 import { auth } from './routes/auth'
+import { cookbook } from './routes/cookbook'
 import { goals } from './routes/goals'
 import { logs } from './routes/logs'
 import { recipes } from './routes/recipes'
@@ -24,5 +25,6 @@ app.route('/v1/auth', auth)
 app.route('/v1/logs', logs)
 app.route('/v1/goals', goals)
 app.route('/v1/recipes', recipes)
+app.route('/v1/cookbook', cookbook)
 
 export default app
