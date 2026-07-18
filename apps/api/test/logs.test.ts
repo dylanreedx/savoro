@@ -50,7 +50,8 @@ describe('logs endpoints', () => {
       servings: 1.5,
     })
     expect(res.status).toBe(201)
-    const body = (await res.json()) as { entry: EntryDTO } & DayResponse
+    const body = (await res.json()) as { entry: EntryDTO; dayLog: DayResponse['dayLog'] }
+    expect(Object.keys(body).sort()).toEqual(['dayLog', 'entry'])
     expect(body.entry.recipeVersionId).toBe(versionId)
     expect(body.entry.snapshot.displayName).toBe('Burrito Bowl')
     expect(body.entry.snapshot.macros.calories).toBe(750)

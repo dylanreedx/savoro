@@ -72,7 +72,8 @@ logs.post('/recipes', async (c) => {
     listEntriesForDay(db, userId, body.date),
     getActiveGoal(db, userId, body.date),
   ])
-  return c.json({ entry: mapEntry(entry), ...mapDayLog(userId, body.date, entries, goal) }, 201)
+  const { dayLog } = mapDayLog(userId, body.date, entries, goal)
+  return c.json({ entry: mapEntry(entry), dayLog }, 201)
 })
 
 interface LogFoodBody {
@@ -128,7 +129,8 @@ logs.post('/foods', async (c) => {
     listEntriesForDay(db, userId, body.date),
     getActiveGoal(db, userId, body.date),
   ])
-  return c.json({ entry: mapEntry(entry), ...mapDayLog(userId, body.date, entries, goal) }, 201)
+  const { dayLog } = mapDayLog(userId, body.date, entries, goal)
+  return c.json({ entry: mapEntry(entry), dayLog }, 201)
 })
 
 function parseLoggedMacros(value: unknown) {

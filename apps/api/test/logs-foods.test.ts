@@ -65,6 +65,7 @@ describe('manual food logging', () => {
     expect(res.status).toBe(201)
     const body = (await res.json()) as FoodLogResponse
 
+    expect(Object.keys(body).sort()).toEqual(['dayLog', 'entry'])
     expect(body.entry.itemType).toBe('food')
     expect(body.entry.sourceType).toBe('manual')
     expect(body.entry.foodId).toBeNull()
