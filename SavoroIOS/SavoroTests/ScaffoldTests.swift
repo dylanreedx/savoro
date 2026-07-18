@@ -6,6 +6,7 @@ import XCTest
 
 final class ScaffoldTests: XCTestCase {
     func testPreviewEnvironmentUsesMockAPIClient() {
+        XCTAssertTrue(AppEnvironment.localMock.apiClient is MockAPIClient)
         XCTAssertTrue(AppEnvironment.preview.apiClient is MockAPIClient)
     }
 
@@ -69,6 +70,19 @@ final class ScaffoldTests: XCTestCase {
         _ = LogPickerPlaceholderView(mealType: .lunch)
         _ = LogRecipeSheetView(viewModel: LogRecipeSheetViewModel(requestedRecipeId: nil))
         _ = ForkRemixConfirmationSheetView(model: ForkRemixConfirmationSheetModel(recipeId: "recipe_shawarma_bowl"))
+
+        let releaseTabCopy = ([
+            PlaceholderFeatureView.statusCopy,
+            PlaceholderFeatureView.detailsHeading,
+            PlaceholderFeatureView.footerCopy,
+            CommunityPlaceholderView.subtitle,
+            DiscoverPlaceholderView.subtitle,
+            ProfilePlaceholderView.subtitle
+        ] + CommunityPlaceholderView.highlights + DiscoverPlaceholderView.highlights + ProfilePlaceholderView.highlights)
+            .joined(separator: " ")
+        let deniedTerms = ["mock", "scaffold", "backend", "placeholder", "adherence", "compliance", "failed", "over limit", "guilt", "cheat", "bad food"]
+        XCTAssertTrue(releaseTabCopy.localizedCaseInsensitiveContains("coming soon"))
+        XCTAssertTrue(deniedTerms.allSatisfy { !releaseTabCopy.localizedCaseInsensitiveContains($0) })
 
         var toast: SavoroToast? = .scaffoldDemo
         let toastBinding = Binding(get: { toast }, set: { toast = $0 })

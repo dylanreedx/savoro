@@ -21,5 +21,6 @@ final class AppEnvironment {
         )
     }
 
-    static let preview = AppEnvironment(apiClient: MockAPIClient())
+    static let localMock = AppEnvironment(apiClient: MockAPIClient.localMockSuccessRoutes())
+    static let preview = localMock
 }

@@ -1,6 +1,10 @@
 import SwiftUI
 
 struct PlaceholderFeatureView: View {
+    static let statusCopy = "Coming soon"
+    static let detailsHeading = "What to expect"
+    static let footerCopy = "We’re putting the finishing touches on this space."
+
     let title: String
     let subtitle: String
     let foundationNotes: [String]
@@ -10,7 +14,7 @@ struct PlaceholderFeatureView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Foundation placeholder")
+                    Text(Self.statusCopy)
                         .font(.caption.weight(.semibold))
                         .textCase(.uppercase)
                         .foregroundStyle(accent)
@@ -25,7 +29,7 @@ struct PlaceholderFeatureView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Future screen contract")
+                    Text(Self.detailsHeading)
                         .font(.headline)
                         .foregroundStyle(SavoroColor.ink)
 
@@ -46,7 +50,7 @@ struct PlaceholderFeatureView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
-                Text("Scaffold only — not final UX, data, routing, persistence, or backend integration.")
+                Text(Self.footerCopy)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .padding(.top, 4)
