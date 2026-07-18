@@ -47,7 +47,7 @@ Max one active ticket per track; lands are serialized on `main`.
 | 10 | L-24 — Today UAT bundle for Dylan (checklist + screenshots + limitations) | human-in-loop | queued — gated on #9 | |
 | 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | **landed** | `d6c910f`, 84/84 tests (1 rework round: contract drift on `mine` fixed) |
 | 12 | **L-36 — TestFlight readiness (icon, plist, mock-mode Release, archive check, morning checklist) — MUST land tonight** | frontend | **landed** | `b851a2f`, 204/204 + Release archive OK; checklist at SavoroIOS/TestFlightChecklist.md |
-| 13 | L-35 — UI consistency guardrails (primitives, layout regression tests, token lint) | frontend | in-progress — final queued ticket of the night | |
+| 13 | L-35 — UI consistency guardrails (primitives, layout regression tests, token lint) | frontend | **landed** | `a3f1803`; 224 + 1 UI green, 36 refs re-recorded (intended primitive consolidation), Today visually verified |
 
 L-18 is superseded by #1/#3 (mock tier) and #9 (live tier).
 
@@ -110,6 +110,50 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**FINAL — LOOP COMPLETE (2026-07-18 ~04:00). Queues drained; every dispatched
+ticket landed. 17 tickets in one night, zero left blocked.**
+
+The night's ledger (all squash commits on main, each independently verified
+before landing):
+
+| Ticket | Commit | What it did |
+|---|---|---|
+| SAV-129 + L-1 | `705510f` | Publish/unpublish/archive lifecycle, publishedAt, auth hole closed |
+| L-12 | `f36349b` | Goal ranges can no longer corrupt |
+| L-14 | `e86cd9b` | Log-create contract parity |
+| brand | `6b2bcdd`/`9fdfbec` | Final chef's-kiss mark, both variants |
+| L-36 | `b851a2f` | TestFlight ready: icon, plist, Release archive verified, checklist |
+| SAV-131 | `d6c910f` | Cookbook save/lists (1 rework: contract drift caught) |
+| L-3 | `9d3fbe3` | Discover rails + search, SQL-level privacy |
+| SAV-133 | `7ea855f` | Profiles + usernames, denylist tested |
+| L-20 | `c688e00` | XCUITest journey, 15 screenshot steps |
+| L-2 | `3f431dd` | Logs management, frozen-snapshot scaling proven |
+| L-28 | `583b602` | Follow/friends + activity projection |
+| L-37 | `804cd84` | Foods schema/endpoints/importer (data run deferred) |
+| L-21 | `9e74efc` | Snapshot harness: 36-reference matrix |
+| L-15 | `b1d97e3` | Dark mode fixed (was illegible), proof-contracted |
+| L-16 | `9e42776` | Accessibility XXXL reflowed (was broken) |
+| L-17 | `7b91e72` | Copy sweep: no jargon/raw IDs/banned words |
+| L-23 | `825a827` | **Today live against the real backend** — first-ever app↔API connection |
+| L-35 | `a3f1803` | UI guardrails: primitives, layout tests, token lint |
+
+Backend: 66 → **131 tests** (124 + 7 foods) across 16 files, typecheck clean.
+iOS: 204 → **224 unit/snapshot tests + 2 UI journeys** (1 live-gated).
+Every audit blocker (auth hole, goal corruption, dark mode, XXXL, jargon) is
+fixed with regression coverage. Root repo clean, parked on pushed main
+`a3f1803`. All worktrees removed, simulators shut down, no stray processes.
+
+**Dylan's morning:**
+1. **TestFlight** (~30 min): follow `SavoroIOS/TestFlightChecklist.md` —
+   Xcode sign-in → ASC app record (`com.savoro.Savoro`) → Archive →
+   Distribute → internal tester. The build is self-contained mock mode.
+2. **Optional — USDA data**: download SR Legacy CSVs and run the importer
+   per `apps/api/README.md` (L-37 shipped the code; the data run is yours).
+3. **Decisions when ready**: L-24 Today-UAT feedback (the live slice is
+   ready to demo via Debug env vars), L-19/L-11 housekeeping (deletions —
+   wanted your sign-off), next slice = Recipe Detail→publish (SAV-72 pairing),
+   and R-2/R-4 (cold-start content, onboarding design) before Slices 4-6.
 
 **Iteration 15 (2026-07-18 ~03:30). THE MILESTONE: L-23 landed (`825a827`) —
 Savoro's app talked to its real backend for the first time.** Live UI journey
