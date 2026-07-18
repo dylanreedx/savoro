@@ -160,6 +160,38 @@ struct TodaySummaryViewModel: Equatable {
     }
 }
 
+enum TodayLayout {
+    static let interCardGap = SavoroSpacing.md
+    static let cardInsets = SavoroCardInsets.compact
+
+    static let privacyCard = "today-layout-privacy"
+    static let emptyDayCard = "today-layout-empty-day"
+    static let calorieCard = "today-layout-calories"
+    static let macroCard = "today-layout-macros"
+    static let quickActionsCard = "today-layout-quick-actions"
+    static let summaryCard = "today-layout-summary"
+
+    static func quickActionCard(_ action: TodayQuickActionKind) -> String {
+        "today-layout-quick-action-\(action.rawValue)"
+    }
+
+    static func recentCard(_ item: TodayRecentLogAgainItem) -> String {
+        "today-layout-recent-\(item.id)"
+    }
+
+    static func mealSectionCard(_ mealType: MealType) -> String {
+        "today-layout-meal-section-\(mealType.rawValue)"
+    }
+
+    static func mealEmptyCard(_ mealType: MealType) -> String {
+        "today-layout-meal-empty-\(mealType.rawValue)"
+    }
+
+    static func mealEntryCard(_ entry: FoodLogEntry) -> String {
+        "today-layout-meal-entry-\(entry.id)"
+    }
+}
+
 struct TodayLoadingStateView: View {
     var body: some View {
         VStack {
@@ -231,7 +263,7 @@ struct TodayPlaceholderView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+            VStack(alignment: .leading, spacing: TodayLayout.interCardGap) {
                 TodayHeaderView(viewModel: viewModel)
                 TodayPrivacyCard(copy: viewModel.reassuranceText, supportCopy: viewModel.privacySupportText)
                 if viewModel.isEmptyDay {
@@ -277,7 +309,11 @@ private struct TodayPrivacyCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SavoroCard(style: .glass) {
+        SavoroMeasuredCard(
+            style: .glass,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.privacyCard
+        ) {
             Group {
                 if dynamicTypeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
@@ -318,7 +354,11 @@ private struct TodayPrivacyCard: View {
 
 private struct TodayEmptyDayCard: View {
     var body: some View {
-        SavoroCard(style: .glass) {
+        SavoroMeasuredCard(
+            style: .glass,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.emptyDayCard
+        ) {
             HStack(alignment: .top, spacing: SavoroSpacing.sm) {
                 Image(systemName: "sunrise.fill")
                     .font(.title2)
@@ -342,7 +382,11 @@ private struct TodayCalorieRingCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SavoroCard(style: .elevated) {
+        SavoroMeasuredCard(
+            style: .elevated,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.calorieCard
+        ) {
             Group {
                 if dynamicTypeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
@@ -393,10 +437,12 @@ private struct TodayMacroProgressCard: View {
     let viewModel: TodaySummaryViewModel
 
     var body: some View {
-        SavoroNutritionSnapshotCard(
+        SavoroMeasuredNutritionSnapshotCard(
             title: "Macro progress",
             subtitle: viewModel.macroProgressSubtitle,
-            macros: viewModel.macroProgressValues
+            macros: viewModel.macroProgressValues,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.macroCard
         )
         .accessibilityElement(children: .combine)
     }
@@ -408,8 +454,12 @@ private struct TodayQuickActionsCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SavoroCard(style: .elevated) {
-            VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+        SavoroMeasuredCard(
+            style: .elevated,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.quickActionsCard
+        ) {
+            VStack(alignment: .leading, spacing: TodayLayout.interCardGap) {
                 VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
                     Text("Quick actions")
                         .font(SavoroTypography.headline)
@@ -421,7 +471,11 @@ private struct TodayQuickActionsCard: View {
 
                 ForEach(actions) { action in
                     Button { onAction(action) } label: {
-                        SavoroCard(style: .strong, insets: .compact) {
+                        SavoroMeasuredCard(
+                            style: .strong,
+                            insets: TodayLayout.cardInsets,
+                            layoutIdentifier: TodayLayout.quickActionCard(action)
+                        ) {
                             Group {
                                 if dynamicTypeSize.isAccessibilitySize {
                                     VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
@@ -487,15 +541,14 @@ private struct TodayRecentLogAgainRail: View {
             }
 
             if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+                VStack(alignment: .leading, spacing: TodayLayout.interCardGap) {
                     recentCards
                 }
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(alignment: .top, spacing: SavoroSpacing.md) {
+                    HStack(alignment: .top, spacing: TodayLayout.interCardGap) {
                         recentCards
                     }
-                    .padding(.vertical, SavoroSpacing.xs)
                 }
             }
         }
@@ -526,7 +579,11 @@ private struct TodayRecentLogAgainCard: View {
     }
 
     private var card: some View {
-        SavoroCard(style: .plain) {
+        SavoroMeasuredCard(
+            style: .plain,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.recentCard(item)
+        ) {
             VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
                 SavoroChip(title: item.sourceLabel, systemImage: "lock.fill", variant: .neutral)
                 Text(item.title)
@@ -551,7 +608,11 @@ private struct TodaySummaryCard: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SavoroCard(style: .glass) {
+        SavoroMeasuredCard(
+            style: .glass,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.summaryCard
+        ) {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
                 VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
                     Text(viewModel.summaryTitle)
@@ -601,7 +662,7 @@ private struct TodayMealSectionsCard: View {
     let sections: [TodayMealSectionViewModel]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+        VStack(alignment: .leading, spacing: TodayLayout.interCardGap) {
             VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
                 Text("Meal sections")
                     .font(SavoroTypography.headline)
@@ -623,7 +684,11 @@ private struct TodayMealSectionView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SavoroCard(style: .plain) {
+        SavoroMeasuredCard(
+            style: .plain,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.mealSectionCard(section.mealType)
+        ) {
             VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
                 Group {
                     if dynamicTypeSize.isAccessibilitySize {
@@ -640,7 +705,7 @@ private struct TodayMealSectionView: View {
                 if section.isEmpty {
                     TodayMealEmptyStateView(section: section)
                 } else {
-                    VStack(spacing: SavoroSpacing.sm) {
+                    VStack(spacing: TodayLayout.interCardGap) {
                         ForEach(section.entries, id: \.id) { entry in
                             TodayMealEntryRow(entry: entry)
                         }
@@ -669,7 +734,11 @@ private struct TodayMealEmptyStateView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SavoroCard(style: .accent, insets: .compact) {
+        SavoroMeasuredCard(
+            style: .accent,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.mealEmptyCard(section.mealType)
+        ) {
             Group {
                 if dynamicTypeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
@@ -704,7 +773,11 @@ private struct TodayMealEntryRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        SavoroCard(style: .strong, insets: .compact) {
+        SavoroMeasuredCard(
+            style: .strong,
+            insets: TodayLayout.cardInsets,
+            layoutIdentifier: TodayLayout.mealEntryCard(entry)
+        ) {
             Group {
                 if dynamicTypeSize.isAccessibilitySize {
                     VStack(alignment: .leading, spacing: SavoroSpacing.sm) {

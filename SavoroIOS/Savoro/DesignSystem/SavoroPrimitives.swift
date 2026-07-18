@@ -1,37 +1,57 @@
 import SwiftUI
 
-struct SavoroCard<Content: View>: View {
-    enum Style {
-        case plain
-        case glass
-        case elevated
-        case strong
-        case accent
-        case overlay
-        case stat
-        case toast
-        case selection(isSelected: Bool)
-    }
+enum SavoroCardInsets {
+    case none
+    case compact
+    case standard
 
-    enum Insets {
-        case none
-        case compact
-        case standard
-
-        var value: CGFloat {
-            switch self {
-            case .none: 0
-            case .compact: SavoroSpacing.sm
-            case .standard: SavoroSpacing.md
-            }
+    var value: CGFloat {
+        switch self {
+        case .none: 0
+        case .compact: SavoroSpacing.sm
+        case .standard: SavoroSpacing.md
         }
     }
+}
 
-    private let style: Style
-    private let insets: Insets
+enum SavoroCardStyle {
+    case plain
+    case glass
+    case elevated
+    case strong
+    case accent
+    case overlay
+    case stat
+    case toast
+    case selection(isSelected: Bool)
+}
+
+struct SavoroCardLayoutAnchors {
+    var card: Anchor<CGRect>?
+    let content: Anchor<CGRect>
+}
+
+struct SavoroCardLayoutPreferenceKey: PreferenceKey {
+    static var defaultValue: [String: SavoroCardLayoutAnchors] = [:]
+
+    static func reduce(
+        value: inout [String: SavoroCardLayoutAnchors],
+        nextValue: () -> [String: SavoroCardLayoutAnchors]
+    ) {
+        value.merge(nextValue(), uniquingKeysWith: { _, latest in latest })
+    }
+}
+
+struct SavoroCard<Content: View>: View {
+    private let style: SavoroCardStyle
+    private let insets: SavoroCardInsets
     private let content: Content
 
-    init(style: Style = .glass, insets: Insets = .standard, @ViewBuilder content: () -> Content) {
+    init(
+        style: SavoroCardStyle = .glass,
+        insets: SavoroCardInsets = .standard,
+        @ViewBuilder content: () -> Content
+    ) {
         self.style = style
         self.insets = insets
         self.content = content()
@@ -90,6 +110,50 @@ struct SavoroCard<Content: View>: View {
         case .elevated: SavoroShadow.glassLarge
         case .plain, .glass, .toast: SavoroShadow.glass
         case .strong, .accent, .overlay, .stat, .selection: SavoroShadow.none
+        }
+    }
+}
+
+struct SavoroMeasuredCard<Content: View>: View {
+    let style: SavoroCardStyle
+    let insets: SavoroCardInsets
+    let layoutIdentifier: String
+    let content: Content
+
+    init(
+        style: SavoroCardStyle = .glass,
+        insets: SavoroCardInsets = .standard,
+        layoutIdentifier: String,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.style = style
+        self.insets = insets
+        self.layoutIdentifier = layoutIdentifier
+        self.content = content()
+    }
+
+    var body: some View {
+        SavoroCard(style: style, insets: .none) {
+            content
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .transformAnchorPreference(
+                    key: SavoroCardLayoutPreferenceKey.self,
+                    value: .bounds
+                ) { anchors, contentBounds in
+                    anchors[layoutIdentifier] = SavoroCardLayoutAnchors(
+                        card: nil,
+                        content: contentBounds
+                    )
+                }
+                .padding(insets.value)
+        }
+        .transformAnchorPreference(
+            key: SavoroCardLayoutPreferenceKey.self,
+            value: .bounds
+        ) { anchors, cardBounds in
+            guard var layoutAnchors = anchors[layoutIdentifier] else { return }
+            layoutAnchors.card = cardBounds
+            anchors[layoutIdentifier] = layoutAnchors
         }
     }
 }
@@ -574,6 +638,30 @@ struct SavoroNutritionSnapshotCard: View {
 
     var body: some View {
         SavoroCard(style: .elevated) {
+            VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+                VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+                    Text(title).font(SavoroTypography.headline).foregroundStyle(SavoroColor.textStrong)
+                    Text(subtitle).font(SavoroTypography.callout).foregroundStyle(SavoroColor.textMuted)
+                }
+                ForEach(macros) { SavoroMacroProgressBar(macro: $0) }
+            }
+        }
+    }
+}
+
+struct SavoroMeasuredNutritionSnapshotCard: View {
+    let title: String
+    let subtitle: String
+    let macros: [SavoroMacroValue]
+    let insets: SavoroCardInsets
+    let layoutIdentifier: String
+
+    var body: some View {
+        SavoroMeasuredCard(
+            style: .elevated,
+            insets: insets,
+            layoutIdentifier: layoutIdentifier
+        ) {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
                 VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
                     Text(title).font(SavoroTypography.headline).foregroundStyle(SavoroColor.textStrong)

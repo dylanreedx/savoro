@@ -292,6 +292,73 @@ final class ScaffoldTests: XCTestCase {
         _ = TodayPlaceholderView(viewModel: TodaySummaryViewModel())
     }
 
+    @MainActor
+    func testTodayCardStackUsesEqualRenderedGapsAndHorizontalInsets() {
+        let viewModel = TodaySummaryViewModel(dayLog: .todayFixture)
+        let measurements = renderedTodayCardLayout(viewModel: viewModel)
+        let expectedCardIdentifiers = [
+            TodayLayout.privacyCard,
+            TodayLayout.calorieCard,
+            TodayLayout.macroCard,
+            TodayLayout.quickActionsCard,
+            TodayLayout.summaryCard
+        ]
+            + viewModel.quickActions.map(TodayLayout.quickActionCard)
+            + viewModel.recentLogAgainItems.map(TodayLayout.recentCard)
+            + viewModel.mealSections.map { TodayLayout.mealSectionCard($0.mealType) }
+            + viewModel.mealSections.flatMap { section in
+                section.isEmpty
+                    ? [TodayLayout.mealEmptyCard(section.mealType)]
+                    : section.entries.map(TodayLayout.mealEntryCard)
+            }
+
+        XCTAssertEqual(measurements.keys.sorted(), expectedCardIdentifiers.sorted())
+
+        for identifier in expectedCardIdentifiers {
+            guard let measurement = measurements[identifier] else {
+                XCTFail("Missing rendered Today card measurement for \(identifier)")
+                continue
+            }
+            XCTAssertEqual(
+                measurement.contentFrame.minX - measurement.cardFrame.minX,
+                TodayLayout.cardInsets.value,
+                accuracy: 0.5,
+                "Unequal leading inset for \(identifier)"
+            )
+            XCTAssertEqual(
+                measurement.cardFrame.maxX - measurement.contentFrame.maxX,
+                TodayLayout.cardInsets.value,
+                accuracy: 0.5,
+                "Unequal trailing inset for \(identifier)"
+            )
+        }
+
+        let verticalCardGroups = [
+            [
+                TodayLayout.privacyCard,
+                TodayLayout.calorieCard,
+                TodayLayout.macroCard,
+                TodayLayout.quickActionsCard
+            ],
+            viewModel.quickActions.map(TodayLayout.quickActionCard),
+            viewModel.mealSections.map { TodayLayout.mealSectionCard($0.mealType) }
+        ]
+        let verticalGaps = verticalCardGroups.flatMap {
+            renderedCardGaps(between: $0, in: measurements, axis: .vertical)
+        }
+        let recentHorizontalGaps = renderedCardGaps(
+            between: viewModel.recentLogAgainItems.map(TodayLayout.recentCard),
+            in: measurements,
+            axis: .horizontal
+        )
+        let allAdjacentCardGaps = verticalGaps + recentHorizontalGaps
+
+        XCTAssertFalse(allAdjacentCardGaps.isEmpty)
+        for gap in allAdjacentCardGaps {
+            XCTAssertEqual(gap, TodayLayout.interCardGap, accuracy: 0.5)
+        }
+    }
+
     func testRecipeVisibilityOptionsMatchLinearScope() {
         XCTAssertEqual(RecipeVisibilityOption.allCases.map(\.title), [
             "Keep private",
@@ -3594,6 +3661,99 @@ private func viewCodeSourceFilesForLint() throws -> [ViewCodeSourceForLint] {
     }
 
     return sourceFiles
+}
+
+private struct SavoroCardLayoutMeasurement: Equatable {
+    let cardFrame: CGRect
+    let contentFrame: CGRect
+}
+
+private enum CardGapAxis {
+    case horizontal
+    case vertical
+}
+
+private struct SavoroCardLayoutReader<Content: View>: View {
+    let content: Content
+    let onChange: ([String: SavoroCardLayoutMeasurement]) -> Void
+
+    init(
+        onChange: @escaping ([String: SavoroCardLayoutMeasurement]) -> Void,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.content = content()
+        self.onChange = onChange
+    }
+
+    var body: some View {
+        content.overlayPreferenceValue(SavoroCardLayoutPreferenceKey.self) { anchorsByIdentifier in
+            GeometryReader { proxy in
+                let measurements: [String: SavoroCardLayoutMeasurement] = anchorsByIdentifier.compactMapValues { anchors -> SavoroCardLayoutMeasurement? in
+                    guard let card = anchors.card else { return nil }
+                    return SavoroCardLayoutMeasurement(
+                        cardFrame: proxy[card],
+                        contentFrame: proxy[anchors.content]
+                    )
+                }
+
+                Color.clear
+                    .onAppear { onChange(measurements) }
+                    .onChange(of: measurements) { _, updatedMeasurements in
+                        onChange(updatedMeasurements)
+                    }
+            }
+        }
+    }
+}
+
+@MainActor
+private func renderedTodayCardLayout(
+    viewModel: TodaySummaryViewModel
+) -> [String: SavoroCardLayoutMeasurement] {
+    let bounds = CGRect(x: 0, y: 0, width: 402, height: 5_000)
+    var measurements: [String: SavoroCardLayoutMeasurement] = [:]
+    let controller = UIHostingController(
+        rootView: SavoroCardLayoutReader(onChange: { measurements = $0 }) {
+            TodayPlaceholderView(viewModel: viewModel)
+                .environment(\.dynamicTypeSize, .large)
+                .environment(\.locale, Locale(identifier: "en_US_POSIX"))
+        }
+        .frame(width: bounds.width, height: bounds.height, alignment: .top)
+    )
+    controller.view.bounds = bounds
+    controller.view.backgroundColor = .systemBackground
+
+    let window = UIWindow(frame: bounds)
+    window.rootViewController = controller
+    window.makeKeyAndVisible()
+    controller.view.setNeedsLayout()
+    controller.view.layoutIfNeeded()
+    RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+    controller.view.layoutIfNeeded()
+
+    window.isHidden = true
+    window.rootViewController = nil
+    return measurements
+}
+
+private func renderedCardGaps(
+    between identifiers: [String],
+    in measurements: [String: SavoroCardLayoutMeasurement],
+    axis: CardGapAxis
+) -> [CGFloat] {
+    zip(identifiers, identifiers.dropFirst()).compactMap { firstIdentifier, secondIdentifier in
+        guard
+            let first = measurements[firstIdentifier]?.cardFrame,
+            let second = measurements[secondIdentifier]?.cardFrame
+        else { return nil }
+
+        switch axis {
+        case .horizontal:
+            return second.minX - first.maxX
+        case .vertical:
+            return second.minY - first.maxY
+        }
+    }
 }
 
 @MainActor
