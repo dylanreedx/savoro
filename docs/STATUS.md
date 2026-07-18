@@ -123,7 +123,16 @@ Create Recipe epic, Batch D + Batch 0 complete:
 - RE-1 (`33e20cf`): Today card rhythm normalized — 12pt insets, 16pt gaps,
   geometry regression test. Rebased over RE-D3, reverified.
 
-**UPDATE (2026-07-18 ~10:15): RE-D4 landed (`475f081`) — the text-first
+**PHASE A RUNNING (2026-07-18 ~11:00): Epic v2 (docs/epics/recipe-creation.md)
+dispatched.** RC-1 (two guided-editor prototypes for Dylan's pick) and RC-2
+(video import flow spec) in flight. Hard stops after both land: Dylan picks
+the editor model, approves the import flow, names the LLM provider (RC-3),
+and approves the contract diff (RC-4) before Phases B-D dispatch. Note:
+RE-D4 text-first UI was vetoed by Dylan post-land; its parser is retained
+as the engine behind v2 composers/import; its UI gets replaced by the
+RC-1 winner.
+
+**PREVIOUS UPDATE (2026-07-18 ~10:15): RE-D4 landed (`475f081`) — the text-first
 conversion.** Dylan flagged the RE-D3 result as still button-heavy; a
 researched critical review (docs/epics/recipe-editor-design/CRITICAL-REVIEW.md,
 Mela/Paprika evidence) replaced the row-form model: ingredients and steps are
