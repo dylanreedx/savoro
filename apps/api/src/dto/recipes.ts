@@ -63,7 +63,7 @@ export function mapRecipeDetail(rows: RecipeDetailRows, viewerUserId: string) {
       servings: version.servings,
       perServingMacros,
       createdByUserId: recipe.ownerUserId,
-      publishedAt: null,
+      publishedAt: version.publishedAt,
       createdAt: version.createdAt,
     },
     ingredients: ingredients.map((i) => ({

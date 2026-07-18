@@ -6,8 +6,11 @@ import { ApiError } from '../errors'
 import { requireAuth } from '../middleware/auth'
 import {
   createRecipe,
+  archiveRecipe,
   forkRecipe,
   getRecipeDetailForViewer,
+  publishRecipe,
+  unpublishRecipe,
   updateRecipe,
   type RecipeContentInput,
   type RecipeIngredientInput,
@@ -38,6 +41,30 @@ recipes.get('/:id', async (c) => {
   return c.json({ recipe: mapRecipeDetail(rows, userId) })
 })
 
+recipes.post('/:id/publish', async (c) => {
+  const userId = c.get('userId')
+  const body = await readJson(c.req.raw)
+  const visibility = parsePublishVisibility(body.visibility)
+
+  const db = createDb(c.env.DB)
+  const rows = await publishRecipe(db, userId, c.req.param('id'), visibility)
+  return c.json({ recipe: mapRecipeDetail(rows, userId) })
+})
+
+recipes.post('/:id/unpublish', async (c) => {
+  const userId = c.get('userId')
+  const db = createDb(c.env.DB)
+  const rows = await unpublishRecipe(db, userId, c.req.param('id'))
+  return c.json({ recipe: mapRecipeDetail(rows, userId) })
+})
+
+recipes.post('/:id/archive', async (c) => {
+  const userId = c.get('userId')
+  const db = createDb(c.env.DB)
+  const rows = await archiveRecipe(db, userId, c.req.param('id'))
+  return c.json({ recipe: mapRecipeDetail(rows, userId) })
+})
+
 recipes.post('/:id/fork', async (c) => {
   const userId = c.get('userId')
   const db = createDb(c.env.DB)
@@ -63,6 +90,13 @@ async function readJson(req: Request): Promise<Record<string, unknown>> {
     throw new ApiError('validation_failed', 'Body must be a JSON object.')
   }
   return body as Record<string, unknown>
+}
+
+function parsePublishVisibility(value: unknown): 'public' | 'unlisted' {
+  if (value !== 'public' && value !== 'unlisted') {
+    throw new ApiError('validation_failed', 'visibility must be public or unlisted.')
+  }
+  return value
 }
 
 function parseCreateBody(body: Record<string, unknown>): RecipeContentInput {

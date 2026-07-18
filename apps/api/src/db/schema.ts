@@ -68,6 +68,7 @@ export const recipeVersions = sqliteTable(
     fatGrams: real('fat_grams').notNull(),
     fiberGrams: real('fiber_grams'),
     sodiumMilligrams: real('sodium_milligrams'),
+    publishedAt: text('published_at'),
     createdAt: text('created_at').notNull(),
   },
   (t) => [uniqueIndex('uq_recipe_versions_number').on(t.recipeId, t.versionNumber)],

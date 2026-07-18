@@ -116,6 +116,23 @@ describe('logs endpoints', () => {
     expect(res.status).toBe(404)
   })
 
+  it('rejects fetching and logging a public draft recipe as a stranger', async () => {
+    await env.DB.prepare("update recipes set visibility = 'public' where id = 'rec_bowl'").run()
+
+    const fetched = await app.request('/v1/recipes/rec_bowl', authed('bob-token'), env)
+    expect(fetched.status).toBe(404)
+
+    const logged = await logRecipe('bob-token', {
+      recipeId: 'rec_bowl',
+      date: '2026-06-10',
+      mealType: 'lunch',
+      servings: 1,
+    })
+    expect(logged.status).toBe(404)
+    const body = (await logged.json()) as { error: { code: string } }
+    expect(body.error.code).toBe('not_found')
+  })
+
   it('rejects a recipeVersionId that belongs to a different recipe', async () => {
     const otherVersionId = await seedRecipe(env.DB, { recipeId: 'rec_other', ownerUserId: 'usr_alice' })
     const res = await logRecipe('alice-token', {

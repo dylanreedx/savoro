@@ -16,9 +16,10 @@ import {
 import { ApiError } from '../errors'
 
 /**
- * Loads the recipe version to log against, enforcing visibility: the viewer
- * must own the recipe or it must be public. When versionId is omitted the
- * recipe's current version is used.
+ * Loads the recipe version to log against, enforcing the same rule exposed by
+ * RecipeViewerState.canLog: owners may log their own recipe; everyone else
+ * needs a public, published recipe. When versionId is omitted the recipe's
+ * current version is used.
  */
 export async function getLoggableVersion(
   db: Db,
@@ -27,7 +28,9 @@ export async function getLoggableVersion(
   versionId: string | undefined,
 ): Promise<RecipeVersionRow> {
   const recipe = await db.query.recipes.findFirst({ where: eq(recipes.id, recipeId) })
-  if (!recipe || (recipe.ownerUserId !== viewerUserId && recipe.visibility !== 'public')) {
+  const isOwner = recipe?.ownerUserId === viewerUserId
+  const canLog = recipe && (isOwner || (recipe.visibility === 'public' && recipe.status === 'published'))
+  if (!canLog) {
     throw new ApiError('not_found', 'Recipe not found.')
   }
 
@@ -206,10 +209,84 @@ export async function forkRecipe(db: Db, viewerUserId: string, sourceRecipeId: s
   })
 }
 
+async function getOwnedRecipe(db: Db, ownerUserId: string, recipeId: string): Promise<RecipeRow> {
+  const recipe = await db.query.recipes.findFirst({ where: eq(recipes.id, recipeId) })
+  // Ownership failures match missing ids so lifecycle endpoints do not leak existence.
+  if (!recipe || recipe.ownerUserId !== ownerUserId) {
+    throw new ApiError('not_found', 'Recipe not found.')
+  }
+  return recipe
+}
+
+/** Publishes the current draft version as public or link-reachable unlisted. */
+export async function publishRecipe(
+  db: Db,
+  ownerUserId: string,
+  recipeId: string,
+  visibility: 'public' | 'unlisted',
+): Promise<RecipeDetailRows> {
+  const recipe = await getOwnedRecipe(db, ownerUserId, recipeId)
+  if (recipe.status !== 'draft') {
+    throw new ApiError('validation_failed', 'Only draft recipes can be published.')
+  }
+  if (!recipe.currentVersionId) throw new ApiError('internal', 'Recipe has no current version.')
+
+  const version = await db.query.recipeVersions.findFirst({
+    where: eq(recipeVersions.id, recipe.currentVersionId),
+  })
+  if (!version || version.recipeId !== recipe.id) {
+    throw new ApiError('internal', 'Recipe has no current version.')
+  }
+
+  const now = new Date().toISOString()
+  const ops: BatchItem<'sqlite'>[] = []
+  // A republish of unchanged content keeps the version's first publication time.
+  if (version.publishedAt === null) {
+    ops.push(db.update(recipeVersions).set({ publishedAt: now }).where(eq(recipeVersions.id, version.id)))
+  }
+  ops.push(
+    db
+      .update(recipes)
+      .set({ status: 'published', visibility, updatedAt: now })
+      .where(eq(recipes.id, recipe.id)),
+  )
+  await db.batch(ops as SqliteBatch)
+  return loadRecipeDetail(db, recipe.id)
+}
+
+/** Returns a published recipe to a private draft without changing its versions. */
+export async function unpublishRecipe(db: Db, ownerUserId: string, recipeId: string): Promise<RecipeDetailRows> {
+  const recipe = await getOwnedRecipe(db, ownerUserId, recipeId)
+  if (recipe.status !== 'published') {
+    throw new ApiError('validation_failed', 'Only published recipes can be unpublished.')
+  }
+
+  await db
+    .update(recipes)
+    .set({ status: 'draft', visibility: 'private', updatedAt: new Date().toISOString() })
+    .where(eq(recipes.id, recipe.id))
+  return loadRecipeDetail(db, recipe.id)
+}
+
+/** Archives any active recipe; archived is a terminal lifecycle state. */
+export async function archiveRecipe(db: Db, ownerUserId: string, recipeId: string): Promise<RecipeDetailRows> {
+  const recipe = await getOwnedRecipe(db, ownerUserId, recipeId)
+  if (recipe.status === 'archived') {
+    throw new ApiError('validation_failed', 'Recipe is already archived.')
+  }
+
+  await db
+    .update(recipes)
+    .set({ status: 'archived', updatedAt: new Date().toISOString() })
+    .where(eq(recipes.id, recipe.id))
+  return loadRecipeDetail(db, recipe.id)
+}
+
 /**
- * Owner-only edit. Drafts mutate version 1 in place; published recipes get a
- * NEW version (published versions are immutable — existing logs keep pointing
- * at the version they logged). Absent patch fields keep current content.
+ * Owner-only edit. Never-published drafts mutate their current version in
+ * place. Published recipes and unpublished versions that were published
+ * before get a NEW version, so existing logs/forks keep immutable references.
+ * Absent patch fields keep current content.
  */
 export async function updateRecipe(
   db: Db,
@@ -237,7 +314,7 @@ export async function updateRecipe(
   }
 
   const now = new Date().toISOString()
-  if (recipe.status === 'draft') {
+  if (recipe.status === 'draft' && current.version.publishedAt === null) {
     const versionId = current.version.id
     const ops: BatchItem<'sqlite'>[] = [
       db.update(recipeVersions).set(versionValues(content)).where(eq(recipeVersions.id, versionId)),
@@ -258,6 +335,7 @@ export async function updateRecipe(
         recipeId,
         versionNumber: current.version.versionNumber + 1,
         ...versionValues(content),
+        publishedAt: recipe.status === 'published' ? now : null,
         createdAt: now,
       }),
       db.update(recipes).set({ currentVersionId: versionId, updatedAt: now }).where(eq(recipes.id, recipeId)),

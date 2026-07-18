@@ -82,6 +82,7 @@ insert into recipe_versions (
   fat_grams,
   fiber_grams,
   sodium_milligrams,
+  published_at,
   created_at
 )
 values (
@@ -96,6 +97,7 @@ values (
   18,
   9,
   760,
+  '2026-06-10T00:00:00Z',
   '2026-06-10T00:00:00Z'
 )
 on conflict(id) do update set
@@ -108,4 +110,5 @@ on conflict(id) do update set
   carbs_grams = excluded.carbs_grams,
   fat_grams = excluded.fat_grams,
   fiber_grams = excluded.fiber_grams,
-  sodium_milligrams = excluded.sodium_milligrams;
+  sodium_milligrams = excluded.sodium_milligrams,
+  published_at = excluded.published_at;
