@@ -35,9 +35,9 @@ Max one active ticket per track; lands are serialized on `main`.
 
 | # | Ticket | Track | Status | Evidence (commit / run) |
 |---|---|---|---|---|
-| 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | in-progress (fresh run from post-L-36 main; stale partial work discarded to avoid pbxproj conflicts) | |
+| 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | **landed** | `c688e00`, 204 unit + 1 UI journey green; 15 step screenshots visually reviewed |
 | 2 | SAV-129 + L-1 — publish lifecycle, close public-draft logging hole, real `publishedAt` | backend | **landed** | `705510f`, 74/74 tests |
-| 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | queued | |
+| 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | in-progress | |
 | 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | **landed** | `f36349b`, 78/78 tests |
 | 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | queued | |
 | 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | **landed** | `e86cd9b`, 78/78 tests |
@@ -58,7 +58,8 @@ work continues; only UAT-gated items park):
 |---|---|---|---|
 | S1 | L-3 — discover/search endpoints (gate met; foods half deferred to L-37) | backend | **landed** — `9d3fbe3`, 91/91 tests |
 | S2b | SAV-133 — profiles/usernames (follow/friends stays L-28) | backend | **landed** — `7ea855f`, 98/98 tests |
-| S3 | L-2 — logs management endpoints | backend | in-progress |
+| S3 | L-2 — logs management endpoints | backend | **landed** — `3f431dd`, 107/107 tests |
+| S7b | L-28 — follow/friends + activity | backend | in-progress |
 | S2 | SAV-133 — profiles/usernames endpoints | backend | queued |
 | S3 | L-2 — logs management endpoints | backend | queued |
 | S4 | SAV-72 — editor save/publish UX (mock-first) | frontend | queued |
@@ -108,6 +109,17 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 8 (2026-07-18 ~00:50).** Double land. **L-20** (`c688e00`): UI-test
+target live, 15-step journey (tabs → log → fork → editor) green at 86s, 204
+unit tests intact; I visually reviewed the step screenshots — journey verified,
+and the photos document the pre-existing jargon ("From frozen mock log data",
+raw version IDs) that L-17 will fix, now with evidence. **L-2** (`3f431dd`,
+backend 107/107): recents + delete + patch with frozen-snapshot scaling derived
+strictly from the entry's own stored values (raw-SQL mutation regression
+proves no re-derivation). Dispatched: L-21 (snapshot harness) on frontend,
+L-28 (follow/friends/activity) on backend. Remaining backend stretch after
+L-28: only L-37 (USDA port — needs a data download; may defer to daytime).
 
 **Iteration 7 (2026-07-18 ~00:20).** SAV-133 landed (`7ea855f`, backend 98/98):
 GET /v1/me, PATCH /v1/me/profile (username rules documented, uniqueness 422),
