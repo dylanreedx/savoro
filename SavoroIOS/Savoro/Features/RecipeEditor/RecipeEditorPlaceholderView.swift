@@ -1036,11 +1036,11 @@ public struct RecipeEditorPlaceholderView: View {
                 ForEach($form.ingredients) { $ingredient in
                     VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
                         HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                            TextField("Qty", text: $ingredient.quantityText)
+                            TextField("Qty", text: $ingredient.quantityText, prompt: fieldPrompt("Qty"))
                                 .textFieldStyle(.roundedBorder)
-                            TextField("Unit", text: $ingredient.unit)
+                            TextField("Unit", text: $ingredient.unit, prompt: fieldPrompt("Unit"))
                                 .textFieldStyle(.roundedBorder)
-                            TextField("Ingredient name", text: $ingredient.name)
+                            TextField("Ingredient name", text: $ingredient.name, prompt: fieldPrompt("Ingredient name"))
                                 .textFieldStyle(.roundedBorder)
                         }
                         HStack {
@@ -1086,7 +1086,7 @@ public struct RecipeEditorPlaceholderView: View {
                         Text(step.displayNumber)
                             .font(SavoroTypography.label)
                             .foregroundStyle(SavoroColor.textBody)
-                        TextField("Instruction step", text: $step.body, axis: .vertical)
+                        TextField("Instruction step", text: $step.body, prompt: fieldPrompt("Instruction step"), axis: .vertical)
                             .textFieldStyle(.roundedBorder)
                             .lineLimit(2...4)
                             .accessibilityLabel(step.instructionFieldAccessibilityLabel)
@@ -1278,12 +1278,16 @@ public struct RecipeEditorPlaceholderView: View {
             Text(isRequired ? "\(label) required" : label)
                 .font(SavoroTypography.label)
                 .foregroundStyle(SavoroColor.textBody)
-            TextField(label, text: text, axis: axis)
+            TextField(label, text: text, prompt: fieldPrompt(label), axis: axis)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityLabel(isRequired ? "\(label), required" : label)
                 .accessibilityIdentifier("recipe-editor-field-\(label.lowercased().replacingOccurrences(of: " ", with: "-"))")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func fieldPrompt(_ text: String) -> Text {
+        Text(text).foregroundStyle(SavoroColor.fieldPlaceholder)
     }
 
     @ViewBuilder
@@ -1491,7 +1495,12 @@ struct RecipeCommunityShareSetupSheetView: View {
                             Text("Optional public-facing recipe caption for this mock setup. It stays local and is not posted.")
                                 .font(SavoroTypography.callout)
                                 .foregroundStyle(SavoroColor.textBody)
-                            TextField("Add an optional caption", text: $pendingSetup.caption, axis: .vertical)
+                            TextField(
+                                "Add an optional caption",
+                                text: $pendingSetup.caption,
+                                prompt: Text("Add an optional caption").foregroundStyle(SavoroColor.fieldPlaceholder),
+                                axis: .vertical
+                            )
                                 .textFieldStyle(.roundedBorder)
                                 .lineLimit(3...5)
                                 .accessibilityLabel("Community share caption")

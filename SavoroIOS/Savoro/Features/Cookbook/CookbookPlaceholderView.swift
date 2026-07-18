@@ -360,7 +360,11 @@ struct CookbookPlaceholderView: View {
 
     private func searchFilterShell(viewModel: CookbookLibraryViewModel) -> some View {
         VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-            TextField(viewModel.searchPrompt, text: $searchText)
+            TextField(
+                viewModel.searchPrompt,
+                text: $searchText,
+                prompt: Text(viewModel.searchPrompt).foregroundStyle(SavoroColor.fieldPlaceholder)
+            )
                 .textFieldStyle(.roundedBorder)
                 .accessibilityLabel(viewModel.searchPrompt)
             Picker(viewModel.filterShellTitle, selection: $selectedFilter) {

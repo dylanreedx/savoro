@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Centralized Savoro design tokens for the native SwiftUI MVP.
 ///
@@ -41,38 +42,151 @@ enum SavoroColor {
 
     // MARK: - Semantic surfaces/text
 
-    static let page = sand50
-    static let raised = sand100
-    static let card = Color.white.opacity(0.55)
-    static let cardStrong = Color.white.opacity(0.70)
-    static let inverseSurface = sand900
+    /// Semantic colors preserve the original light palette while resolving to
+    /// a warm sand-based palette in dark mode. Raw ramp values above remain
+    /// fixed so they can still be used for deliberate, non-semantic artwork.
+    static let page = adaptive(
+        light: uiColor(0.988, 0.977, 0.957),
+        dark: uiColor(0.090, 0.073, 0.063)
+    )
+    static let raised = adaptive(
+        light: uiColor(0.966, 0.946, 0.914),
+        dark: uiColor(0.139, 0.113, 0.094)
+    )
+    static let card = adaptive(
+        light: uiColor(1, 1, 1, alpha: 0.55),
+        dark: uiColor(0.139, 0.113, 0.094, alpha: 0.72)
+    )
+    static let cardStrong = adaptive(
+        light: uiColor(1, 1, 1, alpha: 0.70),
+        dark: uiColor(0.223, 0.184, 0.151, alpha: 0.86)
+    )
+    static let cardOverlay = adaptive(
+        light: uiColor(1, 1, 1, alpha: 0.72),
+        dark: uiColor(0.223, 0.184, 0.151, alpha: 0.86)
+    )
+    static let inverseSurface = adaptive(
+        light: uiColor(0.139, 0.113, 0.094),
+        dark: uiColor(0.966, 0.946, 0.914)
+    )
 
-    static let textStrong = sand900
-    static let textBody = sand700
-    static let textMuted = sand500
-    static let textSubtle = sand400
-    static let textInverse = sand50
-    static let textOnAccent = sand900
+    static let textStrong = adaptive(
+        light: uiColor(0.139, 0.113, 0.094),
+        dark: uiColor(0.988, 0.977, 0.957)
+    )
+    static let textBody = adaptive(
+        light: uiColor(0.315, 0.267, 0.220),
+        dark: uiColor(0.915, 0.887, 0.845)
+    )
+    static let textMuted = adaptive(
+        light: uiColor(0.525, 0.472, 0.402),
+        dark: uiColor(0.834, 0.795, 0.735)
+    )
+    static let textSubtle = adaptive(
+        light: uiColor(0.676, 0.625, 0.552),
+        dark: uiColor(0.676, 0.625, 0.552)
+    )
+    static let textInverse = adaptive(
+        light: uiColor(0.988, 0.977, 0.957),
+        dark: uiColor(0.139, 0.113, 0.094)
+    )
+    static let textOnAccent = adaptive(
+        light: uiColor(0.139, 0.113, 0.094),
+        dark: uiColor(0.090, 0.073, 0.063)
+    )
+    static let numericTextStrong = adaptive(
+        light: uiColor(0, 0, 0),
+        dark: uiColor(0.988, 0.977, 0.957)
+    )
+    static let fieldPlaceholder = adaptive(
+        light: UIColor.placeholderText.resolvedColor(with: UITraitCollection(userInterfaceStyle: .light)),
+        dark: uiColor(0.676, 0.625, 0.552)
+    )
 
-    static let accent = blush400
-    static let accentSoft = blush100
-    static let accentStrong = blush500
-    static let positive = sage400
-    static let positiveSoft = sage100
+    static let accent = adaptive(
+        light: uiColor(0.877, 0.620, 0.638),
+        dark: uiColor(0.934, 0.743, 0.751)
+    )
+    static let accentSoft = adaptive(
+        light: uiColor(0.987, 0.917, 0.917),
+        dark: uiColor(0.306, 0.169, 0.188)
+    )
+    static let accentHighlight = adaptive(
+        light: uiColor(0.965, 0.833, 0.835),
+        dark: uiColor(0.420, 0.235, 0.263)
+    )
+    static let accentStrong = adaptive(
+        light: uiColor(0.789, 0.490, 0.520),
+        dark: uiColor(0.965, 0.833, 0.835)
+    )
+    static let positive = adaptive(
+        light: uiColor(0.477, 0.682, 0.504),
+        dark: uiColor(0.658, 0.815, 0.676)
+    )
+    static let positiveSoft = adaptive(
+        light: uiColor(0.899, 0.958, 0.904),
+        dark: uiColor(0.145, 0.247, 0.165)
+    )
+    static let positiveBorder = adaptive(
+        light: uiColor(0.791, 0.903, 0.803),
+        dark: uiColor(0.477, 0.682, 0.504)
+    )
+    static let lavenderSoft = adaptive(
+        light: uiColor(0.940, 0.917, 0.986),
+        dark: uiColor(0.247, 0.204, 0.337)
+    )
 
-    static let border = sand200
-    static let borderStrong = sand300
-    static let glassBorder = Color.white.opacity(0.50)
-    static let focusRing = blush300
+    static let border = adaptive(
+        light: uiColor(0.915, 0.887, 0.845),
+        dark: uiColor(0.315, 0.267, 0.220)
+    )
+    static let borderStrong = adaptive(
+        light: uiColor(0.834, 0.795, 0.735),
+        dark: uiColor(0.417, 0.363, 0.303)
+    )
+    static let glassBorder = adaptive(
+        light: uiColor(1, 1, 1, alpha: 0.50),
+        dark: uiColor(0.417, 0.363, 0.303, alpha: 0.72)
+    )
+    static let focusRing = adaptive(
+        light: uiColor(0.934, 0.743, 0.751),
+        dark: uiColor(0.965, 0.833, 0.835)
+    )
+    static let decorativeOverlay = adaptive(
+        light: uiColor(1, 1, 1, alpha: 0.34),
+        dark: uiColor(0.966, 0.946, 0.914, alpha: 0.22)
+    )
 
     // MARK: - Macro data colors
 
     /// Macro colors are deliberately distinct and higher contrast than the
     /// soft brand blush palette, so data remains readable and non-decorative.
-    static let macroProtein = Color(red: 0.220, green: 0.575, blue: 0.365)
-    static let macroCarbs = Color(red: 0.770, green: 0.480, blue: 0.120)
-    static let macroFat = Color(red: 0.500, green: 0.365, blue: 0.710)
-    static let macroCalories = sand800
+    static let macroProtein = adaptive(
+        light: uiColor(0.220, 0.575, 0.365),
+        dark: uiColor(0.380, 0.750, 0.480)
+    )
+    static let macroCarbs = adaptive(
+        light: uiColor(0.770, 0.480, 0.120),
+        dark: uiColor(0.900, 0.620, 0.270)
+    )
+    static let macroFat = adaptive(
+        light: uiColor(0.500, 0.365, 0.710),
+        dark: uiColor(0.700, 0.560, 0.880)
+    )
+    static let macroCalories = adaptive(
+        light: uiColor(0.223, 0.184, 0.151),
+        dark: uiColor(0.915, 0.887, 0.845)
+    )
+
+    private static func adaptive(light: UIColor, dark: UIColor) -> Color {
+        Color(uiColor: UIColor { traits in
+            traits.userInterfaceStyle == .dark ? dark : light
+        })
+    }
+
+    private static func uiColor(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, alpha: CGFloat = 1) -> UIColor {
+        UIColor(red: red, green: green, blue: blue, alpha: alpha)
+    }
 
     // Backward-compatible aliases from the scaffold.
     static let warmSand = page

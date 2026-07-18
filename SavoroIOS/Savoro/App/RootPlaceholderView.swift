@@ -302,6 +302,8 @@ struct SavoroTabShellView: View {
             }
         }
         .tint(SavoroColor.accent)
+        .toolbarBackground(SavoroColor.raised, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
         .background(SavoroTabBarAccessibilityIdentifierBridge().frame(width: 0, height: 0))
         .sheet(item: $activeSheet) { route in
             sheetView(for: route)

@@ -16,7 +16,12 @@ final class SnapshotTests: XCTestCase {
     private static let projectDirectory = URL(fileURLWithPath: "\(#filePath)")
         .deletingLastPathComponent()
         .deletingLastPathComponent()
-    private static let recordMarkerURL = projectDirectory.appendingPathComponent(".snapshot-record-all")
+    private static let recordAllMarkerURL = projectDirectory.appendingPathComponent(".snapshot-record-all")
+    private static let recordDarkMarkerURL = projectDirectory.appendingPathComponent(".snapshot-record-dark")
+    private static let workingReferenceDirectory = FileManager.default.temporaryDirectory
+        .appendingPathComponent("SavoroSnapshotReferences", isDirectory: true)
+    private static let referenceDirectory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]
+        ?? workingReferenceDirectory.path
 
     private static let modes: [SnapshotMode] = [
         SnapshotMode(
@@ -66,8 +71,23 @@ final class SnapshotTests: XCTestCase {
     override class func setUp() {
         super.setUp()
 
-        let artifactDirectory = projectDirectory.appendingPathComponent(".snapshot-artifacts", isDirectory: true)
-        try? FileManager.default.createDirectory(at: artifactDirectory, withIntermediateDirectories: true)
+        let fileManager = FileManager.default
+        if ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"] == nil {
+            do {
+                let bundledReferences = try XCTUnwrap(
+                    Bundle(for: SnapshotTests.self).url(forResource: "SnapshotTests", withExtension: nil),
+                    "Bundled snapshot references are missing"
+                )
+                try? fileManager.removeItem(at: workingReferenceDirectory)
+                try fileManager.copyItem(at: bundledReferences, to: workingReferenceDirectory)
+            } catch {
+                XCTFail("Could not prepare snapshot references: \(error)")
+            }
+        }
+
+        let artifactDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("SavoroSnapshotArtifacts", isDirectory: true)
+        try? fileManager.createDirectory(at: artifactDirectory, withIntermediateDirectories: true)
         setenv("SNAPSHOT_ARTIFACTS", artifactDirectory.path, 1)
     }
 
@@ -147,8 +167,8 @@ final class SnapshotTests: XCTestCase {
         }
     }
 
-    /// `Scripts/record-snapshots.sh` enables Point-Free's `.all` record mode,
-    /// renders every reference, removes its marker, and verifies the new set.
+    /// `Scripts/record-snapshots.sh` enables Point-Free's `.all` record mode
+    /// for dark cases only, removes its marker, and verifies the full matrix.
     @MainActor
     private func assertFullMatrix<Content: View>(
         @ViewBuilder screen: () -> Content,
@@ -171,18 +191,28 @@ final class SnapshotTests: XCTestCase {
                 transaction.animation = nil
             }
 
-            assertSnapshot(
+            let failure = verifySnapshot(
                 of: view,
                 as: .image(
                     layout: .device(config: Self.iPhone17Config),
                     traits: traits
                 ),
                 named: mode.name,
-                record: FileManager.default.fileExists(atPath: Self.recordMarkerURL.path) ? .all : nil,
+                record: Self.shouldRecord(mode) ? .all : nil,
+                snapshotDirectory: Self.referenceDirectory,
                 file: file,
                 testName: testName,
                 line: line
             )
+            if let failure {
+                XCTFail(failure, file: file, line: line)
+            }
         }
+    }
+
+    private static func shouldRecord(_ mode: SnapshotMode) -> Bool {
+        let fileManager = FileManager.default
+        return fileManager.fileExists(atPath: recordAllMarkerURL.path)
+            || (mode.colorScheme == .dark && fileManager.fileExists(atPath: recordDarkMarkerURL.path))
     }
 }

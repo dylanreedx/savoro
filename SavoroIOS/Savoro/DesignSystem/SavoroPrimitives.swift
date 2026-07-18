@@ -95,7 +95,7 @@ struct SavoroButtonStyle: ButtonStyle {
     private func background(isPressed: Bool) -> Color {
         switch variant {
         case .primary: isPressed ? SavoroColor.accentStrong : SavoroColor.accent
-        case .secondary: isPressed ? SavoroColor.blush200 : SavoroColor.accentSoft
+        case .secondary: isPressed ? SavoroColor.accentHighlight : SavoroColor.accentSoft
         case .ghost: isPressed ? SavoroColor.raised : .clear
         }
     }
@@ -184,7 +184,11 @@ struct SavoroSearchField: View {
         HStack(spacing: SavoroSpacing.sm) {
             Image(systemName: "magnifyingglass")
                 .foregroundStyle(SavoroColor.textMuted)
-            TextField(placeholder, text: $text)
+            TextField(
+                placeholder,
+                text: $text,
+                prompt: Text(placeholder).foregroundStyle(SavoroColor.fieldPlaceholder)
+            )
                 .font(SavoroTypography.body)
                 .foregroundStyle(SavoroColor.textStrong)
                 .textInputAutocapitalization(.never)
@@ -345,7 +349,9 @@ struct SavoroMacroRing: View {
                 .stroke(tint, style: StrokeStyle(lineWidth: 12, lineCap: .round))
                 .rotationEffect(.degrees(-90))
             VStack(spacing: SavoroSpacing.xxs) {
-                Text("\(Int(value))").font(SavoroTypography.numericTitle)
+                Text("\(Int(value))")
+                    .font(SavoroTypography.numericTitle)
+                    .foregroundStyle(SavoroColor.numericTextStrong)
                 Text("/ \(Int(goal)) cal").font(SavoroTypography.micro).foregroundStyle(SavoroColor.textMuted)
             }
         }
@@ -414,7 +420,7 @@ struct SavoroTrustBadge: View {
         .padding(.vertical, SavoroSpacing.xs)
         .background(SavoroColor.positiveSoft)
         .clipShape(Capsule(style: .continuous))
-        .overlay(Capsule(style: .continuous).stroke(SavoroColor.sage200, lineWidth: 1))
+        .overlay(Capsule(style: .continuous).stroke(SavoroColor.positiveBorder, lineWidth: 1))
         .accessibilityElement(children: .combine)
     }
 }
@@ -432,7 +438,7 @@ struct SavoroAvatar: View {
 
     var body: some View {
         ZStack {
-            Circle().fill(LinearGradient(colors: [SavoroColor.accentSoft, SavoroColor.lavender100], startPoint: .topLeading, endPoint: .bottomTrailing))
+            Circle().fill(LinearGradient(colors: [SavoroColor.accentSoft, SavoroColor.lavenderSoft], startPoint: .topLeading, endPoint: .bottomTrailing))
             if let imageURL {
                 AsyncImage(url: imageURL) { image in
                     image.resizable().scaledToFill()

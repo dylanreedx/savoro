@@ -48,7 +48,7 @@ struct PlaceholderFeatureView: View {
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .background(SavoroColor.cardOverlay, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                 Text(Self.footerCopy)
                     .font(.footnote)

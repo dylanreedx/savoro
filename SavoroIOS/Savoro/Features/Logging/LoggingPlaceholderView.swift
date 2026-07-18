@@ -358,7 +358,7 @@ private struct LogRecipeIdentityCard: View {
                 .padding(.vertical, SavoroSpacing.xs)
                 .background(SavoroColor.positiveSoft)
                 .clipShape(Capsule(style: .continuous))
-                .overlay(Capsule(style: .continuous).stroke(SavoroColor.sage200, lineWidth: 1))
+                .overlay(Capsule(style: .continuous).stroke(SavoroColor.positiveBorder, lineWidth: 1))
             }
         }
         .accessibilityElement(children: .combine)

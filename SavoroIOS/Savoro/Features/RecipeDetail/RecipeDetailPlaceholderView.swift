@@ -549,7 +549,7 @@ struct RecipeDetailHeaderViewModel: Equatable {
         description = recipe.summary.description
         updatedText = Self.updatedText(from: recipe.summary.updatedAt, now: now)
         trustBadge = Self.trustBadge(from: recipe.provenance)
-        heroGradient = [SavoroColor.blush200, SavoroColor.carbs.opacity(0.62), SavoroColor.accentSoft]
+        heroGradient = [SavoroColor.accentHighlight, SavoroColor.carbs.opacity(0.62), SavoroColor.accentSoft]
     }
 
     var visibleCopy: String {
@@ -828,7 +828,7 @@ struct RecipeDetailHeaderView: View {
                 .overlay(alignment: .topTrailing) {
                     Image(systemName: "fork.knife.circle.fill")
                         .font(.system(size: 96, weight: .semibold))
-                        .foregroundStyle(.white.opacity(0.34))
+                        .foregroundStyle(SavoroColor.decorativeOverlay)
                         .padding(SavoroSpacing.xl)
                 }
                 .overlay(
@@ -1011,7 +1011,7 @@ struct RecipeDetailSocialContextBlock: View {
                 if let community = viewModel.community {
                     HStack(alignment: .center, spacing: SavoroSpacing.sm) {
                         RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
-                            .fill(LinearGradient(colors: [SavoroColor.accentSoft, SavoroColor.blush200], startPoint: .topLeading, endPoint: .bottomTrailing))
+                            .fill(LinearGradient(colors: [SavoroColor.accentSoft, SavoroColor.accentHighlight], startPoint: .topLeading, endPoint: .bottomTrailing))
                             .frame(width: 42, height: 42)
                             .overlay(Image(systemName: "person.3.fill").foregroundStyle(SavoroColor.accentStrong))
                         VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {

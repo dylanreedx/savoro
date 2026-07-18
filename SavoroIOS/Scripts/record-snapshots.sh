@@ -3,9 +3,10 @@
 set -euo pipefail
 
 project_directory="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-record_marker="$project_directory/.snapshot-record-all"
+reference_directory="$project_directory/SavoroTests/__Snapshots__/SnapshotTests"
+record_marker="$project_directory/.snapshot-record-dark"
 record_log="${TMPDIR:-/tmp}/savoro-snapshot-record.$$.log"
-expected_snapshot_count=36
+expected_snapshot_count=18
 
 after_recording() {
     rm -f "$record_marker" "$record_log"
@@ -30,8 +31,19 @@ if [[ "$recorded_count" -ne "$expected_snapshot_count" ]]; then
     exit 1
 fi
 
+# Snapshot tests use a writable copy bundled into the test host. Copy only the
+# recorded dark references back to the source directory before verification.
+data_container="$(xcrun simctl get_app_container booted com.savoro.Savoro data)"
+recorded_reference_directory="$data_container/tmp/SavoroSnapshotReferences"
+recorded_file_count="$(find "$recorded_reference_directory" -type f -name '*dark*.png' | wc -l | tr -d ' ')"
+if [[ "$recorded_file_count" -ne "$expected_snapshot_count" ]]; then
+    echo "Expected $expected_snapshot_count dark files in $recorded_reference_directory, found $recorded_file_count." >&2
+    exit 1
+fi
+find "$recorded_reference_directory" -type f -name '*dark*.png' -exec cp {} "$reference_directory"/ \;
+
 # SnapshotTesting reports each intentional `.all` recording as a test failure.
-echo "Recorded $recorded_count reference images; verifying with record mode disabled."
+echo "Recorded $recorded_count dark reference images; verifying the full matrix with record mode disabled."
 rm -f "$record_marker"
 
 xcodebuild test \
