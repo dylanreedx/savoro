@@ -1,3 +1,4 @@
 .ui-artifacts/
 .snapshot-artifacts/
 .snapshot-record-all
+.live-ui-test-enabled

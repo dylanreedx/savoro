@@ -2,12 +2,11 @@ import SwiftUI
 
 @main
 struct SavoroApp: App {
-    @State private var environment = AppEnvironment.localMock
+    private let environment = AppEnvironment.appLaunchEnvironment()
 
     var body: some Scene {
         WindowGroup {
-            RootPlaceholderView()
-                .environment(environment)
+            RootPlaceholderView(environment: environment)
         }
     }
 }

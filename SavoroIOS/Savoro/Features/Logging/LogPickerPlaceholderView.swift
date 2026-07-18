@@ -167,6 +167,37 @@ struct LogPickerViewModel: Equatable {
             }
     }
 
+    static let liveTodaySections: [Section] = [
+        Section(kind: .recents, items: [
+            Item(
+                id: "live_dev_bowl",
+                title: "Dev Burrito Bowl",
+                subtitle: "Local recipe • ready to log privately",
+                sectionKind: .recents,
+                itemType: .recipe,
+                recipeId: "rec_dev_bowl",
+                recipeVersionId: "rcv_dev_bowl_v1",
+                foodId: nil,
+                sourceLabel: "Local recipe",
+                macros: try! MacroTotals(calories: 520, proteinGrams: 38, carbsGrams: 58, fatGrams: 18),
+                isPrivateContext: false
+            ),
+            Item(
+                id: "live_manual_yogurt",
+                title: "Greek yogurt, 2%",
+                subtitle: "Manual food • ready to log privately",
+                sectionKind: .recents,
+                itemType: .food,
+                recipeId: nil,
+                recipeVersionId: nil,
+                foodId: nil,
+                sourceLabel: "Manual entry",
+                macros: try! MacroTotals(calories: 150, proteinGrams: 20, carbsGrams: 8, fatGrams: 4),
+                isPrivateContext: true
+            )
+        ])
+    ]
+
     static let defaultSections: [Section] = [
         Section(kind: .recents, items: [
             Item(
@@ -233,6 +264,7 @@ struct LogPickerPlaceholderView: View {
     @State private var query: String
     @State private var mockIssue: LogPickerViewModel.MockIssue?
     let mealType: MealType?
+    let sections: [LogPickerViewModel.Section]?
     var onSelect: (LogPickerViewModel.Item, MealType?) -> Void = { _, _ in }
     var onDismiss: () -> Void = {}
 
@@ -240,17 +272,21 @@ struct LogPickerPlaceholderView: View {
         mealType: MealType? = nil,
         initialQuery: String = "",
         mockIssue: LogPickerViewModel.MockIssue? = nil,
+        sections: [LogPickerViewModel.Section]? = nil,
         onSelect: @escaping (LogPickerViewModel.Item, MealType?) -> Void = { _, _ in },
         onDismiss: @escaping () -> Void = {}
     ) {
         self.mealType = mealType
+        self.sections = sections
         self.onSelect = onSelect
         self.onDismiss = onDismiss
         _query = State(initialValue: initialQuery)
         _mockIssue = State(initialValue: mockIssue)
     }
 
-    private var viewModel: LogPickerViewModel { LogPickerViewModel(query: query, mealType: mealType, mockIssue: mockIssue) }
+    private var viewModel: LogPickerViewModel {
+        LogPickerViewModel(query: query, mealType: mealType, sections: sections, mockIssue: mockIssue)
+    }
 
     var body: some View {
         ScrollView {
@@ -443,7 +479,10 @@ private struct LogPickerItemRow: View {
         case .recipe:
             return mealType.map { "Opens Log Recipe with \($0.displayTitle) preselected. Today changes only after confirmation." } ?? "Opens Log Recipe. Today changes only after confirmation."
         case .food:
-            return mealType.map { "Food logging is coming soon. Your \($0.displayTitle) choice is remembered, and Today is unchanged." } ?? "Food logging is coming soon; Today is unchanged."
+            if item.foodId != nil {
+                return mealType.map { "Food logging is coming soon. Your \($0.displayTitle) choice is remembered, and Today is unchanged." } ?? "Food logging is coming soon; Today is unchanged."
+            }
+            return mealType.map { "Adds this food privately to \($0.displayTitle)." } ?? "Adds this food privately to your day."
         }
     }
 }

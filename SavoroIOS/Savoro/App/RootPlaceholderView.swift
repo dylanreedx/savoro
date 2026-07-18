@@ -231,20 +231,30 @@ struct SavoroTabNavigationState {
     }
 }
 
+private enum TodayLoadState: Equatable {
+    case idle
+    case loading
+    case loaded
+    case error
+}
+
 struct RootPlaceholderView: View {
     @StateObject private var cookbookLocalStore: CookbookMockLocalStore
     @StateObject private var recipeDraftStore: RecipeEditorDraftStore
     @StateObject private var communityShareStore: RecipeCommunityShareStore
     @StateObject private var visibilityChangeStore: RecipeVisibilityChangeStore
+    private let environment: AppEnvironment
 
-    init() {
+    init(environment: AppEnvironment = .localMock) {
+        self.environment = environment
         _cookbookLocalStore = StateObject(wrappedValue: CookbookMockLocalStore())
         _recipeDraftStore = StateObject(wrappedValue: RecipeEditorDraftStore())
         _communityShareStore = StateObject(wrappedValue: RecipeCommunityShareStore())
         _visibilityChangeStore = StateObject(wrappedValue: RecipeVisibilityChangeStore())
     }
 
-    init(cookbookLocalStore: CookbookMockLocalStore, recipeDraftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore()) {
+    init(cookbookLocalStore: CookbookMockLocalStore, recipeDraftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore(), environment: AppEnvironment = .localMock) {
+        self.environment = environment
         _cookbookLocalStore = StateObject(wrappedValue: cookbookLocalStore)
         _recipeDraftStore = StateObject(wrappedValue: recipeDraftStore)
         _communityShareStore = StateObject(wrappedValue: communityShareStore)
@@ -252,7 +262,7 @@ struct RootPlaceholderView: View {
     }
 
     var body: some View {
-        SavoroTabShellView(cookbookLocalStore: cookbookLocalStore, recipeDraftStore: recipeDraftStore, communityShareStore: communityShareStore, visibilityChangeStore: visibilityChangeStore)
+        SavoroTabShellView(cookbookLocalStore: cookbookLocalStore, recipeDraftStore: recipeDraftStore, communityShareStore: communityShareStore, visibilityChangeStore: visibilityChangeStore, environment: environment)
     }
 }
 
@@ -269,16 +279,25 @@ struct SavoroTabShellView: View {
     @State private var communityShareSetup = RecipeCommunityShareSetup()
     @State private var temporaryVisibilityDraftKey = RecipeEditorPlaceholderView.makeTemporaryDraftKey()
     @State private var dayLog: DayLog = .todayFixture
-    private let apiClient: APIClient = MockAPIClient.localMockSuccessRoutes()
+    @State private var todayGoals: MacroTotals = .todayFixtureGoal
+    @State private var todayLoadState: TodayLoadState = .idle
+    private let environment: AppEnvironment
+    private let mockAPIClient: APIClient = MockAPIClient.localMockSuccessRoutes()
 
-    init() {
+    private var todayAPI: TodayAPIService {
+        TodayAPIService(client: environment.apiClient, target: environment.todayRequestTarget)
+    }
+
+    init(environment: AppEnvironment = .localMock) {
+        self.environment = environment
         _cookbookLocalStore = ObservedObject(wrappedValue: CookbookMockLocalStore())
         _recipeDraftStore = ObservedObject(wrappedValue: RecipeEditorDraftStore())
         _communityShareStore = ObservedObject(wrappedValue: RecipeCommunityShareStore())
         _visibilityChangeStore = ObservedObject(wrappedValue: RecipeVisibilityChangeStore())
     }
 
-    init(cookbookLocalStore: CookbookMockLocalStore, recipeDraftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore()) {
+    init(cookbookLocalStore: CookbookMockLocalStore, recipeDraftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore(), environment: AppEnvironment = .localMock) {
+        self.environment = environment
         _cookbookLocalStore = ObservedObject(wrappedValue: cookbookLocalStore)
         _recipeDraftStore = ObservedObject(wrappedValue: recipeDraftStore)
         _communityShareStore = ObservedObject(wrappedValue: communityShareStore)
@@ -309,6 +328,10 @@ struct SavoroTabShellView: View {
             sheetView(for: route)
         }
         .savoroToast($activeToast)
+        .task {
+            guard environment.usesLiveTodayAPI, todayLoadState == .idle else { return }
+            await loadToday()
+        }
     }
 
     private func pathBinding(for tab: SavoroTab) -> Binding<[SavoroRoute]> {
@@ -334,11 +357,15 @@ struct SavoroTabShellView: View {
         case .recipe:
             activeSheet = .logRecipe(recipeId: item.recipeId, recipeVersionId: item.recipeVersionId, mealType: mealType)
         case .food:
-            activeToast = SavoroToast(
-                title: "Food handoff ready",
-                message: "\(item.title) was not added to Today. Recipe logging can continue with the selected meal preset.",
-                style: .info
-            )
+            if environment.usesLiveTodayAPI {
+                Task { await handleLogFood(item, mealType: mealType ?? .snack) }
+            } else {
+                activeToast = SavoroToast(
+                    title: "Food handoff ready",
+                    message: "\(item.title) was not added to Today. Recipe logging can continue with the selected meal preset.",
+                    style: .info
+                )
+            }
         }
     }
 
@@ -354,11 +381,20 @@ struct SavoroTabShellView: View {
     private func placeholderView(for tab: SavoroTab) -> some View {
         switch tab {
         case .today:
-            TodayPlaceholderView(
-                viewModel: TodaySummaryViewModel(dayLog: dayLog),
-                onQuickAction: handleTodayQuickAction,
-                onLogAgain: handleTodayLogAgain
-            )
+            if environment.usesLiveTodayAPI {
+                switch todayLoadState {
+                case .idle, .loading:
+                    TodayLoadingStateView()
+                case .error:
+                    TodayErrorStateView {
+                        Task { await loadToday() }
+                    }
+                case .loaded:
+                    todayContent
+                }
+            } else {
+                todayContent
+            }
         case .cookbook:
             CookbookPlaceholderView(localStore: cookbookLocalStore) { route in
                 navigationState[.cookbook].append(route)
@@ -372,13 +408,27 @@ struct SavoroTabShellView: View {
         }
     }
 
+    private var todayContent: some View {
+        TodayPlaceholderView(
+            viewModel: TodaySummaryViewModel(dayLog: dayLog, goals: todayGoals),
+            onQuickAction: handleTodayQuickAction,
+            onLogAgain: handleTodayLogAgain
+        )
+    }
+
     @ViewBuilder
     private func sheetView(for route: SavoroSheetRoute) -> some View {
         switch route {
         case let .logRecipe(recipeId, recipeVersionId, mealType):
             NavigationStack {
                 LogRecipeSheetView(
-                    viewModel: LogRecipeSheetViewModel(requestedRecipeId: recipeId, requestedRecipeVersionId: recipeVersionId, defaultMealType: mealType, defaultLogDate: dayLog.logDate),
+                    viewModel: LogRecipeSheetViewModel(
+                        requestedRecipeId: recipeId,
+                        requestedRecipeVersionId: recipeVersionId,
+                        defaultMealType: mealType,
+                        defaultLogDate: dayLog.logDate,
+                        calendar: environment.usesLiveTodayAPI ? Self.utcCalendar : Calendar(identifier: .gregorian)
+                    ),
                     onDismiss: { activeSheet = nil },
                     onConfirm: handleLogRecipe
                 )
@@ -387,6 +437,7 @@ struct SavoroTabShellView: View {
             NavigationStack {
                 LogPickerPlaceholderView(
                     mealType: mealType,
+                    sections: environment.usesLiveTodayAPI ? LogPickerViewModel.liveTodaySections : nil,
                     onSelect: handleLogPickerSelection,
                     onDismiss: { activeSheet = nil }
                 )
@@ -454,7 +505,7 @@ struct SavoroTabShellView: View {
     @MainActor
     private func handleForkRecipe(_ model: ForkRemixConfirmationSheetModel) async {
         do {
-            let result = try await RootRecipeForkCoordinator.createPrivateCopy(model: model, apiClient: apiClient)
+            let result = try await RootRecipeForkCoordinator.createPrivateCopy(model: model, apiClient: mockAPIClient)
             cookbookLocalStore.addForkedDraft(result.recipe)
             recipeDraftStore.seedRemixDraft(from: result.recipe)
             activeToast = result.toast
@@ -468,17 +519,24 @@ struct SavoroTabShellView: View {
     }
 
     @MainActor
+    private func loadToday() async {
+        todayLoadState = .loading
+        do {
+            let loaded = try await todayAPI.fetch(date: Self.currentDateString)
+            dayLog = loaded.dayLog
+            todayGoals = loaded.goals
+            todayLoadState = .loaded
+        } catch {
+            todayLoadState = .error
+        }
+    }
+
+    @MainActor
     private func handleLogRecipe(_ viewModel: LogRecipeSheetViewModel) async -> LogRecipeSubmissionStatus {
         let payload = viewModel.logRequestPayload()
         do {
-            let response = try await apiClient.send(LogRecipeRequest(payload: payload))
-            if let responseDayLog = response.dayLog {
-                dayLog = responseDayLog
-            } else if dayLog.date == payload.date {
-                dayLog = try dayLog.addingEntry(response.entry)
-            } else {
-                dayLog = try DayLog(userId: payload.userId, date: payload.date, meals: [try MealLog(mealType: payload.mealType, entries: [response.entry])])
-            }
+            let response = try await todayAPI.logRecipe(payload)
+            try applyLogResponse(response, fallbackUserId: payload.userId)
             activeToast = SavoroToast(
                 title: "Added to Today privately",
                 message: "Recipe added to your private day.",
@@ -495,6 +553,63 @@ struct SavoroTabShellView: View {
             return .errored("Today is unchanged. Please try again.")
         }
     }
+
+    @MainActor
+    private func handleLogFood(_ item: LogPickerViewModel.Item, mealType: MealType) async {
+        let payload = LogFoodRequestPayload(
+            displayName: item.title,
+            macros: item.macros,
+            date: dayLog.date,
+            mealType: mealType,
+            quantity: 1,
+            quantityUnit: "serving"
+        )
+        do {
+            let response = try await todayAPI.logFood(payload)
+            try applyLogResponse(response, fallbackUserId: dayLog.userId)
+            activeToast = SavoroToast(
+                title: "Added to Today privately",
+                message: "Food added to your private day.",
+                style: .success
+            )
+            activeSheet = nil
+        } catch {
+            activeToast = SavoroToast(
+                title: "Log was not added",
+                message: "Today is unchanged. Please try again.",
+                style: .warning
+            )
+        }
+    }
+
+    private func applyLogResponse(_ response: LogRecipeResponse, fallbackUserId: String) throws {
+        if let responseDayLog = response.dayLog {
+            dayLog = responseDayLog
+        } else if dayLog.date == response.entry.date {
+            dayLog = try dayLog.addingEntry(response.entry)
+        } else {
+            dayLog = try DayLog(
+                userId: fallbackUserId,
+                date: response.entry.date,
+                meals: [try MealLog(mealType: response.entry.mealType, entries: [response.entry])]
+            )
+        }
+    }
+
+    private static let utcCalendar: Calendar = {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }()
+
+    private static let currentDateString: String = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = .current
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: Date())
+    }()
 
     private func placeholderAccent(for route: SavoroRoute) -> Color {
         switch route {

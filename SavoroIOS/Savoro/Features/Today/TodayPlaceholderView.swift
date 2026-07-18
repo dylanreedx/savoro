@@ -112,6 +112,7 @@ struct TodaySummaryViewModel: Equatable {
     }
 
     var greeting: String { "Hi, \(displayName)" }
+    var isEmptyDay: Bool { mealSections.allSatisfy(\.isEmpty) }
     var summaryTitle: String { "Today so far" }
     var summarySubtitle: String {
         "\(loggedMealCount) logged \(loggedMealCount == 1 ? "meal" : "meals") — no pressure, just a helpful snapshot."
@@ -159,6 +160,70 @@ struct TodaySummaryViewModel: Equatable {
     }
 }
 
+struct TodayLoadingStateView: View {
+    var body: some View {
+        VStack {
+            Spacer()
+            SavoroCard(style: .elevated) {
+                VStack(spacing: SavoroSpacing.md) {
+                    ProgressView()
+                        .tint(SavoroColor.accent)
+                    Text("Gathering your day")
+                        .font(SavoroTypography.headline)
+                        .foregroundStyle(SavoroColor.textStrong)
+                    Text("Your private log will be ready in a moment.")
+                        .font(SavoroTypography.callout)
+                        .foregroundStyle(SavoroColor.textMuted)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+            }
+            .accessibilityIdentifier("today-loading-state")
+            Spacer()
+        }
+        .padding(SavoroSpacing.lg)
+        .background(SavoroColor.page.ignoresSafeArea())
+        .accessibilityIdentifier("screen-today")
+        .navigationTitle("Today")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+struct TodayErrorStateView: View {
+    static let title = "Your day needs a moment"
+    static let message = "We couldn’t load your day right now. Your private log is safe. Try again when you’re ready."
+
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack {
+            Spacer()
+            SavoroCard(style: .elevated) {
+                VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+                    Image(systemName: "arrow.clockwise.heart.fill")
+                        .font(.title2)
+                        .foregroundStyle(SavoroColor.accent)
+                    Text(Self.title)
+                        .font(SavoroTypography.headline)
+                        .foregroundStyle(SavoroColor.textStrong)
+                    Text(Self.message)
+                        .font(SavoroTypography.callout)
+                        .foregroundStyle(SavoroColor.textBody)
+                    SavoroButton("Try again", systemImage: "arrow.clockwise", action: onRetry)
+                        .accessibilityIdentifier("today-retry-button")
+                }
+            }
+            .accessibilityIdentifier("today-error-state")
+            Spacer()
+        }
+        .padding(SavoroSpacing.lg)
+        .background(SavoroColor.page.ignoresSafeArea())
+        .accessibilityIdentifier("screen-today")
+        .navigationTitle("Today")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
 struct TodayPlaceholderView: View {
     var viewModel = TodaySummaryViewModel()
     var onQuickAction: (TodayQuickActionKind) -> Void = { _ in }
@@ -169,6 +234,9 @@ struct TodayPlaceholderView: View {
             VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
                 TodayHeaderView(viewModel: viewModel)
                 TodayPrivacyCard(copy: viewModel.reassuranceText, supportCopy: viewModel.privacySupportText)
+                if viewModel.isEmptyDay {
+                    TodayEmptyDayCard()
+                }
                 TodayCalorieRingCard(viewModel: viewModel)
                 TodayMacroProgressCard(viewModel: viewModel)
                 TodayQuickActionsCard(actions: viewModel.quickActions, onAction: onQuickAction)
@@ -245,6 +313,27 @@ private struct TodayPrivacyCard: View {
                 .font(SavoroTypography.micro)
                 .foregroundStyle(SavoroColor.textMuted)
         }
+    }
+}
+
+private struct TodayEmptyDayCard: View {
+    var body: some View {
+        SavoroCard(style: .glass) {
+            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                Image(systemName: "sunrise.fill")
+                    .font(.title2)
+                    .foregroundStyle(SavoroColor.accent)
+                VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+                    Text("A fresh day")
+                        .font(SavoroTypography.headline)
+                        .foregroundStyle(SavoroColor.textStrong)
+                    Text("Nothing has been logged yet. Add something whenever it feels useful; it stays private.")
+                        .font(SavoroTypography.callout)
+                        .foregroundStyle(SavoroColor.textBody)
+                }
+            }
+        }
+        .accessibilityIdentifier("today-empty-day-state")
     }
 }
 
@@ -492,6 +581,8 @@ private struct TodaySummaryCard: View {
             }
         }
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("today-day-summary")
+        .accessibilityValue("\(Int(viewModel.totals.calories)) calories logged")
     }
 
     @ViewBuilder

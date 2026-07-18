@@ -46,7 +46,7 @@ struct LogRecipeSheetViewModel: Equatable {
     let provenanceDetail: String
     let perServingMacros: MacroTotals
 
-    init(requestedRecipeId: String?, requestedRecipeVersionId: String? = nil, defaultMealType: MealType? = nil, defaultLogDate: Date = Date()) {
+    init(requestedRecipeId: String?, requestedRecipeVersionId: String? = nil, defaultMealType: MealType? = nil, defaultLogDate: Date = Date(), calendar: Calendar = Calendar(identifier: .gregorian)) {
         let mockRecipe = Self.mockRecipe(for: requestedRecipeId, requestedRecipeVersionId: requestedRecipeVersionId)
         self.requestedRecipeId = requestedRecipeId
         self.recipeId = mockRecipe.recipeId
@@ -59,7 +59,7 @@ struct LogRecipeSheetViewModel: Equatable {
         self.selectedServings = 1
         self.selectedMealType = defaultMealType ?? .lunch
         self.selectedDate = defaultLogDate
-        self.calendar = Calendar(identifier: .gregorian)
+        self.calendar = calendar
         self.locale = Locale(identifier: "en_US_POSIX")
         self.primaryButtonTitle = "Log privately"
         self.secondaryButtonTitle = "Not now"
@@ -90,6 +90,14 @@ struct LogRecipeSheetViewModel: Equatable {
         )
         let recipes = [
             fallback,
+            MockRecipe(
+                recipeId: "rec_dev_bowl",
+                recipeVersionId: "rcv_dev_bowl_v1",
+                title: "Dev Burrito Bowl",
+                creator: "Dev Alice",
+                sourceLabel: "Local recipe",
+                perServingMacros: try! MacroTotals(calories: 520, proteinGrams: 38, carbsGrams: 58, fatGrams: 18, fiberGrams: 9, sodiumMilligrams: 760)
+            ),
             MockRecipe(
                 recipeId: "recipe_lentil_soup",
                 recipeVersionId: "recipe_version_lentil_20260604",

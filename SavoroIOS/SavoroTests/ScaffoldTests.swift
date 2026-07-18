@@ -8,6 +8,42 @@ final class ScaffoldTests: XCTestCase {
     func testPreviewEnvironmentUsesMockAPIClient() {
         XCTAssertTrue(AppEnvironment.localMock.apiClient is MockAPIClient)
         XCTAssertTrue(AppEnvironment.preview.apiClient is MockAPIClient)
+        XCTAssertEqual(AppEnvironment.localMock.todayRequestTarget, .localMock)
+    }
+
+    func testLaunchEnvironmentFallsBackToMockUnlessCompleteLiveConfigurationIsAllowed() {
+        let missingToken = AppEnvironment.configured(
+            processEnvironment: ["SAVORO_API_BASE_URL": "http://127.0.0.1:8787"],
+            allowsLiveConfiguration: true
+        )
+        let releaseEquivalent = AppEnvironment.configured(
+            processEnvironment: [
+                "SAVORO_API_BASE_URL": "http://127.0.0.1:8787",
+                "SAVORO_API_TOKEN": "dev-alice-token"
+            ],
+            allowsLiveConfiguration: false
+        )
+
+        XCTAssertTrue(missingToken.apiClient is MockAPIClient)
+        XCTAssertFalse(missingToken.usesLiveTodayAPI)
+        XCTAssertTrue(releaseEquivalent.apiClient is MockAPIClient)
+        XCTAssertFalse(releaseEquivalent.usesLiveTodayAPI)
+    }
+
+    func testCompleteAllowedLaunchEnvironmentSelectsAuthenticatedLiveClient() async throws {
+        let environment = AppEnvironment.configured(
+            processEnvironment: [
+                "SAVORO_API_BASE_URL": "http://127.0.0.1:8787",
+                "SAVORO_API_TOKEN": "dev-alice-token"
+            ],
+            allowsLiveConfiguration: true
+        )
+        let client = try XCTUnwrap(environment.apiClient as? URLSessionAPIClient)
+        let request = try await client.makeURLRequest(for: DayLogRequest(date: "2026-06-10", target: .live))
+
+        XCTAssertTrue(environment.usesLiveTodayAPI)
+        XCTAssertEqual(request.url?.absoluteString, "http://127.0.0.1:8787/v1/logs/day?date=2026-06-10")
+        XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer dev-alice-token")
     }
 
     func testFixtureLoaderDecodesBundledJSONFixture() throws {
@@ -2109,6 +2145,61 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(decoded.snapshot.sourceLabel, "The version you logged")
         XCTAssertEqual(decoded.snapshot.capturedAt, now)
         XCTAssertEqual(decoded.privacyDomain, .privateUserData)
+    }
+
+    func testLiveTodayRequestsUseV1PathsAndContractExactBodies() throws {
+        let recipePayload = LogRecipeSheetViewModel(requestedRecipeId: "rec_dev_bowl", requestedRecipeVersionId: "rcv_dev_bowl_v1")
+            .logRequestPayload(now: Date(timeIntervalSince1970: 0))
+        let recipeRequest = LogRecipeRequest(payload: recipePayload, target: .live)
+        let recipeBody = try XCTUnwrap(recipeRequest.body)
+        let recipeJSON = try XCTUnwrap(JSONSerialization.jsonObject(with: recipeBody) as? [String: Any])
+        let foodPayload = LogFoodRequestPayload(
+            displayName: "Greek yogurt, 2%",
+            macros: try MacroTotals(calories: 150, proteinGrams: 20, carbsGrams: 8, fatGrams: 4),
+            date: "2026-06-10",
+            mealType: .breakfast,
+            quantity: 1,
+            quantityUnit: "serving"
+        )
+        let foodRequest = LogFoodRequest(payload: foodPayload, target: .live)
+
+        XCTAssertEqual(DayLogRequest(date: "2026-06-10", target: .live).path, "/v1/logs/day")
+        XCTAssertEqual(CurrentGoalRequest(date: "2026-06-10", target: .live).path, "/v1/goals/current")
+        XCTAssertEqual(recipeRequest.path, "/v1/logs/recipes")
+        XCTAssertEqual(foodRequest.path, "/v1/logs/foods")
+        XCTAssertEqual(Set(recipeJSON.keys), ["recipeId", "recipeVersionId", "date", "mealType", "servings"])
+        XCTAssertNil(recipeJSON["userId"])
+        XCTAssertNil(recipeJSON["snapshot"])
+        XCTAssertEqual(try JSONDecoder.savoro.decode(LogFoodRequestPayload.self, from: XCTUnwrap(foodRequest.body)), foodPayload)
+    }
+
+    func testLocalFoodLogMockCreatesFrozenManualEntry() async throws {
+        let payload = LogFoodRequestPayload(
+            displayName: "Greek yogurt, 2%",
+            macros: try MacroTotals(calories: 150, proteinGrams: 20, carbsGrams: 8, fatGrams: 4),
+            date: DayLog.todayFixture.date,
+            mealType: .snack,
+            quantity: 1,
+            quantityUnit: "serving"
+        )
+
+        let response = try await MockAPIClient.localLogFoodSuccess().send(LogFoodRequest(payload: payload))
+
+        XCTAssertEqual(response.entry.itemType, .food)
+        XCTAssertEqual(response.entry.sourceType, .manual)
+        XCTAssertNil(response.entry.foodId)
+        XCTAssertEqual(response.entry.snapshot.displayName, payload.displayName)
+        XCTAssertEqual(response.entry.snapshot.macros, payload.macros)
+        XCTAssertEqual(response.entry.privacyDomain, .privateUserData)
+    }
+
+    func testTodayStateCopyIsCalmPrivateAndAvoidsBannedLanguage() {
+        let copy = [TodayErrorStateView.title, TodayErrorStateView.message, "A fresh day", "Nothing has been logged yet."].joined(separator: " ")
+        let deniedTerms = ["worker", "server", "backend", "adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food"]
+
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("private"))
+        XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
+        XCTAssertTrue(TodaySummaryViewModel(dayLog: try! DayLog(userId: "user_1", date: "2026-06-10", meals: [])).isEmptyDay)
     }
 
     func testDefaultLogRecipeAppFlowDateAppendsToDisplayedTodayFixture() throws {

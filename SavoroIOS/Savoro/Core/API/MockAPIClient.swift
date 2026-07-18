@@ -36,6 +36,12 @@ struct MockAPIClient: APIClient {
         }
     }
 
+    static func localLogFoodSuccess(decoder: JSONDecoder = .savoro) -> MockAPIClient {
+        MockAPIClient(decoder: decoder) { request in
+            try logFoodResponseData(for: request)
+        }
+    }
+
     /// Local mock mirror of `POST /v1/recipes/:id/fork`: creates a new private
     /// draft copy owned by the viewer, attributed to the source recipe and its
     /// frozen current version. The source fixture is never modified.
@@ -48,10 +54,14 @@ struct MockAPIClient: APIClient {
     /// Single client serving every local mock success route used by the app shell.
     static func localMockSuccessRoutes(decoder: JSONDecoder = .savoro) -> MockAPIClient {
         MockAPIClient(decoder: decoder) { request in
-            if request.path == "/mock/logs/recipes" {
+            switch request.path {
+            case "/mock/logs/recipes":
                 return try logRecipeResponseData(for: request)
+            case "/mock/logs/foods":
+                return try logFoodResponseData(for: request)
+            default:
+                return try forkRecipeResponseData(for: request)
             }
-            return try forkRecipeResponseData(for: request)
         }
     }
 
@@ -76,6 +86,35 @@ struct MockAPIClient: APIClient {
             snapshot: payload.snapshot,
             sourceType: .recipe,
             privacyDomain: payload.privacyDomain,
+            createdAt: now,
+            updatedAt: now
+        )
+        return try JSONEncoder.savoro.encode(LogRecipeResponse(entry: entry, dayLog: nil))
+    }
+
+    private static func logFoodResponseData(for request: any APIRequest) throws -> Data {
+        guard request.path == "/mock/logs/foods",
+              let body = request.body,
+              let payload = try? JSONDecoder.savoro.decode(LogFoodRequestPayload.self, from: body)
+        else {
+            throw MockAPIClientError.unimplemented(request.path)
+        }
+        let now = Date()
+        let entry = try FoodLogEntry(
+            id: "mock_food_\(Int(now.timeIntervalSince1970))",
+            userId: "user_1",
+            date: payload.date,
+            mealType: payload.mealType,
+            itemType: .food,
+            quantity: payload.quantity,
+            quantityUnit: payload.quantityUnit,
+            snapshot: NutritionSnapshot(
+                displayName: payload.displayName,
+                macros: payload.macros,
+                sourceLabel: nil,
+                capturedAt: now
+            ),
+            sourceType: .manual,
             createdAt: now,
             updatedAt: now
         )

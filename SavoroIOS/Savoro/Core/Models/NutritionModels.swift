@@ -202,7 +202,10 @@ struct FoodLogEntry: Codable, Equatable, Sendable {
         guard quantity.isFinite, quantity > 0 else { throw NutritionValidationError.quantityMustBePositive }
         switch itemType {
         case .food:
-            guard foodId != nil, recipeId == nil, recipeVersionId == nil else {
+            let hasValidFoodSource = sourceType == .manual
+                ? servingId == nil
+                : foodId != nil
+            guard hasValidFoodSource, recipeId == nil, recipeVersionId == nil else {
                 throw NutritionValidationError.invalidFoodReference
             }
         case .recipe:
