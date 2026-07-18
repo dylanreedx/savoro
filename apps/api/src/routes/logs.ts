@@ -6,7 +6,17 @@ import { mapDayLog, mapEntry } from '../dto/logs'
 import { ApiError } from '../errors'
 import { requireAuth } from '../middleware/auth'
 import { getActiveGoal } from '../repo/goals'
-import { insertManualFoodLog, insertRecipeLog, listEntriesForDay } from '../repo/logs'
+import {
+  deleteLogEntry,
+  insertManualFoodLog,
+  insertRecipeLog,
+  listEntriesForDay,
+  listRecentEntries,
+  updateLogEntry,
+  type PatchLogEntryInput,
+  type RecentLogCursor,
+  type RecentLogOptions,
+} from '../repo/logs'
 import { getLoggableVersion } from '../repo/recipes'
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const
@@ -26,6 +36,18 @@ logs.get('/day', async (c) => {
   const db = createDb(c.env.DB)
   const [entries, goal] = await Promise.all([listEntriesForDay(db, userId, date), getActiveGoal(db, userId, date)])
   return c.json(mapDayLog(userId, date, entries, goal))
+})
+
+logs.get('/recents', async (c) => {
+  const page = await listRecentEntries(
+    createDb(c.env.DB),
+    c.get('userId'),
+    parseRecentLogOptions(c.req.query('limit'), c.req.query('cursor')),
+  )
+  return c.json({
+    items: page.items.map(mapEntry),
+    nextCursor: page.nextCursor === null ? null : encodeRecentLogCursor(page.nextCursor),
+  })
 })
 
 interface LogRecipeBody {
@@ -132,6 +154,86 @@ logs.post('/foods', async (c) => {
   const { dayLog } = mapDayLog(userId, body.date, entries, goal)
   return c.json({ entry: mapEntry(entry), dayLog }, 201)
 })
+
+logs.patch('/:entryId', async (c) => {
+  const body = await c.req.json<unknown>().catch(() => {
+    throw new ApiError('validation_failed', 'Body must be JSON.')
+  })
+  const patch = parseLogPatch(body)
+  const entry = await updateLogEntry(createDb(c.env.DB), c.get('userId'), c.req.param('entryId'), patch)
+  return c.json({ entry: mapEntry(entry) })
+})
+
+logs.delete('/:entryId', async (c) => {
+  await deleteLogEntry(createDb(c.env.DB), c.get('userId'), c.req.param('entryId'))
+  return c.body(null, 204)
+})
+
+function parseLogPatch(value: unknown): PatchLogEntryInput {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new ApiError('validation_failed', 'Body must be a JSON object.')
+  }
+  const raw = value as Record<string, unknown>
+  const keys = Object.keys(raw)
+  const allowed = new Set(['date', 'mealType', 'quantity'])
+  if (keys.length === 0) throw new ApiError('validation_failed', 'Patch must include an editable field.')
+  if (keys.some((key) => !allowed.has(key))) {
+    throw new ApiError('validation_failed', 'Only date, mealType, and quantity may be changed.')
+  }
+
+  const patch: PatchLogEntryInput = {}
+  if ('date' in raw) {
+    if (typeof raw.date !== 'string' || !isCalendarDate(raw.date)) {
+      throw new ApiError('validation_failed', 'date must be YYYY-MM-DD.')
+    }
+    patch.date = raw.date
+  }
+  if ('mealType' in raw) {
+    if (!MEAL_TYPES.includes(raw.mealType as MealType)) {
+      throw new ApiError('validation_failed', `mealType must be one of ${MEAL_TYPES.join(', ')}.`)
+    }
+    patch.mealType = raw.mealType as MealType
+  }
+  if ('quantity' in raw) {
+    if (typeof raw.quantity !== 'number' || !Number.isFinite(raw.quantity) || raw.quantity <= 0) {
+      throw new ApiError('validation_failed', 'quantity must be a positive number.')
+    }
+    patch.quantity = raw.quantity
+  }
+  return patch
+}
+
+function parseRecentLogOptions(limitParam: string | undefined, cursorParam: string | undefined): RecentLogOptions {
+  let limit = 20
+  if (limitParam !== undefined) {
+    if (!/^\d+$/.test(limitParam)) throw new ApiError('validation_failed', 'limit must be an integer from 1 to 50.')
+    limit = Number(limitParam)
+    if (limit < 1 || limit > 50) throw new ApiError('validation_failed', 'limit must be an integer from 1 to 50.')
+  }
+  return { limit, ...(cursorParam !== undefined && { cursor: decodeRecentLogCursor(cursorParam) }) }
+}
+
+function encodeRecentLogCursor(cursor: RecentLogCursor): string {
+  return btoa(JSON.stringify(cursor)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function decodeRecentLogCursor(value: string): RecentLogCursor {
+  try {
+    const base64 = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=')
+    const decoded = JSON.parse(atob(base64)) as Record<string, unknown>
+    if (
+      typeof decoded.createdAt === 'string' &&
+      !Number.isNaN(Date.parse(decoded.createdAt)) &&
+      typeof decoded.entryId === 'string' &&
+      decoded.entryId !== ''
+    ) {
+      return { createdAt: decoded.createdAt, entryId: decoded.entryId }
+    }
+  } catch {
+    // Invalid opaque cursors use the normal validation envelope below.
+  }
+  throw new ApiError('validation_failed', 'cursor is invalid.')
+}
 
 function parseLoggedMacros(value: unknown) {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {

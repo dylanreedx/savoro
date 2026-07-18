@@ -1,6 +1,7 @@
-import { and, asc, eq } from 'drizzle-orm'
+import { and, asc, desc, eq, getTableColumns, lt, or, sql } from 'drizzle-orm'
 import type { Db } from '../db/client'
 import { foodLogEntries, type FoodLogEntryRow, type RecipeVersionRow } from '../db/schema'
+import { ApiError } from '../errors'
 
 export interface InsertRecipeLogInput {
   userId: string
@@ -106,4 +107,130 @@ export async function listEntriesForDay(db: Db, userId: string, date: string): P
     where: and(eq(foodLogEntries.userId, userId), eq(foodLogEntries.logDate, date)),
     orderBy: [asc(foodLogEntries.createdAt)],
   })
+}
+
+export interface RecentLogCursor {
+  createdAt: string
+  entryId: string
+}
+
+export interface RecentLogOptions {
+  limit: number
+  cursor?: RecentLogCursor
+}
+
+export interface RecentLogPage {
+  items: FoodLogEntryRow[]
+  nextCursor: RecentLogCursor | null
+}
+
+/**
+ * The viewer's distinct log items, newest first. Recipes dedupe by recipe id
+ * and database foods by food id; manual foods have no stable source identity,
+ * so each manual entry remains independently re-loggable.
+ */
+export async function listRecentEntries(db: Db, userId: string, options: RecentLogOptions): Promise<RecentLogPage> {
+  const itemKey = sql<string>`case
+    when ${foodLogEntries.itemType} = 'recipe' then 'recipe:' || ${foodLogEntries.recipeId}
+    when ${foodLogEntries.foodId} is not null then 'food:' || ${foodLogEntries.foodId}
+    else 'manual:' || ${foodLogEntries.id}
+  end`
+  const ranked = db.$with('ranked_recent_logs').as(
+    db
+      .select({
+        ...getTableColumns(foodLogEntries),
+        recentRank:
+          sql<number>`row_number() over (partition by ${itemKey} order by ${foodLogEntries.createdAt} desc, ${foodLogEntries.id} desc)`.as(
+            'recent_rank',
+          ),
+      })
+      .from(foodLogEntries)
+      .where(eq(foodLogEntries.userId, userId)),
+  )
+  const cursor = options.cursor
+  const cursorFilter = cursor
+    ? or(
+        lt(ranked.createdAt, cursor.createdAt),
+        and(eq(ranked.createdAt, cursor.createdAt), lt(ranked.id, cursor.entryId)),
+      )
+    : undefined
+  const found = await db
+    .with(ranked)
+    .select()
+    .from(ranked)
+    .where(and(eq(ranked.recentRank, 1), cursorFilter))
+    .orderBy(desc(ranked.createdAt), desc(ranked.id))
+    .limit(options.limit + 1)
+  const items = found.slice(0, options.limit).map(({ recentRank: _, ...row }) => row)
+  const last = items.at(-1)
+  return {
+    items,
+    nextCursor: found.length > options.limit && last ? { createdAt: last.createdAt, entryId: last.id } : null,
+  }
+}
+
+export interface PatchLogEntryInput {
+  date?: string
+  mealType?: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+  quantity?: number
+}
+
+/** Owner-scoped update that never reads recipe or food source tables. */
+export async function updateLogEntry(
+  db: Db,
+  userId: string,
+  entryId: string,
+  patch: PatchLogEntryInput,
+): Promise<FoodLogEntryRow> {
+  const existing = await db.query.foodLogEntries.findFirst({
+    where: and(eq(foodLogEntries.id, entryId), eq(foodLogEntries.userId, userId)),
+  })
+  if (!existing) throw new ApiError('not_found', 'Log entry not found.')
+
+  const values: Partial<typeof foodLogEntries.$inferInsert> = {
+    updatedAt: new Date().toISOString(),
+    ...(patch.date !== undefined && { logDate: patch.date }),
+    ...(patch.mealType !== undefined && { mealType: patch.mealType }),
+  }
+  if (patch.quantity !== undefined) {
+    // Derive each frozen per-unit value only from this entry, then scale it:
+    // new snapshot total = (stored snapshot total / stored quantity) * new quantity.
+    // Source recipe/food data is never consulted, and recipeVersionId is untouched.
+    const scale = patch.quantity / existing.quantity
+    const scaled = {
+      calories: existing.snapshotCalories * scale,
+      proteinGrams: existing.snapshotProteinGrams * scale,
+      carbsGrams: existing.snapshotCarbsGrams * scale,
+      fatGrams: existing.snapshotFatGrams * scale,
+      fiberGrams: existing.snapshotFiberGrams === null ? null : existing.snapshotFiberGrams * scale,
+      sodiumMilligrams:
+        existing.snapshotSodiumMilligrams === null ? null : existing.snapshotSodiumMilligrams * scale,
+    }
+    if (!Number.isFinite(scale) || Object.values(scaled).some((value) => value !== null && !Number.isFinite(value))) {
+      throw new ApiError('validation_failed', 'quantity is too large to scale this entry.')
+    }
+    values.quantity = patch.quantity
+    values.snapshotCalories = scaled.calories
+    values.snapshotProteinGrams = scaled.proteinGrams
+    values.snapshotCarbsGrams = scaled.carbsGrams
+    values.snapshotFatGrams = scaled.fatGrams
+    values.snapshotFiberGrams = scaled.fiberGrams
+    values.snapshotSodiumMilligrams = scaled.sodiumMilligrams
+  }
+
+  const updated = await db
+    .update(foodLogEntries)
+    .set(values)
+    .where(and(eq(foodLogEntries.id, entryId), eq(foodLogEntries.userId, userId)))
+    .returning()
+  return updated[0]
+}
+
+/** Deletes exactly one owner-scoped entry; foreign ids and missing ids match. */
+export async function deleteLogEntry(db: Db, userId: string, entryId: string): Promise<void> {
+  const deleted = await db
+    .delete(foodLogEntries)
+    .where(and(eq(foodLogEntries.id, entryId), eq(foodLogEntries.userId, userId)))
+    .returning({ id: foodLogEntries.id })
+  if (deleted.length === 0) throw new ApiError('not_found', 'Log entry not found.')
 }

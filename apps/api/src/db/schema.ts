@@ -164,7 +164,10 @@ export const foodLogEntries = sqliteTable(
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },
-  (t) => [index('idx_food_logs_user_date').on(t.userId, t.logDate)],
+  (t) => [
+    index('idx_food_logs_user_date').on(t.userId, t.logDate),
+    index('idx_food_logs_user_created').on(t.userId, t.createdAt, t.id),
+  ],
 )
 
 export const goals = sqliteTable(
