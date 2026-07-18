@@ -123,7 +123,21 @@ Create Recipe epic, Batch D + Batch 0 complete:
 - RE-1 (`33e20cf`): Today card rhythm normalized — 12pt insets, 16pt gaps,
   geometry regression test. Rebased over RE-D3, reverified.
 
-**PHASE A RUNNING (2026-07-18 ~11:00): Epic v2 (docs/epics/recipe-creation.md)
+**PHASE A COMPLETE — PARKED FOR DYLAN'S THREE VERDICTS (2026-07-18 ~13:20).**
+Landed: RC-2 (`727050e`) import flow spec (12 sections, exact copy proposals,
+4 confirmations requested at its end); RC-1 (`bbec3e2`) both guided-editor
+prototypes with 17 reference snapshots under
+SavoroTests/__Snapshots__/RecipeEditorPrototypeSnapshotTests/ — Composer
+(inline type-in-place add) vs Sheet-build (focused add sheet), 11/12 controls
+each. Also `8c0fb27`: Dylan's Apple team ID persisted in the project after
+Xcode's reformat collided with the merge (cosmetic rewrite discarded,
+functional signing kept, build verified green).
+**Dylan decides:** (1) Composer or Sheet-build; (2) approve/redline
+IMPORT-FLOW-SPEC.md incl. its 4 questions; (3) RC-3 LLM provider + cost
+ceiling. Then RC-4 contract diff gets drafted for his approval and Phases
+B + D dispatch in parallel.
+
+**PREVIOUS — PHASE A RUNNING (2026-07-18 ~11:00): Epic v2 (docs/epics/recipe-creation.md)
 dispatched.** RC-1 (two guided-editor prototypes for Dylan's pick) and RC-2
 (video import flow spec) in flight. Hard stops after both land: Dylan picks
 the editor model, approves the import flow, names the LLM provider (RC-3),
