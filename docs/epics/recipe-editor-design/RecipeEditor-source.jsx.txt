@@ -1,0 +1,80 @@
+function RecipeEditor() {
+  const app = useApp();
+  const [title, setTitle] = useState('');
+  const [servings, setServings] = useState(2);
+  const [ings, setIngs] = useState([EDITOR_FOODS[0], EDITOR_FOODS[5]]);
+  const [steps, setSteps] = useState(['']);
+  const [adding, setAdding] = useState(false);
+  const [q, setQ] = useState('');
+
+  const totals = ings.reduce((a, i) => ({ cal: a.cal + i.cal, p: a.p + i.p, c: a.c + i.c, f: a.f + i.f }), { cal: 0, p: 0, c: 0, f: 0 });
+  const per = { cal: Math.round(totals.cal / servings), p: Math.round(totals.p / servings), c: Math.round(totals.c / servings), f: Math.round(totals.f / servings) };
+  const candidates = EDITOR_FOODS.filter((f) => f.name.toLowerCase().includes(q.toLowerCase()));
+
+  const draftRecipe = { id: 'draft-new', title: title || 'Untitled recipe', grad: GRAD.tofu, cal: per.cal, p: per.p, c: per.c, f: per.f, servings, time: '20 min', creator: ME.handle, source: 'creator', tags: ['draft'], blurb: '', ingredients: ings, steps: steps.filter(Boolean), updated: 'just now', savedByFriends: 0, community: null };
+
+  const fieldLabel = (t) => <Eyebrow style={{ marginBottom: 9 }}>{t}</Eyebrow>;
+  const inputStyle = { width: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', padding: '13px 15px', fontFamily: 'var(--font-sans)', fontSize: 'var(--text-base)', fontWeight: 600, color: 'var(--text-strong)', background: 'var(--surface-card-strong)', outline: 'none' };
+
+  const bottomBar = (
+    <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 20, padding: '12px 16px', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 22px))', background: 'var(--glass-strong)', backdropFilter: 'blur(22px) saturate(150%)', WebkitBackdropFilter: 'blur(22px) saturate(150%)', borderTop: '1px solid var(--border-glass)', display: 'flex', gap: 10 }}>
+      <Button variant="secondary" size="lg" style={{ flex: 1 }} onClick={() => app.saveDraft()}>Save draft</Button>
+      <Button variant="primary" size="lg" style={{ flex: 1 }} onClick={() => app.openSheet({ type: 'publish', recipe: draftRecipe })}>Save & publish</Button>
+    </div>
+  );
+
+  return (
+    <DetailScreen onBack={app.back} barTitle="New recipe" bottomBar={bottomBar}>
+      <div style={{ paddingTop: STATUS_PAD + 50, padding: `${STATUS_PAD + 50}px 16px 130px` }}>
+        <h1 style={{ margin: '0 0 18px', fontSize: 30, fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-strong)' }}>New recipe</h1>
+
+        {/* Photo slot */}
+        <div style={{ marginBottom: 20 }}>
+          <image-slot id="savoro-editor-photo" shape="rounded" radius="20" placeholder="Add a photo (optional)" style={{ width: '100%', height: '170px', display: 'block', border: '1.5px dashed var(--border-strong)', background: 'var(--surface-raised)' }}></image-slot>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          {fieldLabel('Title')}
+          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Spicy Tofu Rice Bowl" style={inputStyle} />
+        </div>
+
+        <div style={{ marginBottom: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 'var(--radius-card)', background: 'var(--surface-card-strong)', border: '1px solid var(--border)' }}>
+          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text-strong)' }}>Servings (yield)</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Pressable as="button" onClick={() => setServings(Math.max(1, servings - 1))} style={{ width: 32, height: 32, borderRadius: 9999, border: '1px solid var(--border)', background: 'var(--surface-card-strong)', color: 'var(--text-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconMinus size={16} stroke={2.2} /></Pressable>
+            <span style={{ fontSize: 'var(--text-lg)', fontWeight: 800, color: 'var(--text-strong)', fontVariantNumeric: 'tabular-nums', minWidth: 16, textAlign: 'center' }}>{servings}</span>
+            <Pressable as="button" onClick={() => setServings(servings + 1)} style={{ width: 32, height: 32, borderRadius: 9999, border: '1px solid var(--border)', background: 'var(--surface-card-strong)', color: 'var(--text-strong)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IconPlus size={16} stroke={2.2} /></Pressable>
+          </div>
+        </div>
+
+        {/* Live macro preview */}
+        <div style={{ marginBottom: 22, padding: 16, borderRadius: 'var(--radius-glass)', background: 'var(--accent-soft)', border: '1px solid var(--blush-200)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--accent-strong)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Live · per serving</span>
+            <IconSparkle size={15} style={{ color: 'var(--accent-strong)' }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
+            <span style={{ fontSize: 'var(--text-3xl)', fontWeight: 800, letterSpacing: '-0.03em', color: 'var(--text-strong)', fontVariantNumeric: 'tabular-nums' }}>{per.cal}</span>
+            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginLeft: -8 }}>cal</span>
+            <div style={{ flex: 1 }} />
+            <MacroDots p={per.p} c={per.c} f={per.f} size="md" gap={12} />
+          </div>
+          <div style={{ marginTop: 12 }}><MacroBar protein={per.p} carbs={per.c} fat={per.f} legend={false} height={7} /></div>
+        </div>
+
+        {/* Ingredients */}
+        <div style={{ marginBottom: 22 }}>
+          <SectionTitle style={{ marginBottom: 4 }}>Ingredients</SectionTitle>
+          <div>{ings.map((ing, i) => <EditorIngredientRow key={i} ing={ing} onRemove={() => setIngs(ings.filter((_, j) => j !== i))} />)}</div>
+          {adding ? (
+            <div style={{ marginTop: 12, padding: 12, borderRadius: 'var(--radius-card)', background: 'var(--surface-raised)' }}>
+              <Input icon={<IconSearch size={16} />} placeholder="Search foods or type your own" value={q} onChange={(e) => setQ(e.target.value)} autoFocus />
+              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 2, maxHeight: 180, overflowY: 'auto' }}>
+                {candidates.map((f) => (
+                  <Pressable as="button" key={f.name} onClick={() => { setIngs([...ings, f]); setAdding(false); setQ(''); }} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 6px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-sans)' }}>
+                    <span style={{ fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text-strong)' }}>{f.name}</span>
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontVariantNumeric: 'tabular-nums' }}>{f.cal} cal</span>
+                  </Pressable>
+                ))}
+                {q && !candidates.length && (
+                  <Pressable as="button" onClick={() => { setIngs([...ings, { name: q, amount: 'custom', cal: 0, p: 0, c: 0, f: 0, source: 'creator' }]); setAdding(false); setQ(''); }} style={{ padding: '10px 6px', border: 'none', background: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 'var(--text-sm)', color: 'var(--accent-strong)', fontWeight: 600, fontFamily: 'var(--font-sans)' }}>Add "{q}" as free text</Pressable>
