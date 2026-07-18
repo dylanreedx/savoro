@@ -57,7 +57,8 @@ work continues; only UAT-gated items park):
 | # | Ticket | Track | Status |
 |---|---|---|---|
 | S1 | L-3 — discover/search endpoints (gate met; foods half deferred to L-37) | backend | **landed** — `9d3fbe3`, 91/91 tests |
-| S2b | SAV-133 — profiles/usernames (follow/friends stays L-28) | backend | in-progress |
+| S2b | SAV-133 — profiles/usernames (follow/friends stays L-28) | backend | **landed** — `7ea855f`, 98/98 tests |
+| S3 | L-2 — logs management endpoints | backend | in-progress |
 | S2 | SAV-133 — profiles/usernames endpoints | backend | queued |
 | S3 | L-2 — logs management endpoints | backend | queued |
 | S4 | SAV-72 — editor save/publish UX (mock-first) | frontend | queued |
@@ -107,6 +108,16 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 7 (2026-07-18 ~00:20).** SAV-133 landed (`7ea855f`, backend 98/98):
+GET /v1/me, PATCH /v1/me/profile (username rules documented, uniqueness 422),
+public profiles with tested privacy denylist and indistinguishable 404s,
+profile recipes public+published only, and recipe DTOs now carry real
+usernames (pre-onboarding fallback documented). L-2 (logs management)
+dispatched with the frozen-snapshot invariant called out as blocking for the
+PATCH path. L-20 healthy: journey screenshots appearing in .ui-artifacts
+(launch + all tabs so far), ~28 min elapsed — long but plausible for UI-test
+target creation plus simulator runs.
 
 **Iteration 6 (2026-07-17 ~23:55).** L-3 landed (`9d3fbe3`, backend 91/91):
 discover rails (recent real, featured/trending = documented deterministic
