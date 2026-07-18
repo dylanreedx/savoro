@@ -36,9 +36,9 @@ Max one active ticket per track; lands are serialized on `main`.
 | # | Ticket | Track | Status | Evidence (commit / run) |
 |---|---|---|---|---|
 | 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | queued | |
-| 2 | SAV-129 + L-1 — publish lifecycle, close public-draft logging hole, real `publishedAt` | backend | queued | |
+| 2 | SAV-129 + L-1 — publish lifecycle, close public-draft logging hole, real `publishedAt` | backend | **landed** | `705510f`, 74/74 tests |
 | 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | queued | |
-| 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | queued | |
+| 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | in-progress | |
 | 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | queued | |
 | 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | queued | |
 | 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | queued | |
@@ -107,7 +107,13 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 
 ## Last run report
 
-_(The orchestrator replaces this section each iteration: tickets landed, review
-verdicts, test counts, anything blocked and why, next dispatch.)_
-
-Not started yet.
+**Iteration 1 (2026-07-17 ~21:50).** SAV-129+L-1 landed as `705510f`: publish/
+unpublish/archive endpoints per contract, real `publishedAt` (migration 0006 with
+backfill), public-draft logging hole closed with regression test, plus a bonus
+correctness catch — editing a draft whose version was previously published now
+creates a new version, preserving log/fork immutability through unpublish→edit.
+Backend suite 66→74 tests, all green, typecheck clean; independently re-verified
+before and after the squash-merge. L-12 (goal ranges) dispatched to a fresh
+worktree. L-20 (XCUITest scaffolding) still running on the frontend track.
+Logo generation is with Dylan (OpenAI billing cap blocks gpt-image-1; four
+self-contained prompts delivered).
