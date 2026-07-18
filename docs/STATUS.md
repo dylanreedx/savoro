@@ -60,7 +60,7 @@ work continues; only UAT-gated items park):
 | S2b | SAV-133 — profiles/usernames (follow/friends stays L-28) | backend | **landed** — `7ea855f`, 98/98 tests |
 | S3 | L-2 — logs management endpoints | backend | **landed** — `3f431dd`, 107/107 tests |
 | S7b | L-28 — follow/friends + activity | backend | **landed** — `583b602`, 117/117 tests |
-| S8b | L-37 — USDA foods: schema/endpoints/importer (code complete; real data import deferred to Dylan — no overnight downloads) | backend | in-progress |
+| S8b | L-37 — USDA foods: schema/endpoints/importer (code complete; real data import deferred to Dylan — no overnight downloads) | backend | **landed** — `804cd84`, 124/124 tests. **Backend track parked: stretch queue drained.** |
 | S2 | SAV-133 — profiles/usernames endpoints | backend | queued |
 | S3 | L-2 — logs management endpoints | backend | queued |
 | S4 | SAV-72 — editor save/publish UX (mock-first) | frontend | queued |
@@ -110,6 +110,15 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 11.** L-37 landed (`804cd84`, backend 124/124): foods +
+food_servings schema, GET /v1/foods/search and /v1/foods/:id with explicit
+per-100g DTO semantics, ported no-download USDA importer
+(apps/api/seed/import-usda.ts, usage in README) tested against a committed
+fixture. **Backend track is parked — every backend ticket in the main and
+stretch queues has landed.** Morning backend task for Dylan: download SR
+Legacy CSVs and run the importer per README. Frontend continues: L-15
+(dark mode) in flight, then L-16 → L-17 → L-35 → L-23 gate check.
 
 **Iteration 10.** L-21 landed (`9e74efc`): the agent-eyes harness is real —
 36 committed reference images (9 screens × light/dark × standard/XXXL, full
