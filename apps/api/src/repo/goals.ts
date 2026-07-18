@@ -3,6 +3,7 @@ import type { BatchItem } from 'drizzle-orm/batch'
 import { previousCalendarDay } from '../dates'
 import type { Db } from '../db/client'
 import { goals, type GoalRow } from '../db/schema'
+import { ApiError } from '../errors'
 
 /** The user's goal active on the given date, or null. */
 export async function getActiveGoal(db: Db, userId: string, date: string): Promise<GoalRow | null> {
@@ -37,16 +38,24 @@ export async function createGoal(db: Db, userId: string, input: CreateGoalInput)
   const now = new Date().toISOString()
   const id = `goal_${crypto.randomUUID()}`
 
-  // An open goal [start, ∞) overlaps the new [startDate, endDate?] range
-  // unless the new goal ends before the open goal starts.
-  const overlappingOpen = await db.query.goals.findMany({
+  // Two inclusive ranges overlap when each starts before the other ends.
+  // Open ends have no upper bound.
+  const overlapping = await db.query.goals.findMany({
     where: and(
       eq(goals.userId, userId),
-      isNull(goals.endDate),
       ...(input.endDate === null ? [] : [lte(goals.startDate, input.endDate)]),
+      or(isNull(goals.endDate), gte(goals.endDate, input.startDate)),
     ),
-    columns: { id: true },
+    columns: { id: true, startDate: true, endDate: true },
   })
+
+  // Closing is only valid when an overlapping open goal began before the new one.
+  // A backdated range starting on or before a later existing goal is rejected
+  // rather than splicing that goal or creating endDate < startDate.
+  if (overlapping.some((goal) => goal.startDate >= input.startDate)) {
+    throw new ApiError('validation_failed', 'Goal range overlaps a later goal.')
+  }
+  const overlappingOpen = overlapping.filter((goal) => goal.endDate === null)
 
   const closeAt = previousCalendarDay(input.startDate)
   const ops: BatchItem<'sqlite'>[] = [

@@ -92,7 +92,7 @@ describe('goals endpoints', () => {
     expect(inSecond.goal?.id).toBe(second.goal?.id)
   })
 
-  it('closes an overlapping open goal at the new startDate', async () => {
+  it('creates goals chronologically by closing only the earlier open range', async () => {
     const first = (await (
       await createGoal('alice-token', { dailyTargets: TARGETS, startDate: '2026-06-01' })
     ).json()) as GoalResponse
@@ -106,13 +106,31 @@ describe('goals endpoints', () => {
     const july = (await (await currentGoal('alice-token', '2026-07-01')).json()) as GoalResponse
     expect(july.goal?.id).toBe(second.goal?.id)
 
-    const oldRow = await env.DB.prepare('select end_date from goals where id = ?')
+    const oldRow = await env.DB.prepare('select start_date, end_date from goals where id = ?')
       .bind(first.goal?.id)
-      .first<{ end_date: string | null }>()
-    expect(oldRow?.end_date).toBe('2026-06-30')
+      .first<{ start_date: string; end_date: string | null }>()
+    expect(oldRow).toEqual({ start_date: '2026-06-01', end_date: '2026-06-30' })
   })
 
-  it('does not touch open goals the new goal cannot overlap', async () => {
+  it('rejects a backdated open goal that would overlap a later open goal', async () => {
+    const future = (await (
+      await createGoal('alice-token', { dailyTargets: TARGETS, startDate: '2026-08-01' })
+    ).json()) as GoalResponse
+
+    const res = await createGoal('alice-token', {
+      dailyTargets: { ...TARGETS, calories: 2000 },
+      startDate: '2026-06-01',
+    })
+    expect(res.status).toBe(422)
+    expect(await res.json()).toMatchObject({ error: { code: 'validation_failed' } })
+
+    const rows = await env.DB.prepare('select id, start_date, end_date from goals where user_id = ?')
+      .bind('usr_alice')
+      .all<{ id: string; start_date: string; end_date: string | null }>()
+    expect(rows.results).toEqual([{ id: future.goal?.id, start_date: '2026-08-01', end_date: null }])
+  })
+
+  it('allows a bounded historical goal that ends before a later open goal', async () => {
     const future = (await (
       await createGoal('alice-token', { dailyTargets: TARGETS, startDate: '2026-08-01' })
     ).json()) as GoalResponse
@@ -127,6 +145,58 @@ describe('goals endpoints', () => {
       .bind(future.goal?.id)
       .first<{ end_date: string | null }>()
     expect(row?.end_date).toBeNull()
+  })
+
+  it('rejects a bounded historical goal that overlaps a later open goal', async () => {
+    const future = (await (
+      await createGoal('alice-token', { dailyTargets: TARGETS, startDate: '2026-08-01' })
+    ).json()) as GoalResponse
+
+    const res = await createGoal('alice-token', {
+      dailyTargets: { ...TARGETS, calories: 2000 },
+      startDate: '2026-07-15',
+      endDate: '2026-08-15',
+    })
+    expect(res.status).toBe(422)
+
+    const row = await env.DB.prepare('select start_date, end_date from goals where id = ?')
+      .bind(future.goal?.id)
+      .first<{ start_date: string; end_date: string | null }>()
+    expect(row).toEqual({ start_date: '2026-08-01', end_date: null })
+  })
+
+  it('rejects a backdated open goal rather than splicing a later bounded goal', async () => {
+    const future = (await (
+      await createGoal('alice-token', {
+        dailyTargets: TARGETS,
+        startDate: '2026-08-01',
+        endDate: '2026-08-31',
+      })
+    ).json()) as GoalResponse
+
+    const res = await createGoal('alice-token', {
+      dailyTargets: { ...TARGETS, calories: 2000 },
+      startDate: '2026-06-01',
+    })
+    expect(res.status).toBe(422)
+
+    const rows = await env.DB.prepare('select id, start_date, end_date from goals where user_id = ?')
+      .bind('usr_alice')
+      .all<{ id: string; start_date: string; end_date: string | null }>()
+    expect(rows.results).toEqual([{ id: future.goal?.id, start_date: '2026-08-01', end_date: '2026-08-31' }])
+  })
+
+  it('never produces a goal row whose end date is before its start date', async () => {
+    await createGoal('alice-token', { dailyTargets: TARGETS, startDate: '2026-08-01' })
+    await createGoal('alice-token', {
+      dailyTargets: { ...TARGETS, calories: 2000 },
+      startDate: '2026-06-01',
+    })
+
+    const invalid = await env.DB.prepare(
+      'select count(*) as count from goals where end_date is not null and end_date < start_date',
+    ).first<{ count: number }>()
+    expect(invalid?.count).toBe(0)
   })
 
   it("never reads another user's goal", async () => {
