@@ -286,3 +286,12 @@ New tickets:
   batched API), then implement `GET /v1/foods/search` + `GET /v1/foods/:id`
   cache-first against on-prem data (external fallback later, only if needed).
   Old-branch code is the reference implementation.
+
+## FOCUS DIRECTIVE (2026-07-18, Dylan)
+
+One page at a time, driven to exhaustive completion, starting with **Create
+Recipe**. The full 50-ticket epic lives in `docs/epics/recipe-editor.md`
+(RE-1..RE-50, folds in SAV-72). Nothing outside that epic gets dispatched
+without Dylan's say-so, except RE-1 (Today card spacing — his named
+complaint). Breadth work and new surfaces are frozen until RE-50 (his UAT)
+passes.
