@@ -42,6 +42,52 @@ export const sessions = sqliteTable(
   (t) => [index('idx_sessions_user').on(t.userId)],
 )
 
+export const foods = sqliteTable(
+  'foods',
+  {
+    id: text('id').primaryKey(),
+    source: text('source').notNull(),
+    sourceId: text('source_id').notNull(),
+    name: text('name').notNull(),
+    brand: text('brand'),
+    category: text('category'),
+    caloriesPer100g: real('calories_per_100g').notNull(),
+    proteinGramsPer100g: real('protein_grams_per_100g').notNull(),
+    carbsGramsPer100g: real('carbs_grams_per_100g').notNull(),
+    fatGramsPer100g: real('fat_grams_per_100g').notNull(),
+    fiberGramsPer100g: real('fiber_grams_per_100g'),
+    sodiumMilligramsPer100g: real('sodium_milligrams_per_100g'),
+  },
+  (t) => [
+    uniqueIndex('uq_foods_source_id').on(t.source, t.sourceId),
+    index('idx_foods_name_search').on(t.name, t.id),
+  ],
+)
+
+export const foodServings = sqliteTable(
+  'food_servings',
+  {
+    id: text('id').primaryKey(),
+    foodId: text('food_id')
+      .notNull()
+      .references(() => foods.id, { onDelete: 'cascade' }),
+    sourceId: text('source_id'),
+    description: text('description').notNull(),
+    gramWeight: real('gram_weight').notNull(),
+    isDefault: integer('is_default', { mode: 'boolean' }).notNull().default(false),
+    sortOrder: integer('sort_order').notNull().default(0),
+  },
+  (t) => [
+    uniqueIndex('uq_food_servings_source')
+      .on(t.foodId, t.sourceId)
+      .where(sql`${t.sourceId} is not null`),
+    uniqueIndex('uq_food_servings_default')
+      .on(t.foodId)
+      .where(sql`${t.isDefault} = 1`),
+    index('idx_food_servings_food_order').on(t.foodId, t.isDefault, t.sortOrder, t.id),
+  ],
+)
+
 export const recipes = sqliteTable(
   'recipes',
   {
@@ -257,6 +303,8 @@ export const goals = sqliteTable(
   (t) => [index('idx_goals_user_dates').on(t.userId, t.startDate)],
 )
 
+export type FoodRow = typeof foods.$inferSelect
+export type FoodServingRow = typeof foodServings.$inferSelect
 export type FoodLogEntryRow = typeof foodLogEntries.$inferSelect
 export type RecipeRow = typeof recipes.$inferSelect
 export type SavedRecipeRow = typeof savedRecipes.$inferSelect

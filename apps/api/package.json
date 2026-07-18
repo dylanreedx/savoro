@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
-    "db:seed:local": "wrangler d1 execute DB --local --file ./seed/local-dev.sql"
+    "db:seed:local": "wrangler d1 execute DB --local --file ./seed/local-dev.sql",
+    "db:seed:foods:fixture:local": "wrangler d1 execute DB --local --file ./seed/foods-fixture.sql"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.2",
