@@ -9,6 +9,7 @@ import { logs } from './routes/logs'
 import { me, profiles } from './routes/profiles'
 import { recipes } from './routes/recipes'
 import { search } from './routes/search'
+import { activity, friends, users } from './routes/social'
 
 const app = new Hono<AppEnv>()
 
@@ -33,5 +34,8 @@ app.route('/v1/recipes', recipes)
 app.route('/v1/cookbook', cookbook)
 app.route('/v1/discover', discover)
 app.route('/v1/search', search)
+app.route('/v1/users', users)
+app.route('/v1/friends', friends)
+app.route('/v1/activity', activity)
 
 export default app

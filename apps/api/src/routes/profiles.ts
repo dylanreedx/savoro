@@ -6,6 +6,7 @@ import { ApiError } from '../errors'
 import { requireAuth } from '../middleware/auth'
 import { getPublicUserByUsername, getUserById, updateUserProfile, type ProfilePatch } from '../repo/profiles'
 import { listPublicRecipesByOwner } from '../repo/recipes'
+import { viewerFollows } from '../repo/social'
 import { mapRecipePage, parseRecipeListOptions } from './recipe-list'
 
 export const me = new Hono<AppEnv>()
@@ -43,12 +44,14 @@ profiles.get('/:username', async (c) => {
   const db = createDb(c.env.DB)
   const viewerUserId = c.get('userId')
   const profileUser = await getPublicUserByUsername(db, c.req.param('username'))
-  const recipes = await listPublicRecipesByOwner(db, viewerUserId, profileUser.id, { limit: 20 })
+  const [recipes, isFollowing] = await Promise.all([
+    listPublicRecipesByOwner(db, viewerUserId, profileUser.id, { limit: 20 }),
+    viewerFollows(db, viewerUserId, profileUser.id),
+  ])
   return c.json({
     profile: mapUserProfile(profileUser),
     isSelf: profileUser.id === viewerUserId,
-    // Relationship persistence belongs to the separate follow/friends ticket.
-    followState: 'none' as const,
+    followState: isFollowing ? ('following' as const) : ('none' as const),
     publicRecipes: mapRecipePage(recipes, viewerUserId).items,
   })
 })

@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import { index, integer, primaryKey, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 export const users = sqliteTable(
@@ -77,6 +78,71 @@ export const savedRecipes = sqliteTable(
   (t) => [
     primaryKey({ name: 'pk_saved_recipes', columns: [t.userId, t.recipeId] }),
     index('idx_saved_recipes_user_created').on(t.userId, t.createdAt),
+  ],
+)
+
+export const follows = sqliteTable(
+  'follows',
+  {
+    id: text('id').primaryKey(),
+    followerUserId: text('follower_user_id')
+      .notNull()
+      .references(() => users.id),
+    followedUserId: text('followed_user_id')
+      .notNull()
+      .references(() => users.id),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('uq_follows_pair').on(t.followerUserId, t.followedUserId),
+    index('idx_follows_followed').on(t.followedUserId, t.createdAt),
+  ],
+)
+
+export const friendRequests = sqliteTable(
+  'friend_requests',
+  {
+    id: text('id').primaryKey(),
+    requesterUserId: text('requester_user_id')
+      .notNull()
+      .references(() => users.id),
+    targetUserId: text('target_user_id')
+      .notNull()
+      .references(() => users.id),
+    pairUserOneId: text('pair_user_one_id')
+      .notNull()
+      .references(() => users.id),
+    pairUserTwoId: text('pair_user_two_id')
+      .notNull()
+      .references(() => users.id),
+    status: text('status', { enum: ['pending', 'accepted', 'declined'] }).notNull(),
+    createdAt: text('created_at').notNull(),
+    updatedAt: text('updated_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('uq_friend_requests_pending_pair')
+      .on(t.pairUserOneId, t.pairUserTwoId)
+      .where(sql`${t.status} = 'pending'`),
+    index('idx_friend_requests_target_status').on(t.targetUserId, t.status, t.createdAt),
+    index('idx_friend_requests_requester_status').on(t.requesterUserId, t.status, t.createdAt),
+  ],
+)
+
+export const friendships = sqliteTable(
+  'friendships',
+  {
+    id: text('id').primaryKey(),
+    userOneId: text('user_one_id')
+      .notNull()
+      .references(() => users.id),
+    userTwoId: text('user_two_id')
+      .notNull()
+      .references(() => users.id),
+    createdAt: text('created_at').notNull(),
+  },
+  (t) => [
+    uniqueIndex('uq_friendships_pair').on(t.userOneId, t.userTwoId),
+    index('idx_friendships_user_two').on(t.userTwoId, t.createdAt),
   ],
 )
 
@@ -198,4 +264,7 @@ export type RecipeVersionRow = typeof recipeVersions.$inferSelect
 export type RecipeIngredientRow = typeof recipeIngredients.$inferSelect
 export type RecipeStepRow = typeof recipeSteps.$inferSelect
 export type GoalRow = typeof goals.$inferSelect
+export type FollowRow = typeof follows.$inferSelect
+export type FriendRequestRow = typeof friendRequests.$inferSelect
+export type FriendshipRow = typeof friendships.$inferSelect
 export type UserRow = typeof users.$inferSelect

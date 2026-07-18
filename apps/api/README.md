@@ -74,6 +74,20 @@ Expected behavior:
 - nutrition totals are computed from frozen snapshot columns.
 - client-supplied `userId` or `snapshot` fields are ignored by the log endpoint.
 
+## Social MVP semantics
+
+- Follow and unfollow are viewer-scoped and idempotent. A private profile may be
+  followed, but the follow grants no visibility: that profile and its activity
+  remain hidden.
+- Friend requests are accepted or declined only by the target user. Repeating a
+  same-direction pending request returns the existing request; a reverse pending
+  request is rejected rather than changing who owns the decision.
+- `GET /v1/activity?scope=friends` is a read-time projection of public-profile
+  friends' public, published recipe events only. It never queries food logs,
+  goals, progress/adherence, or body metrics.
+- `GET /v1/activity?scope=communities` currently returns `{ "items": [] }` with
+  the final contract shape. It remains empty until community persistence lands.
+
 ## Tests
 
 ```bash
