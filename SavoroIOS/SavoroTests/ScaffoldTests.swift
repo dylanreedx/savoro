@@ -644,88 +644,164 @@ final class ScaffoldTests: XCTestCase {
         _ = RecipeEditorPlaceholderView()
     }
 
-    func testRecipeEditorIngredientRowValidationAndStateChanges() {
-        var row = RecipeEditorIngredientRow(id: "ingredient_1")
-        XCTAssertFalse(row.isValidForDraft)
+    func testRecipeEditorIngredientParserHandlesPlainNumbersAndKnownFoodLinking() throws {
+        let line = try XCTUnwrap(RecipeEditorIngredientLineParser.parse("120 g greek yogurt").first)
 
-        row.quantityText = "2"
-        row.unit = "cups"
-        row.name = "Spinach"
-
-        XCTAssertTrue(row.isValidForDraft)
-        XCTAssertTrue(row.hasIncompleteNutrition)
-        XCTAssertEqual(row.source, .freeText)
+        XCTAssertEqual(line.kind, .ingredient)
+        XCTAssertEqual(line.quantityText, "120")
+        XCTAssertEqual(line.quantity, 120)
+        XCTAssertEqual(line.unit, "g")
+        XCTAssertEqual(line.name, "greek yogurt")
+        XCTAssertEqual(line.linkedFoodId, "mock_food_yogurt")
+        XCTAssertTrue(line.isNutritionLinked)
     }
 
-    func testRecipeEditorEditedBlankRowBecomesManualIncompleteNutrition() {
-        var row = RecipeEditorIngredientRow.empty(id: "blank_edited")
+    func testRecipeEditorIngredientParserHandlesDecimals() throws {
+        let line = try XCTUnwrap(RecipeEditorIngredientLineParser.parse("1.5 kg Chicken breast").first)
 
-        row.name = "Handful of greens"
-        row.quantityText = "1"
-
-        XCTAssertEqual(row.source, .freeText)
-        XCTAssertTrue(row.hasIncompleteNutrition)
-        XCTAssertTrue(row.nutritionStatusText.localizedCaseInsensitiveContains("nutrition details aren’t available"))
-        XCTAssertFalse(row.nutritionStatusText.localizedCaseInsensitiveContains("seeded from available food details"))
+        XCTAssertEqual(line.quantityText, "1.5")
+        XCTAssertEqual(line.quantity, 1.5)
+        XCTAssertEqual(line.unit, "kg")
+        XCTAssertEqual(line.name, "Chicken breast")
+        XCTAssertEqual(line.linkedFoodId, "mock_food_chicken")
     }
 
-    func testRecipeEditorAggregateWarningAppearsForEditedManualRows() {
-        var row = RecipeEditorIngredientRow.empty(id: "manual_aggregate")
-        row.quantityText = "2"
-        row.name = "Custom sauce"
-        let form = RecipeEditorDraftForm(ingredients: [row])
+    func testRecipeEditorIngredientParserHandlesFractions() throws {
+        let line = try XCTUnwrap(RecipeEditorIngredientLineParser.parse("1/2 cup Greek yogurt").first)
 
-        XCTAssertTrue(form.hasIncompleteNutritionIngredients)
-        XCTAssertEqual(form.incompleteNutritionNotice, RecipeEditorIngredientRow.incompleteNutritionNotice)
-        XCTAssertTrue(form.visibleCopy.localizedCaseInsensitiveContains("partial macro preview"))
+        XCTAssertEqual(line.quantityText, "1/2")
+        XCTAssertEqual(line.quantity, 0.5)
+        XCTAssertEqual(line.unit, "cup")
+        XCTAssertEqual(line.name, "Greek yogurt")
+        XCTAssertEqual(line.linkedFoodId, "mock_food_yogurt")
     }
 
-    func testRecipeEditorCanAddAndRemoveIngredients() {
-        var form = RecipeEditorDraftForm()
-        form.addIngredient(.empty(id: "row_1"))
-        form.addFreeTextIngredient(named: "Pinch of herbs")
+    func testRecipeEditorIngredientParserHandlesMixedFractions() throws {
+        let line = try XCTUnwrap(RecipeEditorIngredientLineParser.parse("1 1/2 cups rolled oats").first)
 
-        XCTAssertEqual(form.ingredients.map(\.id).first, "row_1")
-        XCTAssertEqual(form.ingredients.count, 2)
-        XCTAssertTrue(form.hasIncompleteNutritionIngredients)
-
-        form.removeIngredient(id: "row_1")
-
-        XCTAssertEqual(form.ingredients.count, 1)
-        XCTAssertEqual(form.ingredients.first?.name, "Pinch of herbs")
+        XCTAssertEqual(line.quantityText, "1 1/2")
+        XCTAssertEqual(line.quantity, 1.5)
+        XCTAssertEqual(line.unit, "cups")
+        XCTAssertEqual(line.name, "rolled oats")
     }
 
-    func testRecipeEditorFreeTextWarningCopyIsClearAndNonShaming() {
-        let row = RecipeEditorIngredientRow.freeText(id: "free_1", quantityText: "1", unit: "handful", name: "Herbs")
-        var form = RecipeEditorDraftForm(ingredients: [row])
-        let copy = form.visibleCopy
-        let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food"]
+    func testRecipeEditorIngredientParserHandlesQuantityWithoutUnit() throws {
+        let line = try XCTUnwrap(RecipeEditorIngredientLineParser.parse("2 eggs").first)
 
-        XCTAssertTrue(row.hasIncompleteNutrition)
-        XCTAssertEqual(form.incompleteNutritionNotice, RecipeEditorIngredientRow.incompleteNutritionNotice)
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Nutrition details aren’t available"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("partial macro preview"))
-        XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
+        XCTAssertEqual(line.quantityText, "2")
+        XCTAssertEqual(line.quantity, 2)
+        XCTAssertEqual(line.unit, "")
+        XCTAssertEqual(line.name, "eggs")
+        XCTAssertTrue(line.isValidForDraft)
+    }
+
+    func testRecipeEditorIngredientParserHandlesNameOnlyLines() throws {
+        let line = try XCTUnwrap(RecipeEditorIngredientLineParser.parse("salt to taste").first)
+
+        XCTAssertEqual(line.quantityText, "")
+        XCTAssertNil(line.quantity)
+        XCTAssertEqual(line.unit, "")
+        XCTAssertEqual(line.name, "salt to taste")
+        XCTAssertTrue(line.isValidForDraft)
+    }
+
+    func testRecipeEditorIngredientParserHandlesToTasteSourceUnit() throws {
+        let noQuantity = try XCTUnwrap(RecipeEditorIngredientLineParser.parse("to taste garlic yogurt sauce").first)
+        let quantity = try XCTUnwrap(RecipeEditorIngredientLineParser.parse("1 to taste garlic yogurt sauce").first)
+
+        XCTAssertNil(noQuantity.quantity)
+        XCTAssertEqual(noQuantity.unit, "to taste")
+        XCTAssertEqual(noQuantity.name, "garlic yogurt sauce")
+        XCTAssertEqual(quantity.quantity, 1)
+        XCTAssertEqual(quantity.unit, "to taste")
+        XCTAssertEqual(quantity.name, "garlic yogurt sauce")
+        XCTAssertTrue(quantity.isValidForDraft)
+    }
+
+    func testRecipeEditorIngredientParserHandlesGroupHeadersAndBlankLines() {
+        let lines = RecipeEditorIngredientLineParser.parse("# Batter\n\n2 eggs\n# Sauce")
+
+        XCTAssertEqual(lines.map(\.lineIndex), [0, 1, 2, 3])
+        XCTAssertEqual(lines.map(\.kind), [.groupHeader, .blank, .ingredient, .groupHeader])
+        XCTAssertEqual(lines[0].groupTitle, "Batter")
+        XCTAssertEqual(lines[3].groupTitle, "Sauce")
+        XCTAssertFalse(lines[0].isValidForDraft)
+    }
+
+    func testRecipeEditorIngredientParserPreservesJunkLinesAsFreeText() {
+        let lines = RecipeEditorIngredientLineParser.parse("1/0 cup ???\n!!!\n/ broken")
+
+        XCTAssertEqual(lines.map(\.kind), [.ingredient, .ingredient, .ingredient])
+        XCTAssertEqual(lines.map(\.name), ["1/0 cup ???", "!!!", "/ broken"])
+        XCTAssertTrue(lines.allSatisfy { $0.quantity == nil && $0.linkedFoodId == nil })
+    }
+
+    func testRecipeEditorIngredientParserNormalizesPastedWindowsNewlines() {
+        let lines = RecipeEditorIngredientLineParser.parse("100 g Chicken breast\r\n170 g Greek yogurt\r# Finish")
+
+        XCTAssertEqual(lines.count, 3)
+        XCTAssertEqual(lines.map(\.lineIndex), [0, 1, 2])
+        XCTAssertEqual(lines.map(\.kind), [.ingredient, .ingredient, .groupHeader])
+        XCTAssertEqual(lines.compactMap(\.linkedFoodId), ["mock_food_chicken", "mock_food_yogurt"])
+    }
+
+    func testRecipeEditorIngredientParserUsesInjectedKnownFoodsDeterministically() throws {
+        let customFood = RecipeEditorMockFoodSearchResult(
+            foodId: "custom_food",
+            name: "Family sauce",
+            defaultQuantityText: "100",
+            defaultUnit: "g",
+            sourceLabel: "Suggested food",
+            macrosKnown: false,
+            metadata: [:]
+        )
+        let first = RecipeEditorIngredientLineParser.parse("3 tbsp Family sauce", knownFoods: [customFood])
+        let second = RecipeEditorIngredientLineParser.parse("3 tbsp Family sauce", knownFoods: [customFood])
+
+        XCTAssertEqual(first, second)
+        XCTAssertEqual(try XCTUnwrap(first.first).linkedFoodId, "custom_food")
+    }
+
+    func testRecipeEditorKnownFoodMatchingIsExactAndCaseInsensitive() throws {
+        let lines = RecipeEditorIngredientLineParser.parse("100 g CHICKEN BREAST\n100 g chicken breast strips")
+
+        XCTAssertEqual(try XCTUnwrap(lines.first).linkedFoodId, "mock_food_chicken")
+        XCTAssertNil(try XCTUnwrap(lines.last).linkedFoodId)
     }
 
     func testRecipeEditorMockFoodSearchMetadataIsLocalOnly() {
         let results = RecipeEditorMockFoodSearchResult.search("chicken")
         let food = try! XCTUnwrap(results.first)
-        let row = RecipeEditorIngredientRow.fromMockFood(food, id: "mock_1")
 
         XCTAssertEqual(results.map(\.foodId), ["mock_food_chicken"])
         XCTAssertEqual(food.metadata["mode"], "mock-local-fixture")
         XCTAssertEqual(food.metadata["startsBackendSearch"], "false")
-        XCTAssertEqual(row.name, "Chicken breast")
-        XCTAssertFalse(row.hasIncompleteNutrition)
-        XCTAssertEqual(row.nutritionStatusText, "Nutrition is seeded from available food details.")
     }
 
-    func testRecipeEditorMacroMathUsesKnownMockIngredientQuantityAndUnit() {
-        var chicken = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken")
-        chicken.quantityText = "200"
-        chicken.unit = "g"
-        let form = RecipeEditorDraftForm(servingsText: "2", ingredients: [chicken])
+    func testRecipeEditorPastedIngredientBlockIsCanonicalDraftInput() {
+        let pasted = "# Bowl\n200 g Chicken breast\n1/2 cup Greek yogurt\n2 avocados"
+        let form = RecipeEditorDraftForm(ingredientText: pasted)
+
+        XCTAssertEqual(form.ingredientText, pasted)
+        XCTAssertEqual(form.ingredients.count, 3)
+        XCTAssertEqual(form.ingredients.map(\.name), ["Chicken breast", "Greek yogurt", "avocados"])
+        XCTAssertEqual(form.ingredientLines.first?.kind, .groupHeader)
+    }
+
+    func testRecipeEditorCanAdjustLinkAndRemoveParsedIngredientLines() {
+        var form = RecipeEditorDraftForm(ingredientText: "2 eggs\n1 pinch herbs")
+
+        form.updateIngredientLine(at: 0, quantityText: "170", unit: "g", name: "Greek yogurt")
+        XCTAssertEqual(form.ingredientText, "170 g Greek yogurt\n1 pinch herbs")
+        XCTAssertEqual(form.ingredients.first?.linkedFoodId, "mock_food_yogurt")
+
+        form.removeIngredientLine(at: 1)
+        XCTAssertEqual(form.ingredientText, "170 g Greek yogurt")
+        XCTAssertEqual(form.ingredients.count, 1)
+    }
+
+    func testRecipeEditorMacroMathUsesParsedKnownFoodQuantityAndUnit() {
+        let form = RecipeEditorDraftForm(servingsText: "2", ingredientText: "200 g Chicken breast")
         let preview = form.macroPreview
 
         XCTAssertEqual(preview.includedIngredientCount, 1)
@@ -736,30 +812,33 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(preview.perServingMacros.calories, 165, accuracy: 0.0001)
     }
 
-    func testRecipeEditorMacroStripStaysHiddenUntilNutritionCanBeCalculated() {
-        let freeText = RecipeEditorIngredientRow.freeText(id: "free", quantityText: "1", unit: "pinch", name: "Herbs")
-        let chicken = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken")
+    func testRecipeEditorMacroMathSupportsParsedFractionsDecimalsKilogramsAndOunces() {
+        let fraction = RecipeEditorDraftForm(servingsText: "1", ingredientText: "1/2 kg Chicken breast").macroPreview
+        let decimal = RecipeEditorDraftForm(servingsText: "1", ingredientText: "0.1 kg Chicken breast").macroPreview
+        let ounces = RecipeEditorDraftForm(servingsText: "1", ingredientText: "1 oz Chicken breast").macroPreview
 
-        XCTAssertFalse(RecipeEditorDraftForm.newDraft().showsMacroStrip)
-        XCTAssertFalse(RecipeEditorDraftForm(servingsText: "2", ingredients: [freeText]).showsMacroStrip)
-        XCTAssertTrue(RecipeEditorDraftForm(servingsText: "2", ingredients: [chicken]).showsMacroStrip)
+        XCTAssertEqual(fraction.totalMacros.calories, 825, accuracy: 0.0001)
+        XCTAssertEqual(decimal.totalMacros.calories, 165, accuracy: 0.0001)
+        XCTAssertEqual(ounces.totalMacros.calories, 46.776675, accuracy: 0.0001)
     }
 
-    func testRecipeEditorIngredientRowsUseCalmSummaryAndPartialDotState() {
-        let chicken = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken")
-        let freeText = RecipeEditorIngredientRow.freeText(id: "free", quantityText: "1", unit: "pinch", name: "Herbs")
+    func testRecipeEditorMacroStripStaysHiddenUntilLinkedNutritionCanBeCalculated() {
+        XCTAssertFalse(RecipeEditorDraftForm.newDraft().showsMacroStrip)
+        XCTAssertFalse(RecipeEditorDraftForm(servingsText: "2", ingredientText: "1 pinch herbs").showsMacroStrip)
+        XCTAssertTrue(RecipeEditorDraftForm(servingsText: "2", ingredientText: "100 g Chicken breast").showsMacroStrip)
+    }
 
-        XCTAssertEqual(chicken.displayName, "Chicken breast")
-        XCTAssertEqual(chicken.editorRowSummaryText, "100 g · 165 cal")
-        XCTAssertFalse(chicken.hasIncompleteNutrition)
-        XCTAssertEqual(freeText.editorRowSummaryText, "1 pinch")
-        XCTAssertTrue(freeText.hasIncompleteNutrition)
+    func testRecipeEditorParsedPreviewUsesLinkedDotState() throws {
+        let lines = RecipeEditorIngredientLineParser.parse("100 g Chicken breast\n1 pinch herbs")
+
+        XCTAssertTrue(try XCTUnwrap(lines.first).isNutritionLinked)
+        XCTAssertFalse(try XCTUnwrap(lines.last).isNutritionLinked)
+        XCTAssertEqual(try XCTUnwrap(lines.first).nutritionStatusText, "Nutrition is linked from available food details.")
     }
 
     func testRecipeEditorMacroPreviewRecalculatesWhenServingCountChanges() {
-        let yogurt = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[1], id: "yogurt")
-        let twoServings = RecipeEditorDraftForm(servingsText: "2", ingredients: [yogurt]).macroPreview
-        let fourServings = RecipeEditorDraftForm(servingsText: "4", ingredients: [yogurt]).macroPreview
+        let twoServings = RecipeEditorDraftForm(servingsText: "2", ingredientText: "170 g Greek yogurt").macroPreview
+        let fourServings = RecipeEditorDraftForm(servingsText: "4", ingredientText: "170 g Greek yogurt").macroPreview
 
         XCTAssertEqual(twoServings.totalMacros.calories, fourServings.totalMacros.calories, accuracy: 0.0001)
         XCTAssertEqual(twoServings.perServingMacros.calories, 50, accuracy: 0.0001)
@@ -767,233 +846,115 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(fourServings.perServingMacros.proteinGrams, 4.25, accuracy: 0.0001)
     }
 
-    func testRecipeEditorMacroPreviewRecalculatesWhenQuantityChanges() {
-        var base = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken")
-        base.quantityText = "100"
-        var doubled = base
-        doubled.quantityText = "200"
-
-        XCTAssertEqual(RecipeEditorDraftForm(servingsText: "1", ingredients: [base]).macroPreview.totalMacros.calories, 165, accuracy: 0.0001)
-        XCTAssertEqual(RecipeEditorDraftForm(servingsText: "1", ingredients: [doubled]).macroPreview.totalMacros.calories, 330, accuracy: 0.0001)
-    }
-
-    func testRecipeEditorKnownMockFoodWithBlankOrInvalidQuantityIsPartial() {
-        var blank = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "blank_quantity")
-        blank.quantityText = ""
-        var invalid = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[1], id: "invalid_quantity")
-        invalid.quantityText = "abc"
-        let preview = RecipeEditorDraftForm(servingsText: "2", ingredients: [blank, invalid]).macroPreview
+    func testRecipeEditorLinkedFoodWithoutComputableAmountIsPartial() {
+        let preview = RecipeEditorDraftForm(
+            servingsText: "2",
+            ingredientText: "Greek yogurt\n2 cups Chicken breast"
+        ).macroPreview
 
         XCTAssertTrue(preview.isPartial)
         XCTAssertEqual(preview.includedIngredientCount, 0)
         XCTAssertEqual(preview.partialIngredientCount, 2)
-        XCTAssertTrue(preview.statusText.localizedCaseInsensitiveContains("Partial macro preview"))
         XCTAssertTrue(preview.statusText.localizedCaseInsensitiveContains("not included"))
     }
 
-    func testRecipeEditorKnownMockFoodInvalidQuantityStatusSaysNotIncludedInPartialPreview() {
-        var invalid = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "invalid_quantity_status")
-        invalid.quantityText = "abc"
-
-        XCTAssertEqual(invalid.nutritionStatusText, RecipeEditorIngredientRow.nonComputableMockNutritionNotice)
-        XCTAssertTrue(invalid.nutritionStatusText.localizedCaseInsensitiveContains("not included"))
-        XCTAssertTrue(invalid.nutritionStatusText.localizedCaseInsensitiveContains("partial macro preview"))
-        XCTAssertFalse(invalid.nutritionStatusText.localizedCaseInsensitiveContains("seeded from available food details"))
-    }
-
-    func testRecipeEditorKnownMockFoodUnsupportedUnitStatusSaysNotIncludedInPartialPreview() {
-        var unsupportedUnit = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[1], id: "unsupported_unit_status")
-        unsupportedUnit.unit = "container"
-
-        XCTAssertEqual(unsupportedUnit.nutritionStatusText, RecipeEditorIngredientRow.nonComputableMockNutritionNotice)
-        XCTAssertTrue(unsupportedUnit.nutritionStatusText.localizedCaseInsensitiveContains("not included"))
-        XCTAssertTrue(unsupportedUnit.nutritionStatusText.localizedCaseInsensitiveContains("quantity and unit"))
-        XCTAssertFalse(unsupportedUnit.nutritionStatusText.localizedCaseInsensitiveContains("seeded from available food details"))
-    }
-
     func testRecipeEditorInvalidOrBlankServingsNeedServingsCopyInsteadOfPerServingTotals() {
-        let chicken = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken")
         for servingsText in ["", "zero", "0"] {
-            let preview = RecipeEditorDraftForm(servingsText: servingsText, ingredients: [chicken]).macroPreview
+            let preview = RecipeEditorDraftForm(servingsText: servingsText, ingredientText: "100 g Chicken breast").macroPreview
 
             XCTAssertTrue(preview.isPartial)
             XCTAssertTrue(preview.needsServings)
             XCTAssertNil(preview.servings)
             XCTAssertEqual(preview.totalMacros.calories, 165, accuracy: 0.0001)
             XCTAssertEqual(preview.perServingMacros, .zero)
-            XCTAssertFalse(preview.perServingSummaryText.localizedCaseInsensitiveContains("Per serving: 165"))
             XCTAssertTrue(preview.perServingSummaryText.localizedCaseInsensitiveContains("need a valid servings"))
         }
     }
 
-    func testRecipeEditorMacroMathSupportsKilogramsAndOuncesForKnownMockFoods() {
-        var chickenKg = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken_kg")
-        chickenKg.quantityText = "0.1"
-        chickenKg.unit = "kg"
-        var chickenOz = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken_oz")
-        chickenOz.quantityText = "1"
-        chickenOz.unit = "oz"
-
-        let kgPreview = RecipeEditorDraftForm(servingsText: "1", ingredients: [chickenKg]).macroPreview
-        let ozPreview = RecipeEditorDraftForm(servingsText: "1", ingredients: [chickenOz]).macroPreview
-
-        XCTAssertEqual(kgPreview.totalMacros.calories, 165, accuracy: 0.0001)
-        XCTAssertEqual(ozPreview.totalMacros.calories, 46.776675, accuracy: 0.0001)
-        XCTAssertEqual(kgPreview.partialIngredientCount, 0)
-        XCTAssertEqual(ozPreview.partialIngredientCount, 0)
-    }
-
-    func testRecipeEditorOverflowQuantityBecomesPartialInsteadOfCrashing() {
-        var chicken = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "huge_chicken")
-        chicken.quantityText = "1e309"
-        let preview = RecipeEditorDraftForm(servingsText: "1", ingredients: [chicken]).macroPreview
-
-        XCTAssertTrue(preview.isPartial)
-        XCTAssertEqual(preview.includedIngredientCount, 0)
-        XCTAssertEqual(preview.partialIngredientCount, 1)
-        XCTAssertEqual(preview.totalMacros, .zero)
-    }
-
-    func testRecipeEditorUnknownAndFreeTextIngredientsCreatePartialPreviewWithoutFalseTotals() {
-        let known = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "known")
-        let freeText = RecipeEditorIngredientRow.freeText(id: "free", quantityText: "2", unit: "cups", name: "Family sauce")
-        var unknownUnit = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[1], id: "unknown_unit")
-        unknownUnit.unit = "container"
-        let preview = RecipeEditorDraftForm(servingsText: "1", ingredients: [known, freeText, unknownUnit]).macroPreview
+    func testRecipeEditorUnknownLinesCreatePartialPreviewWithoutFalseTotals() {
+        let preview = RecipeEditorDraftForm(
+            servingsText: "1",
+            ingredientText: "100 g Chicken breast\n2 cups Family sauce\n170 container Greek yogurt"
+        ).macroPreview
 
         XCTAssertTrue(preview.isPartial)
         XCTAssertEqual(preview.includedIngredientCount, 1)
         XCTAssertEqual(preview.partialIngredientCount, 2)
         XCTAssertEqual(preview.totalMacros.calories, 165, accuracy: 0.0001)
-        XCTAssertTrue(preview.statusText.localizedCaseInsensitiveContains("Partial macro preview"))
-        XCTAssertTrue(preview.statusText.localizedCaseInsensitiveContains("not included"))
     }
 
     func testRecipeEditorMacroPreviewCopyIsPrivacySafeAndNonShaming() {
-        var form = RecipeEditorDraftForm(servingsText: "2")
-        form.addMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0])
-        form.addFreeTextIngredient(named: "Family spice blend")
+        let form = RecipeEditorDraftForm(servingsText: "2", ingredientText: "100 g Chicken breast\nFamily spice blend")
         let copy = form.visibleCopy
         let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "daily goal", "calorie goal", "body metric", "private log", "food log"]
 
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("partial macro preview"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("available food details"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("uses only linked lines"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
-    func testRecipeEditorIngredientCopyIsPrivacySafeAndNoBackendOverreach() {
-        var form = RecipeEditorDraftForm()
-        form.addMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0])
-        form.addFreeTextIngredient(named: "Family spice blend")
-        let copy = form.visibleCopy
-        let deniedTerms = ["private log", "food log", "daily goal", "calorie goal", "body metric", "adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "starts backend"]
+    func testRecipeEditorInstructionParserNumbersBlankLineSeparatedParagraphs() {
+        let blocks = RecipeEditorInstructionParser.parse("Whisk the sauce.\nKeep it smooth.\n\nFold in herbs.\n\nServe warm.")
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("available food details"))
-        XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
+        XCTAssertEqual(blocks.map(\.kind), [.step, .step, .step])
+        XCTAssertEqual(blocks.map(\.stepNumber), [1, 2, 3])
+        XCTAssertEqual(blocks[0].body, "Whisk the sauce.\nKeep it smooth.")
+        XCTAssertEqual(blocks[2].displayNumber, "3")
     }
 
-    @MainActor
-    func testRecipeEditorIngredientViewCanBeConstructedWithRows() {
-        let form = RecipeEditorDraftForm(ingredients: [
-            .fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "mock_1"),
-            .freeText(id: "free_1", quantityText: "1", unit: "pinch", name: "Free text spice")
-        ])
-        _ = RecipeEditorPlaceholderView(form: form)
+    func testRecipeEditorInstructionParserHandlesPhaseHeadersWithoutBreakingNumbering() {
+        let blocks = RecipeEditorInstructionParser.parse("# Prep\nChop vegetables.\n\n# Cook\nSauté until tender.\n\nServe warm.")
+
+        XCTAssertEqual(blocks.map(\.kind), [.phaseHeader, .step, .phaseHeader, .step, .step])
+        XCTAssertEqual(blocks.compactMap(\.stepNumber), [1, 2, 3])
+        XCTAssertEqual(blocks[0].body, "Prep")
+        XCTAssertEqual(blocks[2].body, "Cook")
+        XCTAssertEqual(blocks.last?.accessibilityLabel, "Step 3: Serve warm.")
     }
 
-    func testRecipeEditorInstructionStepsConstructWithStableOrderedNumbering() {
-        let form = RecipeEditorDraftForm(instructions: [
-            RecipeEditorInstructionStep(id: "step_b", order: 99, body: "Bake until golden."),
-            RecipeEditorInstructionStep(id: "step_a", order: 42, body: "Mix the batter.")
-        ])
+    func testRecipeEditorPastedInstructionBlockIsCanonicalDraftInput() {
+        let pasted = "# Prep\nWhisk sauce.\n\nFold in herbs.\n\n# Finish\nServe warm."
+        let form = RecipeEditorDraftForm(instructionText: pasted)
 
-        XCTAssertEqual(form.instructions.map(\.id), ["step_b", "step_a"])
-        XCTAssertEqual(form.instructions.map(\.order), [1, 2])
-        XCTAssertEqual(form.instructions.map(\.displayNumber), ["Step 1", "Step 2"])
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.id), ["step_b", "step_a"])
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.order), [1, 2])
-    }
-
-    func testRecipeEditorCanAddRemoveAndReorderInstructionsDeterministically() {
-        var form = RecipeEditorDraftForm()
-        form.addInstruction(body: "Prep vegetables.")
-        form.addInstruction(body: "Cook filling.")
-        form.addInstruction(body: "Serve warm.")
-        let prepId = form.instructions[0].id
-        let cookId = form.instructions[1].id
-        let serveId = form.instructions[2].id
-
-        form.moveInstructionDown(id: prepId)
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.id), [cookId, prepId, serveId])
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.order), [1, 2, 3])
-
-        form.moveInstruction(id: serveId, to: 0)
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.id), [serveId, cookId, prepId])
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.body), ["Serve warm.", "Cook filling.", "Prep vegetables."])
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.order), [1, 2, 3])
-
-        form.removeInstruction(id: cookId)
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.id), [serveId, prepId])
-        XCTAssertEqual(form.persistedInstructionOrder.map(\.order), [1, 2])
+        XCTAssertEqual(form.instructionText, pasted)
+        XCTAssertEqual(form.instructions.map(\.body), ["Whisk sauce.", "Fold in herbs.", "Serve warm."])
+        XCTAssertEqual(form.instructions.compactMap(\.stepNumber), [1, 2, 3])
     }
 
     func testRecipeEditorInstructionCopyIsPrivacySafeLocalOnlyAndNonShaming() {
-        var form = RecipeEditorDraftForm(instructions: [
-            RecipeEditorInstructionStep(id: "step_1", order: 1, body: "Fold in herbs gently."),
-            RecipeEditorInstructionStep(id: "step_2", order: 2, body: "Rest before serving.")
-        ])
-        form.addInstruction(body: "Taste and adjust seasoning.")
+        let form = RecipeEditorDraftForm(instructionText: "Fold in herbs gently.\n\nRest before serving.")
         let copy = form.visibleCopy
         let deniedTerms = ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "food log", "daily goal", "calorie goal", "body metric", "saved local", "starts backend"]
 
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Step 1"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Taste and adjust seasoning"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Draft saving is in-session only"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Reordering updates step numbers in this form only"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Fold in herbs gently"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Blank lines create the next numbered step"))
         XCTAssertTrue(deniedTerms.allSatisfy { !copy.localizedCaseInsensitiveContains($0) })
     }
 
-    func testRecipeEditorHeaderCopyReflectsCurrentLocalScaffoldCapabilities() {
+    func testRecipeEditorHeaderCopyReflectsTextFirstCapabilities() {
         let copy = RecipeEditorDraftForm.headerContextCopy
 
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("basics"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("ingredients"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("ordered instructions"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("text-first ingredients"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("paragraph instructions"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("macro preview"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("Save Draft keeps fields in this app session only"))
-        XCTAssertFalse(copy.localizedCaseInsensitiveContains("later slices"))
     }
 
-    func testRecipeEditorEmptyInstructionStateCopyIsWarmAndLocalOnly() {
-        let form = RecipeEditorDraftForm()
-        let copy = form.visibleCopy
+    func testRecipeEditorEmptyInstructionStateCopyIsWarmAndPasteFriendly() {
+        let copy = RecipeEditorDraftForm().visibleCopy
 
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("No instructions yet"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("when you're ready"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("local form only"))
-        XCTAssertTrue(copy.localizedCaseInsensitiveContains("save this in-session draft"))
-        XCTAssertFalse(copy.localizedCaseInsensitiveContains("saved local"))
-    }
-
-    func testRecipeEditorInstructionAccessibilityMetadataIsStepSpecific() {
-        let first = RecipeEditorInstructionStep(id: "step_1", order: 1, body: "Whisk sauce.")
-        let second = RecipeEditorInstructionStep(id: "step_2", order: 2, body: "Plate bowls.")
-
-        XCTAssertEqual(first.instructionFieldAccessibilityLabel, "Instruction step 1")
-        XCTAssertEqual(second.moveUpAccessibilityLabel, "Move step 2 up")
-        XCTAssertEqual(second.moveDownAccessibilityLabel, "Move step 2 down")
-        XCTAssertEqual(second.removeAccessibilityLabel, "Remove step 2")
-        XCTAssertEqual(first.moveUpAccessibilityHint, "First step cannot move up.")
-        XCTAssertEqual(second.moveDownAccessibilityHint(totalSteps: 2), "Last step cannot move down.")
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("Type or paste"))
+        XCTAssertTrue(copy.localizedCaseInsensitiveContains("when you’re ready"))
     }
 
     @MainActor
-    func testRecipeEditorInstructionViewCanBeConstructedWithSteps() {
-        let form = RecipeEditorDraftForm(instructions: [
-            RecipeEditorInstructionStep(id: "step_1", order: 1, body: "Whisk sauce."),
-            RecipeEditorInstructionStep(id: "step_2", order: 2, body: "Plate bowls.")
-        ])
+    func testRecipeEditorTextFirstViewCanBeConstructed() {
+        let form = RecipeEditorDraftForm(
+            ingredientText: "# Bowl\n100 g Chicken breast\n1 pinch herbs",
+            instructionText: "Whisk sauce.\n\nServe warm."
+        )
         _ = RecipeEditorPlaceholderView(form: form)
     }
 
@@ -1509,6 +1470,8 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(draft.description, result.recipe.currentVersion.description)
         XCTAssertEqual(draft.servingsText, "4")
         XCTAssertEqual(draft.yieldText, "4 bowls")
+        XCTAssertEqual(draft.ingredientText.components(separatedBy: "\n").count, result.recipe.ingredients.count)
+        XCTAssertEqual(draft.instructionText.components(separatedBy: "\n\n").count, result.recipe.steps.count)
         XCTAssertEqual(draft.ingredients.map(\.name), result.recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }.map(\.label))
         XCTAssertEqual(draft.instructions.map(\.body), result.recipe.steps.sorted { $0.sortOrder < $1.sortOrder }.map(\.body))
         XCTAssertEqual(draft.sourceRecipeId, result.recipe.summary.forkedFromRecipeId)
@@ -3300,6 +3263,8 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(newDraft.description, "")
         XCTAssertEqual(newDraft.servingsText, "2")
         XCTAssertEqual(newDraft.yieldText, "")
+        XCTAssertEqual(newDraft.ingredientText, "")
+        XCTAssertEqual(newDraft.instructionText, "")
 
         let existingDraft = RecipeEditorDraftForm.localDraft(id: "draft_green_curry")
         XCTAssertEqual(existingDraft.draftId, "draft_green_curry")
@@ -3329,8 +3294,8 @@ final class ScaffoldTests: XCTestCase {
             servingsText: "6",
             yieldText: "",
             photoHook: .mockPlaceholder,
-            ingredients: [.freeText(id: "lentils", quantityText: "2", unit: "cups", name: "Lentils")],
-            instructions: [RecipeEditorInstructionStep(id: "step_1", order: 1, body: "Simmer until tender.")]
+            ingredientText: "2 cups Lentils",
+            instructionText: "Simmer until tender."
         )
         XCTAssertTrue(publishValid.publicPublishValidationIssues.isEmpty)
         XCTAssertTrue(publishValid.canMockPublishPublicly)
@@ -3385,13 +3350,15 @@ final class ScaffoldTests: XCTestCase {
             description: "Crunchy prep",
             servingsText: "2",
             yieldText: "2 boxes",
-            ingredients: [.freeText(id: "carrots", quantityText: "1", unit: "cup", name: "Carrots")],
-            instructions: [RecipeEditorInstructionStep(id: "step_1", order: 1, body: "Pack chilled.")]
+            ingredientText: "1 cup Carrots",
+            instructionText: "Pack chilled."
         ))
 
         let loaded = store.loadDraft(id: try! XCTUnwrap(saved.draftId))
 
         XCTAssertEqual(loaded.title, "Snack Box")
+        XCTAssertEqual(loaded.ingredientText, "1 cup Carrots")
+        XCTAssertEqual(loaded.instructionText, "Pack chilled.")
         XCTAssertEqual(loaded.ingredients.first?.name, "Carrots")
         XCTAssertEqual(loaded.instructions.first?.body, "Pack chilled.")
         XCTAssertTrue(loaded.draftContextCopy.localizedCaseInsensitiveContains("private draft ready to edit"))
@@ -3417,8 +3384,8 @@ final class ScaffoldTests: XCTestCase {
             title: "Snack Box",
             servingsText: "2",
             yieldText: "2 boxes",
-            ingredients: [.freeText(id: "almonds", quantityText: "1", unit: "cup", name: "Almonds")],
-            instructions: [RecipeEditorInstructionStep(id: "step_1", order: 1, body: "Divide into containers.")]
+            ingredientText: "1 cup Almonds",
+            instructionText: "Divide into containers."
         )
         let copy = form.mockPublicPublishResultCopy
 
@@ -3433,7 +3400,7 @@ final class ScaffoldTests: XCTestCase {
         for denied in ["adherence", "compliance", "failure", "failed", "over limit", "guilt", "cheat", "bad food", "calorie goal", "body metric", "weight"] {
             XCTAssertFalse(copy.contains(denied), "Recipe editor copy should not contain \\(denied)")
         }
-        XCTAssertTrue(copy.contains("local"))
+        XCTAssertTrue(copy.contains("private"))
         XCTAssertTrue(copy.contains("no image upload"))
     }
 

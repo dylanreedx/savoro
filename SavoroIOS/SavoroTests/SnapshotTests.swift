@@ -122,12 +122,13 @@ final class SnapshotTests: XCTestCase {
 
     @MainActor
     func testRecipeEditorSnapshots() {
-        let ingredients = RecipeEditorMockFoodSearchResult.fixtureResults.map {
-            RecipeEditorIngredientRow.fromMockFood($0)
-        }
         assertFullMatrix {
             RecipeEditorPlaceholderView(
-                form: RecipeEditorDraftForm(servingsText: "2", ingredients: ingredients)
+                form: RecipeEditorDraftForm(
+                    servingsText: "2",
+                    ingredientText: "1 cup Chicken breast\n1 cup Greek yogurt",
+                    instructionText: "Whisk until smooth.\n\nServe right away."
+                )
             )
         }
     }

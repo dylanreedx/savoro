@@ -111,8 +111,35 @@ final class SavoroSmokeJourneyTests: XCTestCase {
         XCTAssertTrue(servingCount.waitForExistence(timeout: 5))
         XCTAssertEqual(servingCount.value as? String, "4")
         assertValue("4 bowls", for: element("recipe-editor-field-yield"))
+        let ingredientText = element("recipe-editor-ingredient-text")
+        XCTAssertTrue(ingredientText.waitForExistence(timeout: 5))
+        XCTAssertTrue((ingredientText.value as? String)?.localizedCaseInsensitiveContains("Chicken Breast") == true)
+        let instructionText = element("recipe-editor-instruction-text")
+        XCTAssertTrue(instructionText.waitForExistence(timeout: 5))
+        XCTAssertTrue((instructionText.value as? String)?.localizedCaseInsensitiveContains("Assemble bowls") == true)
         app.swipeUp()
         capture("15-remix-editor-copied-fields")
+    }
+
+    func testRecipeEditorDefaultAccessibilityTreeStaysWithinInteractiveBudget() {
+        visitTab(identifier: "tab-cookbook", surface: "screen-cookbook", title: "Cookbook", step: "control-budget-cookbook")
+        let createRecipe = app.buttons["Create recipe"].firstMatch
+        XCTAssertTrue(createRecipe.waitForExistence(timeout: 5))
+        createRecipe.tap()
+
+        let editor = element("recipe-editor-screen")
+        XCTAssertTrue(editor.waitForExistence(timeout: 5))
+        let buttons = editor.descendants(matching: .button)
+        let menus = editor.descendants(matching: .menu)
+        let steppers = editor.descendants(matching: .stepper)
+        let interactiveControlCount = buttons.count + menus.count + steppers.count
+        let buttonLabels = (0..<buttons.count).map { buttons.element(boundBy: $0).label }
+
+        XCTAssertLessThanOrEqual(
+            interactiveControlCount,
+            10,
+            "Default recipe editor has \(interactiveControlCount) buttons/menus/steppers: \(buttonLabels)"
+        )
     }
 
     func testLiveTodayAgainstLocalWorkerJourney() throws {

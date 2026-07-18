@@ -317,12 +317,256 @@ final class RecipeCommunityShareStore: ObservableObject {
     }
 }
 
+public struct RecipeEditorMockFoodSearchResult: Identifiable, Equatable {
+    public var id: String { foodId }
+    public let foodId: String
+    public let name: String
+    public let defaultQuantityText: String
+    public let defaultUnit: String
+    public let sourceLabel: String
+    public let macrosKnown: Bool
+    public let metadata: [String: String]
+
+    public static let fixtureResults: [Self] = [
+        RecipeEditorMockFoodSearchResult(foodId: "mock_food_chicken", name: "Chicken breast", defaultQuantityText: "100", defaultUnit: "g", sourceLabel: "Suggested food", macrosKnown: true, metadata: ["mode": "mock-local-fixture", "startsBackendSearch": "false"]),
+        RecipeEditorMockFoodSearchResult(foodId: "mock_food_yogurt", name: "Greek yogurt", defaultQuantityText: "170", defaultUnit: "g", sourceLabel: "Suggested food", macrosKnown: true, metadata: ["mode": "mock-local-fixture", "startsBackendSearch": "false"])
+    ]
+
+    public static func search(_ query: String) -> [Self] {
+        let trimmed = query.trimmedForRecipeEditor
+        guard !trimmed.isEmpty else { return fixtureResults }
+        return fixtureResults.filter { $0.name.localizedCaseInsensitiveContains(trimmed) }
+    }
+}
+
+public struct RecipeEditorParsedIngredientLine: Identifiable, Equatable {
+    public enum Kind: Equatable {
+        case blank
+        case groupHeader
+        case ingredient
+    }
+
+    public let lineIndex: Int
+    public let rawText: String
+    public let kind: Kind
+    public let quantityText: String
+    public let quantity: Double?
+    public let unit: String
+    public let name: String
+    public let linkedFoodId: String?
+
+    public var id: Int { lineIndex }
+    public var isIngredient: Bool { kind == .ingredient }
+    public var isGroupHeader: Bool { kind == .groupHeader }
+    public var isNutritionLinked: Bool { linkedFoodId != nil }
+    public var isValidForDraft: Bool { isIngredient && !name.trimmedForRecipeEditor.isEmpty }
+    public var hasAnyUserEnteredContent: Bool { isIngredient && !rawText.trimmedForRecipeEditor.isEmpty }
+    public var displayText: String { rawText.trimmedForRecipeEditor }
+    public var groupTitle: String { name }
+
+    public var nutritionStatusText: String {
+        if isNutritionLinked, RecipeEditorMacroCalculator.macros(for: self) != nil {
+            return "Nutrition is linked from available food details."
+        }
+        if isNutritionLinked {
+            return Self.nonComputableLinkedNutritionNotice
+        }
+        return Self.incompleteNutritionNotice
+    }
+
+    public static let incompleteNutritionNotice = "Nutrition details aren’t linked for every ingredient, so the macro preview uses only linked lines."
+    public static let nonComputableLinkedNutritionNotice = "This linked food needs a supported quantity and unit before it can be included in the partial macro preview."
+}
+
+public enum RecipeEditorIngredientLineParser {
+    private static let recognizedUnits: Set<String> = [
+        "g", "gram", "grams", "kg", "kilogram", "kilograms", "oz", "ounce", "ounces",
+        "ml", "milliliter", "milliliters", "l", "liter", "liters",
+        "cup", "cups", "tbsp", "tablespoon", "tablespoons", "tsp", "teaspoon", "teaspoons",
+        "pinch", "pinches", "clove", "cloves", "can", "cans", "slice", "slices",
+        "piece", "pieces", "handful", "handfuls", "bunch", "bunches"
+    ]
+
+    public static func parse(
+        _ text: String,
+        knownFoods: [RecipeEditorMockFoodSearchResult] = RecipeEditorMockFoodSearchResult.fixtureResults
+    ) -> [RecipeEditorParsedIngredientLine] {
+        normalizedLines(in: text).enumerated().map { lineIndex, rawLine in
+            parseLine(rawLine, lineIndex: lineIndex, knownFoods: knownFoods)
+        }
+    }
+
+    public static func parseLine(
+        _ rawLine: String,
+        lineIndex: Int = 0,
+        knownFoods: [RecipeEditorMockFoodSearchResult] = RecipeEditorMockFoodSearchResult.fixtureResults
+    ) -> RecipeEditorParsedIngredientLine {
+        let trimmed = rawLine.trimmedForRecipeEditor
+        guard !trimmed.isEmpty else {
+            return RecipeEditorParsedIngredientLine(
+                lineIndex: lineIndex,
+                rawText: rawLine,
+                kind: .blank,
+                quantityText: "",
+                quantity: nil,
+                unit: "",
+                name: "",
+                linkedFoodId: nil
+            )
+        }
+
+        if trimmed.hasPrefix("#") {
+            return RecipeEditorParsedIngredientLine(
+                lineIndex: lineIndex,
+                rawText: rawLine,
+                kind: .groupHeader,
+                quantityText: "",
+                quantity: nil,
+                unit: "",
+                name: String(trimmed.dropFirst()).trimmedForRecipeEditor,
+                linkedFoodId: nil
+            )
+        }
+
+        let tokens = trimmed.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        let parsedQuantity = quantityPrefix(in: tokens)
+        let remainingTokens = Array(tokens.dropFirst(parsedQuantity?.tokenCount ?? 0))
+        let hasRecognizedUnit = parsedQuantity != nil
+            && remainingTokens.first.map { recognizedUnits.contains($0.lowercased()) } == true
+        let hasToTasteUnit = remainingTokens.count > 2
+            && remainingTokens[0].lowercased() == "to"
+            && remainingTokens[1].lowercased() == "taste"
+        let unit = hasRecognizedUnit ? remainingTokens[0] : (hasToTasteUnit ? "to taste" : "")
+        let nameTokens = hasRecognizedUnit
+            ? remainingTokens.dropFirst()
+            : (hasToTasteUnit ? remainingTokens.dropFirst(2) : remainingTokens[...])
+        let parsedName = nameTokens.joined(separator: " ")
+        let name = parsedName.isEmpty && parsedQuantity == nil ? trimmed : parsedName
+        let linkedFood = knownFoods.first {
+            $0.name.compare(name, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+        }
+
+        return RecipeEditorParsedIngredientLine(
+            lineIndex: lineIndex,
+            rawText: rawLine,
+            kind: .ingredient,
+            quantityText: parsedQuantity?.text ?? "",
+            quantity: parsedQuantity?.value,
+            unit: unit,
+            name: name,
+            linkedFoodId: linkedFood?.foodId
+        )
+    }
+
+    public static func normalizedLines(in text: String) -> [String] {
+        text
+            .replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
+            .components(separatedBy: "\n")
+    }
+
+    private static func quantityPrefix(in tokens: [String]) -> (text: String, value: Double, tokenCount: Int)? {
+        guard let first = tokens.first else { return nil }
+        if tokens.count > 1,
+           let whole = decimalNumber(first),
+           whole.rounded() == whole,
+           let fraction = fractionNumber(tokens[1]) {
+            return ("\(first) \(tokens[1])", whole + fraction, 2)
+        }
+        if let decimal = decimalNumber(first) {
+            return (first, decimal, 1)
+        }
+        if let fraction = fractionNumber(first) {
+            return (first, fraction, 1)
+        }
+        return nil
+    }
+
+    private static func decimalNumber(_ token: String) -> Double? {
+        let normalized = token.replacingOccurrences(of: ",", with: ".")
+        guard let value = Double(normalized), value.isFinite, value >= 0 else { return nil }
+        return value
+    }
+
+    private static func fractionNumber(_ token: String) -> Double? {
+        let parts = token.split(separator: "/", omittingEmptySubsequences: false)
+        guard parts.count == 2,
+              let numerator = Double(parts[0]),
+              let denominator = Double(parts[1]),
+              numerator.isFinite,
+              denominator.isFinite,
+              numerator >= 0,
+              denominator > 0 else { return nil }
+        return numerator / denominator
+    }
+}
+
+public struct RecipeEditorInstructionBlock: Identifiable, Equatable {
+    public enum Kind: Equatable {
+        case phaseHeader
+        case step
+    }
+
+    public let id: Int
+    public let kind: Kind
+    public let body: String
+    public let stepNumber: Int?
+
+    public var isPhaseHeader: Bool { kind == .phaseHeader }
+    public var displayNumber: String? { stepNumber.map { "\($0)" } }
+    public var accessibilityLabel: String {
+        if let stepNumber { return "Step \(stepNumber): \(body)" }
+        return "Phase: \(body)"
+    }
+}
+
+public enum RecipeEditorInstructionParser {
+    public static func parse(_ text: String) -> [RecipeEditorInstructionBlock] {
+        let lines = RecipeEditorIngredientLineParser.normalizedLines(in: text)
+        var blocks: [RecipeEditorInstructionBlock] = []
+        var paragraphLines: [String] = []
+        var nextStepNumber = 1
+        var nextID = 0
+
+        func appendParagraph() {
+            let body = paragraphLines.joined(separator: "\n").trimmedForRecipeEditor
+            paragraphLines.removeAll(keepingCapacity: true)
+            guard !body.isEmpty else { return }
+            blocks.append(RecipeEditorInstructionBlock(id: nextID, kind: .step, body: body, stepNumber: nextStepNumber))
+            nextID += 1
+            nextStepNumber += 1
+        }
+
+        for rawLine in lines {
+            let trimmed = rawLine.trimmedForRecipeEditor
+            if trimmed.isEmpty {
+                appendParagraph()
+            } else if trimmed.hasPrefix("#") {
+                appendParagraph()
+                blocks.append(
+                    RecipeEditorInstructionBlock(
+                        id: nextID,
+                        kind: .phaseHeader,
+                        body: String(trimmed.dropFirst()).trimmedForRecipeEditor,
+                        stepNumber: nil
+                    )
+                )
+                nextID += 1
+            } else {
+                paragraphLines.append(rawLine)
+            }
+        }
+        appendParagraph()
+        return blocks
+    }
+}
+
 public struct RecipeEditorDraftForm: Equatable {
     public enum ValidationIssue: String, CaseIterable, Equatable {
         case titleRequired = "Add a recipe title."
         case servingsRequired = "Add how many servings this recipe makes."
-        case ingredientRequired = "Add at least one ingredient with a name and quantity."
-        case instructionRequired = "Add at least one instruction step."
+        case ingredientRequired = "Add at least one ingredient."
+        case instructionRequired = "Add at least one instruction paragraph."
     }
 
     public var draftId: String?
@@ -332,12 +576,24 @@ public struct RecipeEditorDraftForm: Equatable {
     public var yieldText: String
     public var photoHook: RecipeEditorPhotoHook
     public var photoStatus: RecipeEditorPhotoStatus
-    public var ingredients: [RecipeEditorIngredientRow]
-    public var instructions: [RecipeEditorInstructionStep]
+    public var ingredientText: String
+    public var instructionText: String
     public var sourceRecipeId: String?
     public var sourceVersionId: String?
 
-    public init(draftId: String? = nil, title: String = "", description: String = "", servingsText: String = "", yieldText: String = "", photoHook: RecipeEditorPhotoHook = .mockPlaceholder, photoStatus: RecipeEditorPhotoStatus = .idle, ingredients: [RecipeEditorIngredientRow] = [], instructions: [RecipeEditorInstructionStep] = [], sourceRecipeId: String? = nil, sourceVersionId: String? = nil) {
+    public init(
+        draftId: String? = nil,
+        title: String = "",
+        description: String = "",
+        servingsText: String = "",
+        yieldText: String = "",
+        photoHook: RecipeEditorPhotoHook = .mockPlaceholder,
+        photoStatus: RecipeEditorPhotoStatus = .idle,
+        ingredientText: String = "",
+        instructionText: String = "",
+        sourceRecipeId: String? = nil,
+        sourceVersionId: String? = nil
+    ) {
         self.draftId = draftId
         self.title = title
         self.description = description
@@ -345,8 +601,8 @@ public struct RecipeEditorDraftForm: Equatable {
         self.yieldText = yieldText
         self.photoHook = photoHook
         self.photoStatus = photoStatus
-        self.ingredients = ingredients
-        self.instructions = Self.renumbered(instructions)
+        self.ingredientText = ingredientText
+        self.instructionText = instructionText
         self.sourceRecipeId = sourceRecipeId
         self.sourceVersionId = sourceVersionId
     }
@@ -366,23 +622,31 @@ public struct RecipeEditorDraftForm: Equatable {
         } else {
             yieldText = "\(Self.formatRecipeNumber(recipe.currentVersion.servings)) servings"
         }
+        let ingredientText = recipe.ingredients
+            .sorted { $0.sortOrder < $1.sortOrder }
+            .map { ingredient in
+                [
+                    ingredient.quantity.map(Self.formatRecipeNumber),
+                    ingredient.unit.trimmedForRecipeEditor.isEmpty ? nil : ingredient.unit,
+                    ingredient.label
+                ]
+                .compactMap { $0 }
+                .joined(separator: " ")
+            }
+            .joined(separator: "\n")
+        let instructionText = recipe.steps
+            .sorted { $0.sortOrder < $1.sortOrder }
+            .map(\.body)
+            .joined(separator: "\n\n")
+
         return RecipeEditorDraftForm(
             draftId: recipe.summary.id,
             title: recipe.currentVersion.title,
             description: recipe.currentVersion.description ?? recipe.summary.description ?? "",
             servingsText: Self.formatRecipeNumber(recipe.currentVersion.servings),
             yieldText: yieldText,
-            ingredients: recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }.map { ingredient in
-                RecipeEditorIngredientRow.freeText(
-                    id: ingredient.id,
-                    quantityText: ingredient.quantity.map(Self.formatRecipeNumber) ?? "",
-                    unit: ingredient.unit,
-                    name: ingredient.label
-                )
-            },
-            instructions: recipe.steps.sorted { $0.sortOrder < $1.sortOrder }.map { step in
-                RecipeEditorInstructionStep(id: step.id, order: step.sortOrder + 1, body: step.body)
-            },
+            ingredientText: ingredientText,
+            instructionText: instructionText,
             sourceRecipeId: recipe.summary.forkedFromRecipeId,
             sourceVersionId: recipe.summary.forkedFromVersionId
         )
@@ -390,6 +654,22 @@ public struct RecipeEditorDraftForm: Equatable {
 
     private static func formatRecipeNumber(_ value: Double) -> String {
         value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
+    }
+
+    public var ingredientLines: [RecipeEditorParsedIngredientLine] {
+        RecipeEditorIngredientLineParser.parse(ingredientText)
+    }
+
+    public var ingredients: [RecipeEditorParsedIngredientLine] {
+        ingredientLines.filter(\.isIngredient)
+    }
+
+    public var instructionBlocks: [RecipeEditorInstructionBlock] {
+        RecipeEditorInstructionParser.parse(instructionText)
+    }
+
+    public var instructions: [RecipeEditorInstructionBlock] {
+        instructionBlocks.filter { $0.kind == .step }
     }
 
     public var basicsValidationIssues: [ValidationIssue] {
@@ -404,7 +684,7 @@ public struct RecipeEditorDraftForm: Equatable {
     public var publicPublishValidationIssues: [ValidationIssue] {
         var issues = basicsValidationIssues
         if !ingredients.contains(where: \.isValidForDraft) { issues.append(.ingredientRequired) }
-        if !instructions.contains(where: { !$0.body.trimmedForRecipeEditor.isEmpty }) { issues.append(.instructionRequired) }
+        if instructions.isEmpty { issues.append(.instructionRequired) }
         return issues
     }
 
@@ -420,60 +700,26 @@ public struct RecipeEditorDraftForm: Equatable {
 
     public var mockPublicPublishResultCopy: String { publishPreviewCopy }
 
-    public mutating func addIngredient(_ ingredient: RecipeEditorIngredientRow = .empty()) {
-        ingredients.append(ingredient)
+    public mutating func updateIngredientLine(
+        at lineIndex: Int,
+        quantityText: String,
+        unit: String,
+        name: String
+    ) {
+        var lines = RecipeEditorIngredientLineParser.normalizedLines(in: ingredientText)
+        guard lines.indices.contains(lineIndex) else { return }
+        lines[lineIndex] = [quantityText, unit, name]
+            .map(\.trimmedForRecipeEditor)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        ingredientText = lines.joined(separator: "\n")
     }
 
-    public mutating func addMockFood(_ food: RecipeEditorMockFoodSearchResult) {
-        ingredients.append(.fromMockFood(food))
-    }
-
-    public mutating func addFreeTextIngredient(named name: String) {
-        ingredients.append(.freeText(name: name))
-    }
-
-    public mutating func removeIngredient(id: String) {
-        ingredients.removeAll { $0.id == id }
-    }
-
-    public mutating func addInstruction(body: String = "") {
-        instructions.append(RecipeEditorInstructionStep(order: instructions.count + 1, body: body))
-        instructions = Self.renumbered(instructions)
-    }
-
-    public mutating func removeInstruction(id: String) {
-        instructions.removeAll { $0.id == id }
-        instructions = Self.renumbered(instructions)
-    }
-
-    public mutating func moveInstruction(id: String, to targetIndex: Int) {
-        guard let currentIndex = instructions.firstIndex(where: { $0.id == id }) else { return }
-        let step = instructions.remove(at: currentIndex)
-        let boundedIndex = max(0, min(targetIndex, instructions.count))
-        instructions.insert(step, at: boundedIndex)
-        instructions = Self.renumbered(instructions)
-    }
-
-    public mutating func moveInstructionUp(id: String) {
-        guard let currentIndex = instructions.firstIndex(where: { $0.id == id }), currentIndex > 0 else { return }
-        moveInstruction(id: id, to: currentIndex - 1)
-    }
-
-    public mutating func moveInstructionDown(id: String) {
-        guard let currentIndex = instructions.firstIndex(where: { $0.id == id }), currentIndex < instructions.count - 1 else { return }
-        moveInstruction(id: id, to: currentIndex + 1)
-    }
-
-    public var persistedInstructionOrder: [(id: String, order: Int, body: String)] {
-        instructions.map { ($0.id, $0.order, $0.body) }
-    }
-
-    private static func renumbered(_ steps: [RecipeEditorInstructionStep]) -> [RecipeEditorInstructionStep] {
-        steps.enumerated().map { index, step in
-            var updated = step
-            updated.order = index + 1
-            return updated
-        }
+    public mutating func removeIngredientLine(at lineIndex: Int) {
+        var lines = RecipeEditorIngredientLineParser.normalizedLines(in: ingredientText)
+        guard lines.indices.contains(lineIndex) else { return }
+        lines.remove(at: lineIndex)
+        ingredientText = lines.joined(separator: "\n")
     }
 
     public var macroPreview: RecipeEditorMacroPreview {
@@ -489,7 +735,7 @@ public struct RecipeEditorDraftForm: Equatable {
     }
 
     public var incompleteNutritionNotice: String? {
-        hasIncompleteNutritionIngredients ? RecipeEditorIngredientRow.incompleteNutritionNotice : nil
+        hasIncompleteNutritionIngredients ? RecipeEditorParsedIngredientLine.incompleteNutritionNotice : nil
     }
 
     public var privacyCopy: String {
@@ -512,37 +758,36 @@ public struct RecipeEditorDraftForm: Equatable {
         return "New private draft. Save Draft keeps fields in this app session only."
     }
 
-    public static let headerContextCopy = "Build a private recipe draft with basics, ingredients, ordered instructions, and a macro preview. Save Draft keeps fields in this app session only. Public publish is a validation preview only."
-    public static let instructionHelperCopy = "Write ordered cooking steps for this local form. Reordering updates step numbers in this form only. Draft saving is in-session only and publish remains a preview."
-    public static let emptyInstructionsCopy = "No instructions yet. Add a step when you're ready; it stays in this local form only until you save this in-session draft."
+    public static let headerContextCopy = "Build a private recipe draft with basics, text-first ingredients, paragraph instructions, and a macro preview. Save Draft keeps fields in this app session only. Public publish is a validation preview only."
+    public static let instructionHelperCopy = "Write or paste instructions as paragraphs. Blank lines create the next numbered step, and # starts a phase header."
+    public static let emptyInstructionsCopy = "No instructions yet. Type or paste paragraphs when you’re ready."
 
     public var visibleCopy: String {
         let instructionStateCopy = instructions.isEmpty ? Self.emptyInstructionsCopy : ""
-        return ([Self.headerContextCopy, privacyCopy, draftContextCopy, publishPreviewCopy, photoHook.title, photoHook.body, photoHook.actionTitle, photoStatus.message, title, description, servingsText, yieldText, incompleteNutritionNotice ?? "", macroPreview.statusText, macroPreview.totalSummaryText, macroPreview.perServingSummaryText, Self.instructionHelperCopy, instructionStateCopy] + ingredients.flatMap(\.visibleCopyParts) + instructions.flatMap(\.visibleCopyParts) + validationIssues.map(\.rawValue)).joined(separator: " ")
+        return [
+            Self.headerContextCopy,
+            privacyCopy,
+            draftContextCopy,
+            publishPreviewCopy,
+            photoHook.title,
+            photoHook.body,
+            photoHook.actionTitle,
+            photoStatus.message,
+            title,
+            description,
+            servingsText,
+            yieldText,
+            ingredientText,
+            instructionText,
+            incompleteNutritionNotice ?? "",
+            macroPreview.statusText,
+            macroPreview.totalSummaryText,
+            macroPreview.perServingSummaryText,
+            Self.instructionHelperCopy,
+            instructionStateCopy
+        ]
+        .joined(separator: " ")
     }
-}
-
-public struct RecipeEditorInstructionStep: Identifiable, Equatable {
-    public var id: String
-    public var order: Int
-    public var body: String
-
-    public init(id: String = UUID().uuidString, order: Int, body: String = "") {
-        self.id = id
-        self.order = order
-        self.body = body
-    }
-
-    public var displayNumber: String { "Step \(order)" }
-    public var instructionFieldAccessibilityLabel: String { "Instruction step \(order)" }
-    public var moveUpAccessibilityLabel: String { "Move step \(order) up" }
-    public var moveDownAccessibilityLabel: String { "Move step \(order) down" }
-    public var removeAccessibilityLabel: String { "Remove step \(order)" }
-    public var moveUpAccessibilityHint: String { order == 1 ? "First step cannot move up." : "Moves this local form step earlier." }
-    public func moveDownAccessibilityHint(totalSteps: Int) -> String {
-        order == totalSteps ? "Last step cannot move down." : "Moves this local form step later."
-    }
-    public var visibleCopyParts: [String] { [displayNumber, instructionFieldAccessibilityLabel, moveUpAccessibilityLabel, moveDownAccessibilityLabel, removeAccessibilityLabel, body] }
 }
 
 public struct RecipeEditorMacroPreview: Equatable {
@@ -601,10 +846,12 @@ public enum RecipeEditorMacroCalculator {
         return RecipeEditorMacroPreview(totalMacros: total, perServingMacros: perServing, servings: servings, includedIngredientCount: included, partialIngredientCount: partial)
     }
 
-    public static func macros(for ingredient: RecipeEditorIngredientRow) -> MacroTotals? {
-        guard case .mockFood(let foodId, _, true) = ingredient.source,
+    public static func macros(for ingredient: RecipeEditorParsedIngredientLine) -> MacroTotals? {
+        guard let foodId = ingredient.linkedFoodId,
               let metadata = RecipeEditorMockFoodNutritionMetadata.fixtureByFoodId[foodId],
-              let quantity = positiveNumber(from: ingredient.quantityText),
+              let quantity = ingredient.quantity,
+              quantity.isFinite,
+              quantity > 0,
               let grams = grams(for: quantity, unit: ingredient.unit) else { return nil }
         return metadata.macros.scaledIfValid(by: grams / metadata.referenceGrams)
     }
@@ -653,156 +900,6 @@ private extension MacroTotals {
 
     static func validated(calories: Double, proteinGrams: Double, carbsGrams: Double, fatGrams: Double) -> MacroTotals? {
         try? MacroTotals(calories: calories, proteinGrams: proteinGrams, carbsGrams: carbsGrams, fatGrams: fatGrams)
-    }
-}
-
-public struct RecipeEditorIngredientRow: Identifiable, Equatable {
-    public enum Source: Equatable {
-        case empty
-        case mockFood(foodId: String, sourceLabel: String, macrosKnown: Bool)
-        case freeText
-    }
-
-    public var id: String
-    private var storedQuantityText: String
-    private var storedUnit: String
-    private var storedName: String
-    public var quantityText: String {
-        get { storedQuantityText }
-        set {
-            storedQuantityText = newValue
-            markEditedEmptyRowAsFreeText()
-        }
-    }
-    public var unit: String {
-        get { storedUnit }
-        set {
-            storedUnit = newValue
-            markEditedEmptyRowAsFreeText()
-        }
-    }
-    public var name: String {
-        get { storedName }
-        set {
-            storedName = newValue
-            markEditedEmptyRowAsFreeText()
-        }
-    }
-    public var source: Source
-
-    public init(id: String = UUID().uuidString, quantityText: String = "", unit: String = "", name: String = "", source: Source = .empty) {
-        self.id = id
-        self.storedQuantityText = quantityText
-        self.storedUnit = unit
-        self.storedName = name
-        self.source = source
-        markEditedEmptyRowAsFreeText()
-    }
-
-    public static func empty(id: String = UUID().uuidString) -> Self {
-        RecipeEditorIngredientRow(id: id)
-    }
-
-    public static func freeText(id: String = UUID().uuidString, quantityText: String = "", unit: String = "", name: String) -> Self {
-        RecipeEditorIngredientRow(id: id, quantityText: quantityText, unit: unit, name: name, source: .freeText)
-    }
-
-    public static func fromMockFood(_ food: RecipeEditorMockFoodSearchResult, id: String = UUID().uuidString) -> Self {
-        RecipeEditorIngredientRow(id: id, quantityText: food.defaultQuantityText, unit: food.defaultUnit, name: food.name, source: .mockFood(foodId: food.foodId, sourceLabel: food.sourceLabel, macrosKnown: food.macrosKnown))
-    }
-
-    public var isNameValid: Bool { !name.trimmedForRecipeEditor.isEmpty }
-    public var isQuantityValid: Bool { !quantityText.trimmedForRecipeEditor.isEmpty }
-    public var isValidForDraft: Bool { isNameValid && isQuantityValid }
-    public var hasAnyUserEnteredContent: Bool {
-        !quantityText.trimmedForRecipeEditor.isEmpty || !unit.trimmedForRecipeEditor.isEmpty || !name.trimmedForRecipeEditor.isEmpty
-    }
-
-    public var hasIncompleteNutrition: Bool {
-        switch source {
-        case .freeText:
-            return true
-        case .mockFood(_, _, let macrosKnown):
-            return !macrosKnown || RecipeEditorMacroCalculator.macros(for: self) == nil
-        case .empty:
-            return false
-        }
-    }
-
-    public var displayName: String {
-        let trimmed = name.trimmedForRecipeEditor
-        return trimmed.isEmpty ? "Untitled ingredient" : trimmed
-    }
-
-    public var amountSummaryText: String {
-        [quantityText.trimmedForRecipeEditor, unit.trimmedForRecipeEditor]
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
-    }
-
-    public var editorRowSummaryText: String {
-        var parts: [String] = []
-        if !amountSummaryText.isEmpty { parts.append(amountSummaryText) }
-        if let macros = RecipeEditorMacroCalculator.macros(for: self) {
-            parts.append("\(Self.formatRecipeNumber(macros.calories)) cal")
-        }
-        return parts.isEmpty ? "Add amount" : parts.joined(separator: " · ")
-    }
-
-    public var nutritionStatusText: String {
-        switch source {
-        case .freeText:
-            return Self.incompleteNutritionNotice
-        case .mockFood(_, _, true):
-            if RecipeEditorMacroCalculator.macros(for: self) != nil {
-                return "Nutrition is seeded from available food details."
-            }
-            return Self.nonComputableMockNutritionNotice
-        case .mockFood(_, _, false):
-            return Self.incompleteNutritionNotice
-        case .empty:
-            return "Add a custom ingredient or choose a suggested food to preview nutrition status."
-        }
-    }
-
-    public static let incompleteNutritionNotice = "Nutrition details aren’t available for this ingredient, so it isn’t included in the partial macro preview."
-    public static let nonComputableMockNutritionNotice = "This food is not included in the partial macro preview until quantity and unit are supported."
-
-    private static func formatRecipeNumber(_ value: Double) -> String {
-        value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
-    }
-
-    private mutating func markEditedEmptyRowAsFreeText() {
-        guard case .empty = source else { return }
-        if !quantityText.trimmedForRecipeEditor.isEmpty || !unit.trimmedForRecipeEditor.isEmpty || !name.trimmedForRecipeEditor.isEmpty {
-            source = .freeText
-        }
-    }
-
-    public var visibleCopyParts: [String] {
-        [quantityText, unit, name, nutritionStatusText]
-    }
-}
-
-public struct RecipeEditorMockFoodSearchResult: Identifiable, Equatable {
-    public var id: String { foodId }
-    public let foodId: String
-    public let name: String
-    public let defaultQuantityText: String
-    public let defaultUnit: String
-    public let sourceLabel: String
-    public let macrosKnown: Bool
-    public let metadata: [String: String]
-
-    public static let fixtureResults: [Self] = [
-        RecipeEditorMockFoodSearchResult(foodId: "mock_food_chicken", name: "Chicken breast", defaultQuantityText: "100", defaultUnit: "g", sourceLabel: "Suggested food", macrosKnown: true, metadata: ["mode": "mock-local-fixture", "startsBackendSearch": "false"]),
-        RecipeEditorMockFoodSearchResult(foodId: "mock_food_yogurt", name: "Greek yogurt", defaultQuantityText: "170", defaultUnit: "g", sourceLabel: "Suggested food", macrosKnown: true, metadata: ["mode": "mock-local-fixture", "startsBackendSearch": "false"])
-    ]
-
-    public static func search(_ query: String) -> [Self] {
-        let trimmed = query.trimmedForRecipeEditor
-        guard !trimmed.isEmpty else { return fixtureResults }
-        return fixtureResults.filter { $0.name.localizedCaseInsensitiveContains(trimmed) }
     }
 }
 
@@ -889,7 +986,7 @@ final class RecipeEditorDraftStore: ObservableObject {
 }
 
 private struct RecipeEditorIngredientSelection: Identifiable {
-    let id: String
+    let id: Int
 }
 
 public struct RecipeEditorPlaceholderView: View {
@@ -902,7 +999,6 @@ public struct RecipeEditorPlaceholderView: View {
     @State private var communityShareSetup: RecipeCommunityShareSetup
     @State private var isDescriptionExpanded: Bool
     @State private var isYieldExpanded: Bool
-    @State private var isShowingIngredientPicker = false
     @State private var editingIngredient: RecipeEditorIngredientSelection?
     @State private var isShowingMacroDetails = false
     @State private var isShowingRemixDetails = false
@@ -998,18 +1094,23 @@ public struct RecipeEditorPlaceholderView: View {
                 .accessibilityIdentifier("recipe-editor-draft-action-status")
             }
         }
-        .sheet(isPresented: $isShowingIngredientPicker) {
-            RecipeEditorIngredientPickerSheetView(
-                onAddFood: { food in
-                    form.addMockFood(food)
-                },
-                onAddFreeText: { ingredient in
-                    form.addIngredient(ingredient)
-                }
-            )
-        }
         .sheet(item: $editingIngredient) { selection in
-            RecipeEditorIngredientEditSheetView(ingredient: ingredientBinding(for: selection.id))
+            if let ingredient = form.ingredients.first(where: { $0.lineIndex == selection.id }) {
+                RecipeEditorIngredientDetailSheetView(
+                    ingredient: ingredient,
+                    onSave: { quantityText, unit, name in
+                        form.updateIngredientLine(
+                            at: selection.id,
+                            quantityText: quantityText,
+                            unit: unit,
+                            name: name
+                        )
+                    },
+                    onRemove: {
+                        form.removeIngredientLine(at: selection.id)
+                    }
+                )
+            }
         }
         .sheet(isPresented: $isShowingMacroDetails) {
             RecipeEditorMacroDetailSheetView(preview: form.macroPreview)
@@ -1269,166 +1370,125 @@ public struct RecipeEditorPlaceholderView: View {
     }
 
     private var ingredientsSection: some View {
-        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
             Text("Ingredients")
                 .font(SavoroTypography.title2)
                 .foregroundStyle(SavoroColor.textStrong)
+            Text("One ingredient per line. Use # for a group heading.")
+                .font(SavoroTypography.callout)
+                .foregroundStyle(SavoroColor.textMuted)
 
-            ForEach(form.ingredients) { ingredient in
-                ingredientRow(ingredient)
-                Divider().overlay(SavoroColor.border)
-            }
+            RecipeEditorGrowingTextEditor(
+                text: $form.ingredientText,
+                placeholder: "120 g greek yogurt\n2 eggs\n# Sauce",
+                minimumLines: 5
+            )
+            .accessibilityLabel("Ingredients, one per line")
+            .accessibilityHint("Type or paste an ingredient list. Lines beginning with number sign become group headings.")
+            .accessibilityIdentifier("recipe-editor-ingredient-text")
 
-            SavoroButton(
-                "Add ingredient",
-                systemImage: "plus",
-                variant: .text,
-                expandsHorizontally: false
-            ) {
-                isShowingIngredientPicker = true
+            if form.ingredientLines.contains(where: { $0.kind != .blank }) {
+                ingredientPreview
             }
-            .accessibilityIdentifier("recipe-editor-add-ingredient")
         }
     }
 
-    private func ingredientRow(_ ingredient: RecipeEditorIngredientRow) -> some View {
-        HStack(spacing: SavoroSpacing.xs) {
-            Button {
-                editingIngredient = RecipeEditorIngredientSelection(id: ingredient.id)
-            } label: {
-                VStack(alignment: .leading, spacing: SavoroSpacing.compact) {
-                    Text(ingredient.displayName)
-                        .font(SavoroTypography.bodyEmphasized)
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Text(ingredient.editorRowSummaryText)
-                        .font(SavoroTypography.callout.monospacedDigit())
+    private var ingredientPreview: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.compact) {
+            recipeEditorEyebrow("Parsed preview")
+            ForEach(form.ingredientLines.filter { $0.kind != .blank }) { line in
+                if line.isGroupHeader {
+                    Text(line.groupTitle.isEmpty ? "Group" : line.groupTitle)
+                        .font(SavoroTypography.label)
                         .foregroundStyle(SavoroColor.textMuted)
+                        .padding(.top, SavoroSpacing.xs)
+                        .accessibilityLabel("Ingredient group: \(line.groupTitle)")
+                } else {
+                    Button {
+                        editingIngredient = RecipeEditorIngredientSelection(id: line.lineIndex)
+                    } label: {
+                        HStack(spacing: SavoroSpacing.xs) {
+                            Text(line.displayText)
+                                .font(SavoroTypography.callout)
+                                .foregroundStyle(SavoroColor.textBody)
+                                .multilineTextAlignment(.leading)
+                            Spacer(minLength: SavoroSpacing.xs)
+                            if line.isNutritionLinked {
+                                Circle()
+                                    .fill(SavoroColor.accentStrong)
+                                    .frame(width: SavoroSpacing.xxs, height: SavoroSpacing.xxs)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, minHeight: SavoroControlSize.minimumTapTarget, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(
+                        line.isNutritionLinked
+                            ? "\(line.displayText), nutrition linked"
+                            : line.displayText
+                    )
+                    .accessibilityHint("Opens ingredient details.")
+                    .accessibilityIdentifier("recipe-editor-parsed-ingredient-\(line.lineIndex)")
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("\(ingredient.displayName), \(ingredient.editorRowSummaryText)")
-            .accessibilityHint("Edit ingredient details.")
-
-            if ingredient.hasIncompleteNutrition {
-                Circle()
-                    .fill(SavoroColor.accentStrong)
-                    .frame(width: SavoroSpacing.xxs, height: SavoroSpacing.xxs)
-                    .accessibilityLabel("Nutrition details are partial")
-            }
-
-            SavoroButton(
-                "×",
-                variant: .text,
-                expandsHorizontally: false,
-                size: .compact
-            ) {
-                form.removeIngredient(id: ingredient.id)
-            }
-            .frame(width: SavoroControlSize.minimumTapTarget)
-            .accessibilityLabel("Remove \(ingredient.displayName)")
         }
-        .padding(.vertical, SavoroSpacing.xs)
-        .accessibilityIdentifier("recipe-editor-ingredient-\(ingredient.id)")
+        .padding(.horizontal, SavoroSpacing.xs)
     }
 
     private var stepsSection: some View {
-        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
             Text("Steps")
                 .font(SavoroTypography.title2)
                 .foregroundStyle(SavoroColor.textStrong)
-
-            ForEach($form.instructions) { $step in
-                instructionRow($step)
-            }
-
-            SavoroButton(
-                "Add step",
-                systemImage: "plus",
-                variant: .text,
-                expandsHorizontally: false
-            ) {
-                form.addInstruction()
-            }
-            .accessibilityIdentifier("recipe-editor-add-step")
-        }
-    }
-
-    @ViewBuilder
-    private func instructionRow(_ step: Binding<RecipeEditorInstructionStep>) -> some View {
-        let stepValue = step.wrappedValue
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                HStack {
-                    stepNumber(stepValue.order)
-                    Spacer()
-                    instructionMenu(stepValue)
-                }
-                instructionField(step)
-            }
-            .padding(.vertical, SavoroSpacing.xs)
-            .accessibilityIdentifier("recipe-editor-instruction-step-\(stepValue.order)")
-        } else {
-            HStack(alignment: .top, spacing: SavoroSpacing.xs) {
-                stepNumber(stepValue.order)
-                instructionField(step)
-                instructionMenu(stepValue)
-            }
-            .padding(.vertical, SavoroSpacing.xs)
-            .accessibilityIdentifier("recipe-editor-instruction-step-\(stepValue.order)")
-        }
-    }
-
-    private func stepNumber(_ order: Int) -> some View {
-        Text("\(order)")
-            .font(SavoroTypography.label.monospacedDigit())
-            .foregroundStyle(SavoroColor.textStrong)
-            .frame(
-                width: SavoroControlSize.minimumTapTarget,
-                height: SavoroControlSize.minimumTapTarget
-            )
-            .background(SavoroColor.accentSoft)
-            .clipShape(Circle())
-            .accessibilityHidden(true)
-    }
-
-    private func instructionField(_ step: Binding<RecipeEditorInstructionStep>) -> some View {
-        TextField(
-            "Add a step",
-            text: step.body,
-            prompt: Text("Add a step").foregroundStyle(SavoroColor.fieldPlaceholder),
-            axis: .vertical
-        )
-        .lineLimit(1...4)
-        .recipeEditorField(isMultiline: true)
-        .accessibilityLabel(step.wrappedValue.instructionFieldAccessibilityLabel)
-    }
-
-    private func instructionMenu(_ step: RecipeEditorInstructionStep) -> some View {
-        Menu {
-            Button("Move earlier", systemImage: "arrow.up") {
-                form.moveInstructionUp(id: step.id)
-            }
-            .disabled(step.order == 1)
-            Button("Move later", systemImage: "arrow.down") {
-                form.moveInstructionDown(id: step.id)
-            }
-            .disabled(step.order == form.instructions.count)
-            Button("Delete step", systemImage: "trash", role: .destructive) {
-                form.removeInstruction(id: step.id)
-            }
-        } label: {
-            Image(systemName: "ellipsis")
-                .font(SavoroTypography.bodyEmphasized)
+            Text("Separate steps with a blank line. Use # for a phase heading.")
+                .font(SavoroTypography.callout)
                 .foregroundStyle(SavoroColor.textMuted)
-                .frame(
-                    width: SavoroControlSize.minimumTapTarget,
-                    height: SavoroControlSize.minimumTapTarget
-                )
-                .contentShape(Rectangle())
+
+            RecipeEditorGrowingTextEditor(
+                text: $form.instructionText,
+                placeholder: "Whisk until smooth.\n\nFold in the herbs and serve.",
+                minimumLines: 6
+            )
+            .accessibilityLabel("Instructions, blank line between steps")
+            .accessibilityHint("Type or paste instruction paragraphs. Lines beginning with number sign become phase headings.")
+            .accessibilityIdentifier("recipe-editor-instruction-text")
+
+            if !form.instructionBlocks.isEmpty {
+                instructionPreview
+            }
         }
-        .accessibilityLabel("Options for step \(step.order)")
+    }
+
+    private var instructionPreview: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+            recipeEditorEyebrow("Numbered preview")
+            ForEach(form.instructionBlocks) { block in
+                if block.isPhaseHeader {
+                    Text(block.body.isEmpty ? "Phase" : block.body)
+                        .font(SavoroTypography.label)
+                        .foregroundStyle(SavoroColor.textMuted)
+                        .padding(.top, SavoroSpacing.xs)
+                        .accessibilityLabel(block.accessibilityLabel)
+                } else {
+                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                        Text(block.displayNumber ?? "")
+                            .font(SavoroTypography.label.monospacedDigit())
+                            .foregroundStyle(SavoroColor.textMuted)
+                            .frame(width: SavoroSpacing.lg, alignment: .trailing)
+                            .accessibilityHidden(true)
+                        Text(block.body)
+                            .font(SavoroTypography.callout)
+                            .foregroundStyle(SavoroColor.textBody)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(block.accessibilityLabel)
+                }
+            }
+        }
+        .padding(.horizontal, SavoroSpacing.xs)
     }
 
     private var bottomBar: some View {
@@ -1462,18 +1522,6 @@ public struct RecipeEditorPlaceholderView: View {
 
     private func formatRecipeNumber(_ value: Double) -> String {
         value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
-    }
-
-    private func ingredientBinding(for id: String) -> Binding<RecipeEditorIngredientRow> {
-        Binding(
-            get: {
-                form.ingredients.first { $0.id == id } ?? .empty(id: id)
-            },
-            set: { updatedIngredient in
-                guard let index = form.ingredients.firstIndex(where: { $0.id == id }) else { return }
-                form.ingredients[index] = updatedIngredient
-            }
-        )
     }
 
     private var currentDraftKey: String {
@@ -1634,121 +1682,79 @@ private struct RecipeEditorMacroStackedBar: View {
     }
 }
 
-private struct RecipeEditorIngredientPickerSheetView: View {
-    let onAddFood: (RecipeEditorMockFoodSearchResult) -> Void
-    let onAddFreeText: (RecipeEditorIngredientRow) -> Void
-    @State private var query = ""
-    @State private var isAddingFreeText = false
-    @State private var freeTextIngredient = RecipeEditorIngredientRow.freeText(name: "")
-    @Environment(\.dismiss) private var dismiss
+private struct RecipeEditorGrowingTextEditor: View {
+    @Binding var text: String
+    let placeholder: String
+    let minimumLines: Int
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    private var suggestions: [RecipeEditorMockFoodSearchResult] {
-        RecipeEditorMockFoodSearchResult.search(query)
+    private var estimatedVisualLineCount: Int {
+        let charactersPerLine = dynamicTypeSize.isAccessibilitySize ? 20 : 36
+        return RecipeEditorIngredientLineParser.normalizedLines(in: text).reduce(0) { count, line in
+            count + max(1, Int(ceil(Double(max(1, line.count)) / Double(charactersPerLine))))
+        }
+    }
+
+    private var editorHeight: CGFloat {
+        let lineHeight: CGFloat = dynamicTypeSize.isAccessibilitySize ? 36 : 24
+        return CGFloat(max(minimumLines, estimatedVisualLineCount)) * lineHeight + (SavoroSpacing.md * 2)
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
-                    if isAddingFreeText {
-                        freeTextForm
-                    } else {
-                        SavoroSearchField(placeholder: "Search foods or type your own", text: $query)
-                        if !suggestions.isEmpty {
-                            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                                Text("Suggestions")
-                                    .font(SavoroTypography.title2)
-                                    .foregroundStyle(SavoroColor.textStrong)
-                                ForEach(suggestions) { food in
-                                    Button {
-                                        onAddFood(food)
-                                        dismiss()
-                                    } label: {
-                                        SavoroCard(style: .strong, insets: .compact) {
-                                            HStack(spacing: SavoroSpacing.sm) {
-                                                VStack(alignment: .leading, spacing: SavoroSpacing.compact) {
-                                                    Text(food.name)
-                                                        .font(SavoroTypography.bodyEmphasized)
-                                                        .foregroundStyle(SavoroColor.textStrong)
-                                                    Text("\(food.defaultQuantityText) \(food.defaultUnit)")
-                                                        .font(SavoroTypography.callout.monospacedDigit())
-                                                        .foregroundStyle(SavoroColor.textMuted)
-                                                }
-                                                Spacer()
-                                                Image(systemName: "plus.circle.fill")
-                                                    .foregroundStyle(SavoroColor.accentStrong)
-                                            }
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                        }
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                        }
+        ZStack(alignment: .topLeading) {
+            if text.isEmpty {
+                Text(placeholder)
+                    .font(SavoroTypography.body)
+                    .foregroundStyle(SavoroColor.fieldPlaceholder)
+                    .padding(.horizontal, SavoroSpacing.md + SavoroSpacing.compact)
+                    .padding(.vertical, SavoroSpacing.md)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+            }
 
-                        SavoroButton(
-                            query.trimmedForRecipeEditor.isEmpty ? "Type your own" : "Add \"\(query)\" as free text",
-                            systemImage: "square.and.pencil",
-                            variant: .secondary
-                        ) {
-                            freeTextIngredient.name = query
-                            isAddingFreeText = true
-                        }
-                    }
-                }
-                .padding(SavoroSpacing.lg)
-            }
-            .background(SavoroColor.page.ignoresSafeArea())
-            .navigationTitle("Add ingredient")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Close") { dismiss() }
-                }
-            }
+            TextEditor(text: $text)
+                .font(SavoroTypography.body)
+                .foregroundStyle(SavoroColor.textStrong)
+                .scrollContentBackground(.hidden)
+                .scrollDisabled(true)
+                .padding(.horizontal, SavoroSpacing.sm)
+                .padding(.vertical, SavoroSpacing.xs)
         }
-    }
-
-    private var freeTextForm: some View {
-        VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-            recipeEditorEyebrow("Ingredient")
-            TextField(
-                "Ingredient name",
-                text: $freeTextIngredient.name,
-                prompt: Text("Ingredient name").foregroundStyle(SavoroColor.fieldPlaceholder)
-            )
-            .recipeEditorField()
-            recipeEditorEyebrow("Amount")
-            HStack(spacing: SavoroSpacing.sm) {
-                TextField(
-                    "Quantity",
-                    text: $freeTextIngredient.quantityText,
-                    prompt: Text("Qty").foregroundStyle(SavoroColor.fieldPlaceholder)
-                )
-                .keyboardType(.decimalPad)
-                .recipeEditorField()
-                TextField(
-                    "Unit",
-                    text: $freeTextIngredient.unit,
-                    prompt: Text("Unit").foregroundStyle(SavoroColor.fieldPlaceholder)
-                )
-                .recipeEditorField()
-            }
-            SavoroButton(
-                "Add ingredient",
-                variant: .ink,
-                isDisabled: freeTextIngredient.name.trimmedForRecipeEditor.isEmpty
-            ) {
-                onAddFreeText(freeTextIngredient)
-                dismiss()
-            }
-        }
+        .frame(height: editorHeight, alignment: .topLeading)
+        .background(SavoroColor.cardStrong)
+        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                .stroke(SavoroColor.border, lineWidth: SavoroSpacing.hairline)
+        )
     }
 }
 
-private struct RecipeEditorIngredientEditSheetView: View {
-    @Binding var ingredient: RecipeEditorIngredientRow
+private struct RecipeEditorIngredientDetailSheetView: View {
+    let ingredient: RecipeEditorParsedIngredientLine
+    let onSave: (String, String, String) -> Void
+    let onRemove: () -> Void
+    @State private var quantityText: String
+    @State private var unit: String
+    @State private var name: String
     @Environment(\.dismiss) private var dismiss
+
+    init(
+        ingredient: RecipeEditorParsedIngredientLine,
+        onSave: @escaping (String, String, String) -> Void,
+        onRemove: @escaping () -> Void
+    ) {
+        self.ingredient = ingredient
+        self.onSave = onSave
+        self.onRemove = onRemove
+        _quantityText = State(initialValue: ingredient.quantityText)
+        _unit = State(initialValue: ingredient.unit)
+        _name = State(initialValue: ingredient.name)
+    }
+
+    private var linkedFood: RecipeEditorMockFoodSearchResult? {
+        RecipeEditorMockFoodSearchResult.fixtureResults.first { $0.foodId == ingredient.linkedFoodId }
+    }
 
     var body: some View {
         NavigationStack {
@@ -1756,12 +1762,9 @@ private struct RecipeEditorIngredientEditSheetView: View {
                 VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
                     VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
                         recipeEditorEyebrow("Ingredient")
-                        TextField(
-                            "Ingredient name",
-                            text: $ingredient.name,
-                            prompt: Text("Ingredient name").foregroundStyle(SavoroColor.fieldPlaceholder)
-                        )
-                        .recipeEditorField()
+                        Text(name.isEmpty ? ingredient.displayText : name)
+                            .font(SavoroTypography.title2)
+                            .foregroundStyle(SavoroColor.textStrong)
                     }
 
                     VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
@@ -1769,36 +1772,76 @@ private struct RecipeEditorIngredientEditSheetView: View {
                         HStack(spacing: SavoroSpacing.sm) {
                             TextField(
                                 "Quantity",
-                                text: $ingredient.quantityText,
+                                text: $quantityText,
                                 prompt: Text("Qty").foregroundStyle(SavoroColor.fieldPlaceholder)
                             )
-                            .keyboardType(.decimalPad)
+                            .keyboardType(.numbersAndPunctuation)
                             .recipeEditorField()
+                            .accessibilityLabel("Ingredient quantity")
                             TextField(
                                 "Unit",
-                                text: $ingredient.unit,
+                                text: $unit,
                                 prompt: Text("Unit").foregroundStyle(SavoroColor.fieldPlaceholder)
                             )
                             .recipeEditorField()
+                            .accessibilityLabel("Ingredient unit")
                         }
                     }
 
-                    if ingredient.hasIncompleteNutrition {
-                        SavoroCard(style: .accent) {
-                            Label(ingredient.nutritionStatusText, systemImage: "info.circle")
-                                .font(SavoroTypography.callout)
-                                .foregroundStyle(SavoroColor.textBody)
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        recipeEditorEyebrow(linkedFood == nil ? "Link food" : "Change linked food")
+                        ForEach(RecipeEditorMockFoodSearchResult.fixtureResults) { food in
+                            Button {
+                                name = food.name
+                            } label: {
+                                SavoroCard(style: .selection(isSelected: name.compare(food.name, options: .caseInsensitive) == .orderedSame), insets: .compact) {
+                                    HStack(spacing: SavoroSpacing.sm) {
+                                        VStack(alignment: .leading, spacing: SavoroSpacing.compact) {
+                                            Text(food.name)
+                                                .font(SavoroTypography.bodyEmphasized)
+                                                .foregroundStyle(SavoroColor.textStrong)
+                                            Text(food.sourceLabel)
+                                                .font(SavoroTypography.micro)
+                                                .foregroundStyle(SavoroColor.textMuted)
+                                        }
+                                        Spacer()
+                                        if name.compare(food.name, options: .caseInsensitive) == .orderedSame {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(SavoroColor.accentStrong)
+                                        }
+                                    }
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                }
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityValue(name.compare(food.name, options: .caseInsensitive) == .orderedSame ? "Linked" : "Not linked")
                         }
                     }
+
+                    Button(role: .destructive) {
+                        onRemove()
+                        dismiss()
+                    } label: {
+                        Label("Remove ingredient", systemImage: "trash")
+                            .font(SavoroTypography.bodyEmphasized)
+                            .frame(maxWidth: .infinity, minHeight: SavoroControlSize.minimumTapTarget)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .padding(SavoroSpacing.lg)
             }
             .background(SavoroColor.page.ignoresSafeArea())
-            .navigationTitle("Edit ingredient")
+            .navigationTitle("Ingredient details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
+                    Button("Done") {
+                        onSave(quantityText, unit, name)
+                        dismiss()
+                    }
                 }
             }
         }
