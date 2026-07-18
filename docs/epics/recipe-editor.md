@@ -210,3 +210,10 @@ held to it visually, not just functionally.
   veto the direction from its snapshots before the rest builds on it.
 - Dependencies on Dylan: USDA import (makes RE-19 real), R2 decision
   (unblocks photo upload later), RE-50 UAT.
+
+---
+
+**SUPERSEDED (2026-07-18):** Batches 1-7 above are replaced by
+`docs/epics/recipe-creation.md` (epic v2 — video-preferred model, guided
+editor, share-extension import). Landed from this epic: RE-1, RE-D1..D4.
+The RE-D4 parser lives on as the engine behind v2's composers and import.
