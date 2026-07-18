@@ -669,6 +669,26 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertEqual(preview.perServingMacros.calories, 165, accuracy: 0.0001)
     }
 
+    func testRecipeEditorMacroStripStaysHiddenUntilNutritionCanBeCalculated() {
+        let freeText = RecipeEditorIngredientRow.freeText(id: "free", quantityText: "1", unit: "pinch", name: "Herbs")
+        let chicken = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken")
+
+        XCTAssertFalse(RecipeEditorDraftForm.newDraft().showsMacroStrip)
+        XCTAssertFalse(RecipeEditorDraftForm(servingsText: "2", ingredients: [freeText]).showsMacroStrip)
+        XCTAssertTrue(RecipeEditorDraftForm(servingsText: "2", ingredients: [chicken]).showsMacroStrip)
+    }
+
+    func testRecipeEditorIngredientRowsUseCalmSummaryAndPartialDotState() {
+        let chicken = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[0], id: "chicken")
+        let freeText = RecipeEditorIngredientRow.freeText(id: "free", quantityText: "1", unit: "pinch", name: "Herbs")
+
+        XCTAssertEqual(chicken.displayName, "Chicken breast")
+        XCTAssertEqual(chicken.editorRowSummaryText, "100 g · 165 cal")
+        XCTAssertFalse(chicken.hasIncompleteNutrition)
+        XCTAssertEqual(freeText.editorRowSummaryText, "1 pinch")
+        XCTAssertTrue(freeText.hasIncompleteNutrition)
+    }
+
     func testRecipeEditorMacroPreviewRecalculatesWhenServingCountChanges() {
         let yogurt = RecipeEditorIngredientRow.fromMockFood(RecipeEditorMockFoodSearchResult.fixtureResults[1], id: "yogurt")
         let twoServings = RecipeEditorDraftForm(servingsText: "2", ingredients: [yogurt]).macroPreview
@@ -1434,6 +1454,7 @@ final class ScaffoldTests: XCTestCase {
         let copy = draft.draftContextCopy
 
         XCTAssertFalse(draft.isRemixDraft)
+        XCTAssertNil(draft.remixAttributionCopy)
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("private draft ready to edit"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("remix"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("original stays unchanged"))
@@ -1446,8 +1467,10 @@ final class ScaffoldTests: XCTestCase {
         let recipe = RecipeDetail.mockForkedFixture
         let draft = RecipeEditorDraftForm.remixDraft(from: recipe)
         let copy = draft.draftContextCopy
+        let banner = try XCTUnwrap(draft.remixAttributionCopy)
 
         XCTAssertTrue(draft.isRemixDraft)
+        XCTAssertEqual(banner, "Private remix · source version attached")
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("private remix ready to edit"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("original stays unchanged"))
         XCTAssertTrue(copy.localizedCaseInsensitiveContains("source version note stays attached"))
@@ -1455,6 +1478,8 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertFalse(copy.localizedCaseInsensitiveContains(recipe.summary.forkedFromVersionId ?? "missing-version-id"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("recipe_"))
         XCTAssertFalse(copy.localizedCaseInsensitiveContains("version_"))
+        XCTAssertFalse(banner.localizedCaseInsensitiveContains("recipe_"))
+        XCTAssertFalse(banner.localizedCaseInsensitiveContains("version_"))
     }
 
     @MainActor
@@ -3206,21 +3231,26 @@ final class ScaffoldTests: XCTestCase {
         XCTAssertNil(newDraft.draftId)
         XCTAssertEqual(newDraft.title, "")
         XCTAssertEqual(newDraft.description, "")
-        XCTAssertEqual(newDraft.servingsText, "")
+        XCTAssertEqual(newDraft.servingsText, "2")
         XCTAssertEqual(newDraft.yieldText, "")
 
         let existingDraft = RecipeEditorDraftForm.localDraft(id: "draft_green_curry")
         XCTAssertEqual(existingDraft.draftId, "draft_green_curry")
+        XCTAssertEqual(existingDraft.servingsText, "2")
     }
 
-    func testRecipeEditorFormValidationRequiresBasicsForDraftAndCompleteFieldsForPublicPreview() {
-        let empty = RecipeEditorDraftForm.newDraft()
-        XCTAssertEqual(empty.basicsValidationIssues, [.titleRequired, .servingsRequired, .yieldRequired])
-        XCTAssertEqual(empty.publicPublishValidationIssues, [.titleRequired, .servingsRequired, .yieldRequired, .ingredientRequired, .instructionRequired])
+    func testRecipeEditorFormValidationKeepsYieldOptionalAndGatesPublishDetails() {
+        let empty = RecipeEditorDraftForm()
+        XCTAssertEqual(empty.basicsValidationIssues, [.titleRequired, .servingsRequired])
+        XCTAssertEqual(empty.publicPublishValidationIssues, [.titleRequired, .servingsRequired, .ingredientRequired, .instructionRequired])
         XCTAssertFalse(empty.isValidDraftSlice)
         XCTAssertFalse(empty.canMockPublishPublicly)
 
-        let draftValid = RecipeEditorDraftForm(draftId: nil, title: "Lemony Lentil Soup", description: "Cozy bowl", servingsText: "6", yieldText: "6 bowls", photoHook: .mockPlaceholder)
+        let openingDraft = RecipeEditorDraftForm.newDraft()
+        XCTAssertEqual(openingDraft.basicsValidationIssues, [.titleRequired])
+        XCTAssertFalse(openingDraft.validationIssues.contains { $0.rawValue.localizedCaseInsensitiveContains("yield") })
+
+        let draftValid = RecipeEditorDraftForm(draftId: nil, title: "Lemony Lentil Soup", description: "Cozy bowl", servingsText: "6", yieldText: "", photoHook: .mockPlaceholder)
         XCTAssertTrue(draftValid.basicsValidationIssues.isEmpty)
         XCTAssertTrue(draftValid.isValidDraftSlice)
         XCTAssertEqual(draftValid.publicPublishValidationIssues, [.ingredientRequired, .instructionRequired])
@@ -3230,7 +3260,7 @@ final class ScaffoldTests: XCTestCase {
             title: "Lemony Lentil Soup",
             description: "Cozy bowl",
             servingsText: "6",
-            yieldText: "6 bowls",
+            yieldText: "",
             photoHook: .mockPlaceholder,
             ingredients: [.freeText(id: "lentils", quantityText: "2", unit: "cups", name: "Lentils")],
             instructions: [RecipeEditorInstructionStep(id: "step_1", order: 1, body: "Simmer until tender.")]
@@ -3429,7 +3459,7 @@ final class ScaffoldTests: XCTestCase {
 
     @MainActor
     func testInteractivePrimitivesMeetMinimumTapTarget() {
-        for variant in [SavoroButton.Variant.primary, .secondary, .ghost, .text] {
+        for variant in [SavoroButton.Variant.primary, .secondary, .soft, .ink, .ghost, .text] {
             let size = measuredViewSize(
                 SavoroButton("Action", variant: variant, expandsHorizontally: false) {},
                 width: 220

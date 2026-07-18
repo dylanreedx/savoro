@@ -321,7 +321,6 @@ public struct RecipeEditorDraftForm: Equatable {
     public enum ValidationIssue: String, CaseIterable, Equatable {
         case titleRequired = "Add a recipe title."
         case servingsRequired = "Add how many servings this recipe makes."
-        case yieldRequired = "Add a yield note, such as 6 bowls or 12 muffins."
         case ingredientRequired = "Add at least one ingredient with a name and quantity."
         case instructionRequired = "Add at least one instruction step."
     }
@@ -352,10 +351,12 @@ public struct RecipeEditorDraftForm: Equatable {
         self.sourceVersionId = sourceVersionId
     }
 
-    public static func newDraft() -> Self { RecipeEditorDraftForm() }
+    public static func newDraft() -> Self {
+        RecipeEditorDraftForm(servingsText: "2")
+    }
 
     public static func localDraft(id: String) -> Self {
-        RecipeEditorDraftForm(draftId: id, title: "", description: "", servingsText: "", yieldText: "")
+        RecipeEditorDraftForm(draftId: id, title: "", description: "", servingsText: "2", yieldText: "")
     }
 
     static func remixDraft(from recipe: RecipeDetail) -> Self {
@@ -395,7 +396,6 @@ public struct RecipeEditorDraftForm: Equatable {
         var issues: [ValidationIssue] = []
         if title.trimmedForRecipeEditor.isEmpty { issues.append(.titleRequired) }
         if servingsText.trimmedForRecipeEditor.isEmpty { issues.append(.servingsRequired) }
-        if yieldText.trimmedForRecipeEditor.isEmpty { issues.append(.yieldRequired) }
         return issues
     }
 
@@ -484,6 +484,10 @@ public struct RecipeEditorDraftForm: Equatable {
         macroPreview.isPartial
     }
 
+    public var showsMacroStrip: Bool {
+        macroPreview.includedIngredientCount > 0
+    }
+
     public var incompleteNutritionNotice: String? {
         hasIncompleteNutritionIngredients ? RecipeEditorIngredientRow.incompleteNutritionNotice : nil
     }
@@ -493,6 +497,10 @@ public struct RecipeEditorDraftForm: Equatable {
     }
 
     public var isRemixDraft: Bool { sourceRecipeId != nil || sourceVersionId != nil }
+
+    public var remixAttributionCopy: String? {
+        isRemixDraft ? "Private remix · source version attached" : nil
+    }
 
     public var draftContextCopy: String {
         if isRemixDraft {
@@ -712,10 +720,33 @@ public struct RecipeEditorIngredientRow: Identifiable, Equatable {
 
     public var hasIncompleteNutrition: Bool {
         switch source {
-        case .freeText: return true
-        case .mockFood(_, _, let macrosKnown): return !macrosKnown
-        case .empty: return false
+        case .freeText:
+            return true
+        case .mockFood(_, _, let macrosKnown):
+            return !macrosKnown || RecipeEditorMacroCalculator.macros(for: self) == nil
+        case .empty:
+            return false
         }
+    }
+
+    public var displayName: String {
+        let trimmed = name.trimmedForRecipeEditor
+        return trimmed.isEmpty ? "Untitled ingredient" : trimmed
+    }
+
+    public var amountSummaryText: String {
+        [quantityText.trimmedForRecipeEditor, unit.trimmedForRecipeEditor]
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    public var editorRowSummaryText: String {
+        var parts: [String] = []
+        if !amountSummaryText.isEmpty { parts.append(amountSummaryText) }
+        if let macros = RecipeEditorMacroCalculator.macros(for: self) {
+            parts.append("\(Self.formatRecipeNumber(macros.calories)) cal")
+        }
+        return parts.isEmpty ? "Add amount" : parts.joined(separator: " · ")
     }
 
     public var nutritionStatusText: String {
@@ -736,6 +767,10 @@ public struct RecipeEditorIngredientRow: Identifiable, Equatable {
 
     public static let incompleteNutritionNotice = "Nutrition details aren’t available for this ingredient, so it isn’t included in the partial macro preview."
     public static let nonComputableMockNutritionNotice = "This food is not included in the partial macro preview until quantity and unit are supported."
+
+    private static func formatRecipeNumber(_ value: Double) -> String {
+        value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
+    }
 
     private mutating func markEditedEmptyRowAsFreeText() {
         guard case .empty = source else { return }
@@ -853,6 +888,10 @@ final class RecipeEditorDraftStore: ObservableObject {
     }
 }
 
+private struct RecipeEditorIngredientSelection: Identifiable {
+    let id: String
+}
+
 public struct RecipeEditorPlaceholderView: View {
     @State private var form: RecipeEditorDraftForm
     @ObservedObject private var draftStore: RecipeEditorDraftStore
@@ -861,20 +900,35 @@ public struct RecipeEditorPlaceholderView: View {
     @State private var actionStatusCopy: String?
     @State private var selectedVisibilityOption: RecipeVisibilityOption
     @State private var communityShareSetup: RecipeCommunityShareSetup
-    @State private var isShowingVisibilityOptions = false
-    @State private var isShowingCommunityShareSetup = false
+    @State private var isDescriptionExpanded: Bool
+    @State private var isYieldExpanded: Bool
+    @State private var isShowingIngredientPicker = false
+    @State private var editingIngredient: RecipeEditorIngredientSelection?
+    @State private var isShowingMacroDetails = false
+    @State private var isShowingRemixDetails = false
+    @State private var isShowingPublishSheet = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.dismiss) private var dismiss
     private let temporaryDraftKey: String
     private let photoCommand: RecipeEditorPhotoCommand
     private let onPhotoHookInvoked: (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus
 
-    init(draftId: String? = nil, draftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore(), photoCommand: RecipeEditorPhotoCommand = .mockLocalPlaceholder, onPhotoHookInvoked: @escaping (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus = { $0.invoke() }) {
+    init(
+        draftId: String? = nil,
+        draftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(),
+        communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(),
+        visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore(),
+        photoCommand: RecipeEditorPhotoCommand = .mockLocalPlaceholder,
+        onPhotoHookInvoked: @escaping (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus = { $0.invoke() }
+    ) {
         let loadedForm = draftId.map(draftStore.loadDraft(id:)) ?? .newDraft()
         let temporaryDraftKey = Self.makeTemporaryDraftKey()
         let draftKey = Self.visibilityDraftKey(for: loadedForm, temporaryDraftKey: temporaryDraftKey)
         _form = State(initialValue: loadedForm)
         _selectedVisibilityOption = State(initialValue: visibilityChangeStore.loadVisibility(draftKey: draftKey))
         _communityShareSetup = State(initialValue: communityShareStore.loadSetup(draftKey: draftKey))
+        _isDescriptionExpanded = State(initialValue: !loadedForm.description.trimmedForRecipeEditor.isEmpty)
+        _isYieldExpanded = State(initialValue: !loadedForm.yieldText.trimmedForRecipeEditor.isEmpty)
         self.temporaryDraftKey = temporaryDraftKey
         self.draftStore = draftStore
         self.communityShareStore = communityShareStore
@@ -883,12 +937,21 @@ public struct RecipeEditorPlaceholderView: View {
         self.onPhotoHookInvoked = onPhotoHookInvoked
     }
 
-    init(form: RecipeEditorDraftForm, draftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(), communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(), visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore(), photoCommand: RecipeEditorPhotoCommand = .mockLocalPlaceholder, onPhotoHookInvoked: @escaping (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus = { $0.invoke() }) {
+    init(
+        form: RecipeEditorDraftForm,
+        draftStore: RecipeEditorDraftStore = RecipeEditorDraftStore(),
+        communityShareStore: RecipeCommunityShareStore = RecipeCommunityShareStore(),
+        visibilityChangeStore: RecipeVisibilityChangeStore = RecipeVisibilityChangeStore(),
+        photoCommand: RecipeEditorPhotoCommand = .mockLocalPlaceholder,
+        onPhotoHookInvoked: @escaping (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus = { $0.invoke() }
+    ) {
         let temporaryDraftKey = Self.makeTemporaryDraftKey()
         let draftKey = Self.visibilityDraftKey(for: form, temporaryDraftKey: temporaryDraftKey)
         _form = State(initialValue: form)
         _selectedVisibilityOption = State(initialValue: visibilityChangeStore.loadVisibility(draftKey: draftKey))
         _communityShareSetup = State(initialValue: communityShareStore.loadSetup(draftKey: draftKey))
+        _isDescriptionExpanded = State(initialValue: !form.description.trimmedForRecipeEditor.isEmpty)
+        _isYieldExpanded = State(initialValue: !form.yieldText.trimmedForRecipeEditor.isEmpty)
         self.temporaryDraftKey = temporaryDraftKey
         self.draftStore = draftStore
         self.communityShareStore = communityShareStore
@@ -900,470 +963,521 @@ public struct RecipeEditorPlaceholderView: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
-                header
-                photoPlaceholder
-                basicsForm
-                ingredientsForm
-                instructionsForm
-                visibilityOptions
-                draftActions
-                validationSummary
-                noticeCard
+                editorNavigationHeader
+                if let attribution = form.remixAttributionCopy {
+                    remixAttributionBanner(attribution)
+                }
+                photoDropZone
+                titleForm
+                servingsCard
+                if form.showsMacroStrip {
+                    macroStrip
+                }
+                ingredientsSection
+                stepsSection
             }
             .padding(SavoroSpacing.lg)
+            .padding(.top, SavoroSpacing.xxxl)
         }
+        .ignoresSafeArea(edges: .top)
         .background(SavoroColor.page.ignoresSafeArea())
         .accessibilityIdentifier("recipe-editor-screen")
-        .navigationTitle(form.draftId == nil ? "New recipe" : "Edit draft")
-        .navigationBarTitleDisplayMode(dynamicTypeSize.isAccessibilitySize ? .inline : .automatic)
-        .sheet(isPresented: $isShowingVisibilityOptions) {
-            RecipeVisibilityOptionSheetView(selectedOption: $selectedVisibilityOption) { option in
-                applyVisibilityChange(option)
-                isShowingVisibilityOptions = false
-                if option == .shareToCommunity && !communityShareStore.hasSetup(draftKey: currentDraftKey) {
-                    actionStatusCopy = "Share to community selected locally. Choose a community and optional caption next; nothing posts publicly."
-                    DispatchQueue.main.async { isShowingCommunityShareSetup = true }
-                } else {
-                    actionStatusCopy = currentVisibilityMatrix.statusCopy
+        .toolbar(.hidden, for: .navigationBar)
+        .safeAreaInset(edge: .bottom, spacing: SavoroSpacing.none) {
+            bottomBar
+        }
+        .overlay(alignment: .bottom) {
+            if let actionStatusCopy {
+                SavoroCard(style: .toast, insets: .compact) {
+                    Label(actionStatusCopy, systemImage: "checkmark.circle.fill")
+                        .font(SavoroTypography.callout)
+                        .foregroundStyle(SavoroColor.textStrong)
                 }
+                .padding(.horizontal, SavoroSpacing.lg)
+                .padding(.bottom, SavoroControlSize.minimumTapTarget + SavoroSpacing.xxxl)
+                .accessibilityIdentifier("recipe-editor-draft-action-status")
             }
         }
-        .sheet(isPresented: $isShowingCommunityShareSetup) {
-            RecipeCommunityShareSetupSheetView(shareSetup: $communityShareSetup) { setup in
-                saveCommunityShareSetup(setup)
-                isShowingCommunityShareSetup = false
-            }
+        .sheet(isPresented: $isShowingIngredientPicker) {
+            RecipeEditorIngredientPickerSheetView(
+                onAddFood: { food in
+                    form.addMockFood(food)
+                },
+                onAddFreeText: { ingredient in
+                    form.addIngredient(ingredient)
+                }
+            )
+        }
+        .sheet(item: $editingIngredient) { selection in
+            RecipeEditorIngredientEditSheetView(ingredient: ingredientBinding(for: selection.id))
+        }
+        .sheet(isPresented: $isShowingMacroDetails) {
+            RecipeEditorMacroDetailSheetView(preview: form.macroPreview)
+        }
+        .sheet(isPresented: $isShowingRemixDetails) {
+            RecipeEditorRemixDetailSheetView(detailCopy: form.draftContextCopy)
+        }
+        .sheet(isPresented: $isShowingPublishSheet) {
+            RecipeEditorPublishSheetView(
+                form: form,
+                selectedVisibilityOption: $selectedVisibilityOption,
+                communityShareSetup: $communityShareSetup,
+                hasCommunitySetup: communityShareStore.hasSetup(draftKey: currentDraftKey),
+                onApplyVisibility: applyVisibilityChange,
+                onSaveCommunitySetup: saveCommunityShareSetup
+            )
         }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-            SavoroChip(title: "Private draft", systemImage: "lock.fill", variant: .accent)
-            Text("Recipe editor")
+    private var editorNavigationHeader: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+            Button { dismiss() } label: {
+                Image(systemName: "chevron.left")
+                    .font(SavoroTypography.bodyEmphasized)
+                    .foregroundStyle(SavoroColor.textStrong)
+                    .frame(
+                        width: SavoroControlSize.minimumTapTarget,
+                        height: SavoroControlSize.minimumTapTarget
+                    )
+                    .background(SavoroColor.cardStrong)
+                    .clipShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Back")
+
+            Text(form.draftId == nil ? "New recipe" : "Edit recipe")
                 .font(SavoroTypography.display)
                 .foregroundStyle(SavoroColor.textStrong)
-            Text(RecipeEditorDraftForm.headerContextCopy)
-                .font(SavoroTypography.body)
-                .foregroundStyle(SavoroColor.textBody)
-            Text(form.draftContextCopy)
-                .font(SavoroTypography.callout)
-                .foregroundStyle(SavoroColor.textBody)
-                .accessibilityIdentifier("recipe-editor-draft-context")
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var photoPlaceholder: some View {
-        SavoroCard(style: .elevated) {
-            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                Image(systemName: form.photoHook.systemImage)
-                    .font(.largeTitle)
-                    .foregroundStyle(SavoroColor.accent)
-                Text(form.photoHook.title)
-                    .font(SavoroTypography.headline)
-                    .foregroundStyle(SavoroColor.textStrong)
-                Text(form.photoHook.body)
-                    .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textBody)
-                SavoroButton(form.photoHook.actionTitle, systemImage: "photo", variant: .secondary) {
-                    form.photoStatus = onPhotoHookInvoked(photoCommand)
-                }
-                .accessibilityHint("Photo preview only. No upload starts.")
-                if form.photoStatus != .idle {
-                    Label(form.photoStatus.message, systemImage: "checkmark.circle")
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textBody)
-                        .accessibilityIdentifier("recipe-editor-photo-status")
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    private var basicsForm: some View {
-        SavoroCard(style: .glass) {
-            VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-                Text("Basics")
-                    .font(SavoroTypography.title2)
-                    .foregroundStyle(SavoroColor.textStrong)
-                labeledTextField(label: "Recipe title", text: $form.title, isRequired: true)
-                if dynamicTypeSize.isAccessibilitySize {
-                    labeledTextField(label: "Short description", text: $form.description, axis: .vertical)
-                    VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-                        servingAndYieldFields
-                    }
-                } else {
-                    labeledTextField(label: "Short description", text: $form.description, axis: .vertical)
-                        .lineLimit(3, reservesSpace: true)
-                    HStack(alignment: .top, spacing: SavoroSpacing.md) {
-                        servingAndYieldFields
-                    }
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var servingAndYieldFields: some View {
-        labeledTextField(label: "Servings", text: $form.servingsText, isRequired: true)
-            .keyboardType(.numberPad)
-        labeledTextField(label: "Yield", text: $form.yieldText, isRequired: true)
-    }
-
-    private var ingredientsForm: some View {
-        SavoroCard(style: .glass) {
-            VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-                Group {
-                    if dynamicTypeSize.isAccessibilitySize {
-                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                            ingredientsHeader
-                        }
-                    } else {
-                        HStack {
-                            ingredientsHeader
-                        }
-                    }
-                }
-                Text("Add foods from suggestions or type a free-text ingredient. Foods with nutrition details update the macro preview as quantity, unit, or servings change.")
-                    .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textBody)
-
-                macroPreviewCard
-
-                Group {
-                    if dynamicTypeSize.isAccessibilitySize {
-                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                            foodSuggestions
-                        }
-                    } else {
-                        HStack(spacing: SavoroSpacing.sm) {
-                            foodSuggestions
-                        }
-                    }
-                }
-
-                SavoroButton("Add free-text ingredient", systemImage: "square.and.pencil", variant: .secondary) {
-                    form.addFreeTextIngredient(named: "Free-text ingredient")
-                }
-                .accessibilityHint("Free-text ingredients show an incomplete nutrition notice.")
-
-                if let notice = form.incompleteNutritionNotice {
-                    Label(notice, systemImage: "info.circle")
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textBody)
-                        .accessibilityIdentifier("recipe-editor-incomplete-nutrition-notice")
-                }
-
-                ForEach($form.ingredients) { $ingredient in
-                    VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                        if dynamicTypeSize.isAccessibilitySize {
-                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                                TextField("Qty", text: $ingredient.quantityText, prompt: fieldPrompt("Qty"))
-                                    .textFieldStyle(.roundedBorder)
-                                TextField("Unit", text: $ingredient.unit, prompt: fieldPrompt("Unit"))
-                                    .textFieldStyle(.roundedBorder)
-                                TextField("Ingredient name", text: $ingredient.name, prompt: fieldPrompt("Ingredient name"))
-                                    .textFieldStyle(.roundedBorder)
-                            }
-                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                                Label(ingredient.nutritionStatusText, systemImage: ingredient.hasIncompleteNutrition ? "info.circle" : "checkmark.circle")
-                                    .font(SavoroTypography.callout)
-                                    .foregroundStyle(SavoroColor.textBody)
-                                SavoroButton("Remove", variant: .text, expandsHorizontally: false) {
-                                    form.removeIngredient(id: ingredient.id)
-                                }
-                            }
-                        } else {
-                            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                                TextField("Qty", text: $ingredient.quantityText, prompt: fieldPrompt("Qty"))
-                                    .textFieldStyle(.roundedBorder)
-                                TextField("Unit", text: $ingredient.unit, prompt: fieldPrompt("Unit"))
-                                    .textFieldStyle(.roundedBorder)
-                                TextField("Ingredient name", text: $ingredient.name, prompt: fieldPrompt("Ingredient name"))
-                                    .textFieldStyle(.roundedBorder)
-                            }
-                            HStack {
-                                Label(ingredient.nutritionStatusText, systemImage: ingredient.hasIncompleteNutrition ? "info.circle" : "checkmark.circle")
-                                    .font(SavoroTypography.callout)
-                                    .foregroundStyle(SavoroColor.textBody)
-                                Spacer()
-                                SavoroButton("Remove", variant: .text, expandsHorizontally: false) {
-                                    form.removeIngredient(id: ingredient.id)
-                                }
-                            }
-                        }
-                    }
-                    .padding(.vertical, SavoroSpacing.xs)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var ingredientsHeader: some View {
-        Text("Ingredients")
-            .font(SavoroTypography.title2)
-            .foregroundStyle(SavoroColor.textStrong)
-        if !dynamicTypeSize.isAccessibilitySize {
-            Spacer()
-        }
-        SavoroButton("Add row", systemImage: "plus", variant: .secondary) {
-            form.addIngredient()
-        }
-    }
-
-    @ViewBuilder
-    private var foodSuggestions: some View {
-        ForEach(RecipeEditorMockFoodSearchResult.fixtureResults) { food in
-            SavoroButton(food.name, variant: .secondary, expandsHorizontally: false) {
-                form.addMockFood(food)
-            }
-            .accessibilityHint("Adds a suggested food; no public search starts.")
-        }
-    }
-
-    private var instructionsForm: some View {
-        SavoroCard(style: .glass) {
-            VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-                Group {
-                    if dynamicTypeSize.isAccessibilitySize {
-                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                            instructionsHeader
-                        }
-                    } else {
-                        HStack {
-                            instructionsHeader
-                        }
-                    }
-                }
-                Text(RecipeEditorDraftForm.instructionHelperCopy)
-                    .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textBody)
-
-                if form.instructions.isEmpty {
-                    Label(RecipeEditorDraftForm.emptyInstructionsCopy, systemImage: "list.number")
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textBody)
-                        .accessibilityIdentifier("recipe-editor-instructions-empty-state")
-                }
-
-                ForEach($form.instructions) { $step in
-                    VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                        Text(step.displayNumber)
-                            .font(SavoroTypography.label)
-                            .foregroundStyle(SavoroColor.textBody)
-                        if dynamicTypeSize.isAccessibilitySize {
-                            accessibilityVerticalTextField(
-                                label: "Instruction step",
-                                text: $step.body,
-                                accessibilityLabel: step.instructionFieldAccessibilityLabel
-                            )
-                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                                instructionButtons(step)
-                            }
-                        } else {
-                            TextField("Instruction step", text: $step.body, prompt: fieldPrompt("Instruction step"), axis: .vertical)
-                                .textFieldStyle(.roundedBorder)
-                                .lineLimit(2...4)
-                                .accessibilityLabel(step.instructionFieldAccessibilityLabel)
-                            HStack(spacing: SavoroSpacing.sm) {
-                                instructionButtons(step)
-                            }
-                        }
-                    }
-                    .padding(.vertical, SavoroSpacing.xs)
-                    .accessibilityIdentifier("recipe-editor-instruction-step-\(step.order)")
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var instructionsHeader: some View {
-        Text("Instructions")
-            .font(SavoroTypography.title2)
-            .foregroundStyle(SavoroColor.textStrong)
-        if !dynamicTypeSize.isAccessibilitySize {
-            Spacer()
-        }
-        SavoroButton("Add step", systemImage: "plus", variant: .secondary) {
-            form.addInstruction()
-        }
-    }
-
-    @ViewBuilder
-    private func instructionButtons(_ step: RecipeEditorInstructionStep) -> some View {
-        SavoroButton(
-            "Move up",
-            variant: .text,
-            isDisabled: step.order == 1,
-            expandsHorizontally: false
-        ) {
-            form.moveInstructionUp(id: step.id)
-        }
-        .accessibilityLabel(step.moveUpAccessibilityLabel)
-        .accessibilityHint(step.moveUpAccessibilityHint)
-        SavoroButton(
-            "Move down",
-            variant: .text,
-            isDisabled: step.order == form.instructions.count,
-            expandsHorizontally: false
-        ) {
-            form.moveInstructionDown(id: step.id)
-        }
-        .accessibilityLabel(step.moveDownAccessibilityLabel)
-        .accessibilityHint(step.moveDownAccessibilityHint(totalSteps: form.instructions.count))
-        if !dynamicTypeSize.isAccessibilitySize {
-            Spacer()
-        }
-        SavoroButton("Remove", variant: .text, expandsHorizontally: false) {
-            form.removeInstruction(id: step.id)
-        }
-        .accessibilityLabel(step.removeAccessibilityLabel)
-        .accessibilityHint("Removes this step from the local form only.")
-    }
-
-    private var macroPreviewCard: some View {
-        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-            Label(form.macroPreview.statusText, systemImage: form.macroPreview.isPartial ? "info.circle" : "sum")
-                .font(SavoroTypography.callout)
-                .foregroundStyle(SavoroColor.textBody)
-            Text(form.macroPreview.totalSummaryText)
-                .font(SavoroTypography.headline)
-                .foregroundStyle(SavoroColor.textStrong)
-            Text(form.macroPreview.perServingSummaryText)
-                .font(SavoroTypography.callout)
-                .foregroundStyle(SavoroColor.textBody)
-        }
-        .accessibilityIdentifier("recipe-editor-macro-preview")
-    }
-
-    private var visibilityOptions: some View {
-        SavoroCard(style: .elevated) {
-            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                Text("Visibility")
-                    .font(SavoroTypography.headline)
-                    .foregroundStyle(SavoroColor.textStrong)
-                Text(RecipeVisibilityMatrixState.localOnlyNotice)
-                    .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textBody)
-                    .accessibilityIdentifier("recipe-visibility-privacy-note")
-                Label("Current: \(selectedVisibilityOption.title)", systemImage: selectedVisibilityOption.systemImage)
-                    .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textBody)
-                Text(currentVisibilityMatrix.statusCopy)
-                    .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textBody)
-                    .accessibilityIdentifier("recipe-visibility-matrix-status")
-                if selectedVisibilityOption == .shareToCommunity {
-                    if communityShareStore.hasSetup(draftKey: currentDraftKey) {
-                        Text("Community saved: \(communityShareSetup.selectedCommunity?.name ?? "Choose a community")")
-                            .font(SavoroTypography.callout)
-                            .foregroundStyle(SavoroColor.textBody)
-                            .accessibilityIdentifier("recipe-community-share-selected-community")
-                        Text("Caption: \(communityShareSetup.captionPreview)")
-                            .font(SavoroTypography.callout)
-                            .foregroundStyle(SavoroColor.textBody)
-                            .accessibilityIdentifier("recipe-community-share-caption-preview")
-                    } else {
-                        Text("No community selected yet. Choose a community and optional caption before sharing this recipe there.")
-                            .font(SavoroTypography.callout)
-                            .foregroundStyle(SavoroColor.textBody)
-                            .accessibilityIdentifier("recipe-community-share-setup-needed")
-                    }
-                    Text(RecipeCommunityShareSetup.localOnlyNotice)
-                        .font(SavoroTypography.callout)
+    private func remixAttributionBanner(_ attribution: String) -> some View {
+        Button { isShowingRemixDetails = true } label: {
+            SavoroCard(style: .accent, insets: .compact) {
+                HStack(spacing: SavoroSpacing.xs) {
+                    Image(systemName: "arrow.triangle.branch")
+                        .foregroundStyle(SavoroColor.accentStrong)
+                    Text(attribution)
+                        .font(SavoroTypography.label)
+                        .foregroundStyle(SavoroColor.textStrong)
+                        .lineLimit(1)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(SavoroTypography.micro)
                         .foregroundStyle(SavoroColor.textMuted)
-                    SavoroButton("Edit community setup", systemImage: "person.3", variant: .secondary) {
-                        isShowingCommunityShareSetup = true
-                    }
-                    .accessibilityHint("Opens community and caption setup. No community post starts.")
                 }
-                Group {
-                    if dynamicTypeSize.isAccessibilitySize {
-                        VStack(spacing: SavoroSpacing.sm) {
-                            visibilityButtons
-                        }
-                    } else {
-                        HStack(spacing: SavoroSpacing.sm) {
-                            visibilityButtons
-                        }
-                    }
-                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("recipe-editor-draft-context")
+        .accessibilityHint("Shows remix source details.")
     }
 
-    private var draftActions: some View {
-        SavoroCard(style: .elevated) {
-            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                Text("Draft actions")
-                    .font(SavoroTypography.headline)
-                    .foregroundStyle(SavoroColor.textStrong)
-                Text("Save Draft keeps this recipe private in this app session. Previewing publish does not create a public listing.")
+    private var photoDropZone: some View {
+        Button {
+            form.photoStatus = onPhotoHookInvoked(photoCommand)
+        } label: {
+            VStack(spacing: SavoroSpacing.sm) {
+                Image(systemName: form.photoStatus == .idle ? "photo" : "checkmark.circle.fill")
+                    .font(SavoroTypography.title1)
+                    .foregroundStyle(form.photoStatus == .idle ? SavoroColor.textSubtle : SavoroColor.accentStrong)
+                Text(form.photoStatus == .idle ? "Add a photo (optional)" : "Photo choices are coming soon")
                     .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textBody)
+                    .foregroundStyle(SavoroColor.textMuted)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: SavoroControlSize.photoDropZoneHeight)
+            .background(SavoroColor.raised)
+            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.glass, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: SavoroRadius.glass, style: .continuous)
+                    .stroke(
+                        SavoroColor.borderStrong,
+                        style: StrokeStyle(
+                            lineWidth: SavoroSpacing.hairline,
+                            dash: [SavoroSpacing.xxs, SavoroSpacing.xxs]
+                        )
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(form.photoHook.actionTitle)
+        .accessibilityHint("Choose a photo for this recipe.")
+        .accessibilityIdentifier("recipe-editor-photo-drop-zone")
+    }
+
+    private var titleForm: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+            recipeEditorEyebrow("Title")
+            TextField(
+                "Recipe title",
+                text: $form.title,
+                prompt: Text("e.g. Spicy Tofu Rice Bowl").foregroundStyle(SavoroColor.fieldPlaceholder)
+            )
+            .textInputAutocapitalization(.words)
+            .recipeEditorField()
+            .accessibilityLabel("Recipe title")
+            .accessibilityIdentifier("recipe-editor-field-recipe-title")
+
+            if isDescriptionExpanded {
+                HStack {
+                    recipeEditorEyebrow("Description")
+                    Spacer()
+                    SavoroButton(
+                        "Hide",
+                        variant: .text,
+                        expandsHorizontally: false,
+                        size: .compact
+                    ) {
+                        isDescriptionExpanded = false
+                    }
+                }
+                TextField(
+                    "Description",
+                    text: $form.description,
+                    prompt: Text("What makes this recipe yours?").foregroundStyle(SavoroColor.fieldPlaceholder),
+                    axis: .vertical
+                )
+                .lineLimit(2...4)
+                .recipeEditorField(isMultiline: true)
+                .accessibilityLabel("Short description")
+                .accessibilityIdentifier("recipe-editor-field-short-description")
+            } else {
+                SavoroButton(
+                    "Add description",
+                    systemImage: "plus",
+                    variant: .text,
+                    expandsHorizontally: false,
+                    size: .compact
+                ) {
+                    isDescriptionExpanded = true
+                }
+                .accessibilityIdentifier("recipe-editor-add-description")
+            }
+        }
+    }
+
+    private var servingsCard: some View {
+        SavoroCard(style: .strong) {
+            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
                 Group {
                     if dynamicTypeSize.isAccessibilitySize {
-                        VStack(spacing: SavoroSpacing.sm) {
-                            draftActionButtons
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            servingsLabel
+                            servingsStepper
                         }
                     } else {
-                        HStack(spacing: SavoroSpacing.sm) {
-                            draftActionButtons
+                        HStack(spacing: SavoroSpacing.md) {
+                            servingsLabel
+                            Spacer()
+                            servingsStepper
                         }
                     }
                 }
-                if let actionStatusCopy {
-                    Label(actionStatusCopy, systemImage: form.canMockPublishPublicly ? "checkmark.circle" : "info.circle")
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textBody)
-                        .accessibilityIdentifier("recipe-editor-draft-action-status")
-                        .accessibilityLabel("Draft action status: \(actionStatusCopy)")
-                        .accessibilityHint("Describes the result of the most recent draft action.")
+
+                if isYieldExpanded {
+                    TextField(
+                        "Yield",
+                        text: $form.yieldText,
+                        prompt: Text("e.g. 6 bowls").foregroundStyle(SavoroColor.fieldPlaceholder)
+                    )
+                    .recipeEditorField()
+                    .accessibilityLabel("Yield, optional")
+                    .accessibilityIdentifier("recipe-editor-field-yield")
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    @ViewBuilder
-    private var visibilityButtons: some View {
-        SavoroButton("Change visibility", systemImage: "eye", variant: .secondary) {
-            isShowingVisibilityOptions = true
-        }
-        .accessibilityHint("Opens visibility options. No publish or community post starts.")
-        if selectedVisibilityOption != .keepPrivate {
-            SavoroButton("Revert to private", systemImage: "lock", variant: .secondary) {
-                revertVisibilityToPrivate()
+    private var servingsLabel: some View {
+        HStack(spacing: SavoroSpacing.compact) {
+            Text("Servings")
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+            SavoroButton(
+                form.yieldText.trimmedForRecipeEditor.isEmpty ? "(yield)" : "(\(form.yieldText))",
+                variant: .text,
+                expandsHorizontally: false,
+                size: .compact
+            ) {
+                isYieldExpanded.toggle()
             }
-            .accessibilityHint("Returns this visibility preview to private. No public update starts.")
+        }
+    }
+
+    private var servingsStepper: some View {
+        HStack(spacing: SavoroSpacing.sm) {
+            servingsStepButton(
+                systemImage: "minus",
+                isDisabled: currentServings <= 1
+            ) {
+                adjustServings(by: -1)
+            }
+            .accessibilityLabel("Decrease servings")
+
+            Text(formatRecipeNumber(currentServings))
+                .font(SavoroTypography.numericHeadline)
+                .foregroundStyle(SavoroColor.textStrong)
+                .frame(minWidth: SavoroSpacing.xl)
+                .accessibilityElement()
+                .accessibilityLabel("Servings")
+                .accessibilityValue(formatRecipeNumber(currentServings))
+                .accessibilityIdentifier("recipe-editor-serving-count")
+
+            servingsStepButton(systemImage: "plus") {
+                adjustServings(by: 1)
+            }
+            .accessibilityLabel("Increase servings")
+        }
+    }
+
+    private func servingsStepButton(
+        systemImage: String,
+        isDisabled: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+                .frame(
+                    width: SavoroControlSize.minimumTapTarget,
+                    height: SavoroControlSize.minimumTapTarget
+                )
+                .background(SavoroColor.cardStrong)
+                .clipShape(Circle())
+                .overlay(
+                    Circle().stroke(SavoroColor.border, lineWidth: SavoroSpacing.hairline)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(isDisabled)
+        .opacity(isDisabled ? 0.48 : 1)
+    }
+
+    private var macroStrip: some View {
+        Button { isShowingMacroDetails = true } label: {
+            RecipeEditorMacroStrip(preview: form.macroPreview)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("recipe-editor-macro-preview")
+        .accessibilityHint(form.macroPreview.isPartial ? "Shows which nutrition details are still missing." : "Shows recipe nutrition details.")
+    }
+
+    private var ingredientsSection: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+            Text("Ingredients")
+                .font(SavoroTypography.title2)
+                .foregroundStyle(SavoroColor.textStrong)
+
+            ForEach(form.ingredients) { ingredient in
+                ingredientRow(ingredient)
+                Divider().overlay(SavoroColor.border)
+            }
+
+            SavoroButton(
+                "Add ingredient",
+                systemImage: "plus",
+                variant: .text,
+                expandsHorizontally: false
+            ) {
+                isShowingIngredientPicker = true
+            }
+            .accessibilityIdentifier("recipe-editor-add-ingredient")
+        }
+    }
+
+    private func ingredientRow(_ ingredient: RecipeEditorIngredientRow) -> some View {
+        HStack(spacing: SavoroSpacing.xs) {
+            Button {
+                editingIngredient = RecipeEditorIngredientSelection(id: ingredient.id)
+            } label: {
+                VStack(alignment: .leading, spacing: SavoroSpacing.compact) {
+                    Text(ingredient.displayName)
+                        .font(SavoroTypography.bodyEmphasized)
+                        .foregroundStyle(SavoroColor.textStrong)
+                    Text(ingredient.editorRowSummaryText)
+                        .font(SavoroTypography.callout.monospacedDigit())
+                        .foregroundStyle(SavoroColor.textMuted)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("\(ingredient.displayName), \(ingredient.editorRowSummaryText)")
+            .accessibilityHint("Edit ingredient details.")
+
+            if ingredient.hasIncompleteNutrition {
+                Circle()
+                    .fill(SavoroColor.accentStrong)
+                    .frame(width: SavoroSpacing.xxs, height: SavoroSpacing.xxs)
+                    .accessibilityLabel("Nutrition details are partial")
+            }
+
+            SavoroButton(
+                "×",
+                variant: .text,
+                expandsHorizontally: false,
+                size: .compact
+            ) {
+                form.removeIngredient(id: ingredient.id)
+            }
+            .frame(width: SavoroControlSize.minimumTapTarget)
+            .accessibilityLabel("Remove \(ingredient.displayName)")
+        }
+        .padding(.vertical, SavoroSpacing.xs)
+        .accessibilityIdentifier("recipe-editor-ingredient-\(ingredient.id)")
+    }
+
+    private var stepsSection: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+            Text("Steps")
+                .font(SavoroTypography.title2)
+                .foregroundStyle(SavoroColor.textStrong)
+
+            ForEach($form.instructions) { $step in
+                instructionRow($step)
+            }
+
+            SavoroButton(
+                "Add step",
+                systemImage: "plus",
+                variant: .text,
+                expandsHorizontally: false
+            ) {
+                form.addInstruction()
+            }
+            .accessibilityIdentifier("recipe-editor-add-step")
         }
     }
 
     @ViewBuilder
-    private var draftActionButtons: some View {
-        SavoroButton("Save Draft", systemImage: "tray.and.arrow.down", variant: .primary) {
-            saveDraft()
+    private func instructionRow(_ step: Binding<RecipeEditorInstructionStep>) -> some View {
+        let stepValue = step.wrappedValue
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                HStack {
+                    stepNumber(stepValue.order)
+                    Spacer()
+                    instructionMenu(stepValue)
+                }
+                instructionField(step)
+            }
+            .padding(.vertical, SavoroSpacing.xs)
+            .accessibilityIdentifier("recipe-editor-instruction-step-\(stepValue.order)")
+        } else {
+            HStack(alignment: .top, spacing: SavoroSpacing.xs) {
+                stepNumber(stepValue.order)
+                instructionField(step)
+                instructionMenu(stepValue)
+            }
+            .padding(.vertical, SavoroSpacing.xs)
+            .accessibilityIdentifier("recipe-editor-instruction-step-\(stepValue.order)")
         }
-        .accessibilityLabel("Save Draft")
-        .accessibilityHint("Saves this recipe draft for this app session only. No public publish or sharing starts.")
-        SavoroButton("Preview public publish", systemImage: "checklist", variant: .secondary) {
-            previewPublicPublish()
+    }
+
+    private func stepNumber(_ order: Int) -> some View {
+        Text("\(order)")
+            .font(SavoroTypography.label.monospacedDigit())
+            .foregroundStyle(SavoroColor.textStrong)
+            .frame(
+                width: SavoroControlSize.minimumTapTarget,
+                height: SavoroControlSize.minimumTapTarget
+            )
+            .background(SavoroColor.accentSoft)
+            .clipShape(Circle())
+            .accessibilityHidden(true)
+    }
+
+    private func instructionField(_ step: Binding<RecipeEditorInstructionStep>) -> some View {
+        TextField(
+            "Add a step",
+            text: step.body,
+            prompt: Text("Add a step").foregroundStyle(SavoroColor.fieldPlaceholder),
+            axis: .vertical
+        )
+        .lineLimit(1...4)
+        .recipeEditorField(isMultiline: true)
+        .accessibilityLabel(step.wrappedValue.instructionFieldAccessibilityLabel)
+    }
+
+    private func instructionMenu(_ step: RecipeEditorInstructionStep) -> some View {
+        Menu {
+            Button("Move earlier", systemImage: "arrow.up") {
+                form.moveInstructionUp(id: step.id)
+            }
+            .disabled(step.order == 1)
+            Button("Move later", systemImage: "arrow.down") {
+                form.moveInstructionDown(id: step.id)
+            }
+            .disabled(step.order == form.instructions.count)
+            Button("Delete step", systemImage: "trash", role: .destructive) {
+                form.removeInstruction(id: step.id)
+            }
+        } label: {
+            Image(systemName: "ellipsis")
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textMuted)
+                .frame(
+                    width: SavoroControlSize.minimumTapTarget,
+                    height: SavoroControlSize.minimumTapTarget
+                )
+                .contentShape(Rectangle())
         }
-        .accessibilityLabel("Preview public publish")
-        .accessibilityHint("Checks required recipe details for a public publish preview. Nothing is posted or listed publicly.")
+        .accessibilityLabel("Options for step \(step.order)")
+    }
+
+    private var bottomBar: some View {
+        HStack(spacing: SavoroSpacing.sm) {
+            SavoroButton("Save draft", variant: .soft) {
+                saveDraft()
+            }
+            .savoroShadow(SavoroShadow.small)
+            .accessibilityHint("Saves this recipe so you can keep editing.")
+            SavoroButton("Save & publish", variant: .ink) {
+                isShowingPublishSheet = true
+            }
+            .accessibilityIdentifier("recipe-editor-save-and-publish")
+            .accessibilityHint("Opens publish options.")
+        }
+        .padding(.horizontal, SavoroSpacing.lg)
+        .padding(.vertical, SavoroSpacing.sm)
+        .background(SavoroColor.raised.ignoresSafeArea(edges: .bottom))
+        .overlay(alignment: .top) {
+            Divider().overlay(SavoroColor.glassBorder)
+        }
+    }
+
+    private var currentServings: Double {
+        RecipeEditorMacroCalculator.positiveNumber(from: form.servingsText) ?? 2
+    }
+
+    private func adjustServings(by amount: Double) {
+        form.servingsText = formatRecipeNumber(max(1, currentServings + amount))
+    }
+
+    private func formatRecipeNumber(_ value: Double) -> String {
+        value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
+    }
+
+    private func ingredientBinding(for id: String) -> Binding<RecipeEditorIngredientRow> {
+        Binding(
+            get: {
+                form.ingredients.first { $0.id == id } ?? .empty(id: id)
+            },
+            set: { updatedIngredient in
+                guard let index = form.ingredients.firstIndex(where: { $0.id == id }) else { return }
+                form.ingredients[index] = updatedIngredient
+            }
+        )
     }
 
     private var currentDraftKey: String {
         Self.visibilityDraftKey(for: form, temporaryDraftKey: temporaryDraftKey)
-    }
-
-    private var currentVisibilityMatrix: RecipeVisibilityMatrixState {
-        RecipeVisibilityMatrixState(
-            option: selectedVisibilityOption,
-            hasPersistedCommunitySetup: communityShareStore.hasSetup(draftKey: currentDraftKey)
-        )
     }
 
     private func saveDraft() {
@@ -1372,7 +1486,7 @@ public struct RecipeEditorPlaceholderView: View {
         let savedKey = currentDraftKey
         communityShareStore.moveSetup(from: previousKey, to: savedKey)
         visibilityChangeStore.moveVisibility(from: previousKey, to: savedKey)
-        actionStatusCopy = "Draft saved locally for this app session only; no public publish or sharing started."
+        actionStatusCopy = "Draft saved"
     }
 
     private func applyVisibilityChange(_ option: RecipeVisibilityOption) {
@@ -1380,18 +1494,11 @@ public struct RecipeEditorPlaceholderView: View {
         visibilityChangeStore.saveVisibility(option, draftKey: currentDraftKey)
     }
 
-    private func revertVisibilityToPrivate() {
-        selectedVisibilityOption = .keepPrivate
-        visibilityChangeStore.unpublishToPrivate(draftKey: currentDraftKey)
-        actionStatusCopy = "Visibility reverted to private locally. The recipe is not profile-listed, community-listed, discoverable, or link-ready; no public update starts."
-    }
-
     private func saveCommunityShareSetup(_ setup: RecipeCommunityShareSetup) {
         communityShareSetup = setup
         selectedVisibilityOption = .shareToCommunity
         communityShareStore.saveSetup(setup, draftKey: currentDraftKey)
         visibilityChangeStore.saveVisibility(.shareToCommunity, draftKey: currentDraftKey)
-        actionStatusCopy = setup.statusCopy + ". No community post is created."
     }
 
     static func makeTemporaryDraftKey() -> String {
@@ -1401,96 +1508,507 @@ public struct RecipeEditorPlaceholderView: View {
     static func visibilityDraftKey(for form: RecipeEditorDraftForm, temporaryDraftKey: String) -> String {
         form.draftId ?? temporaryDraftKey
     }
+}
 
-    private func previewPublicPublish() {
-        actionStatusCopy = form.publishPreviewCopy
+private struct RecipeEditorMacroStrip: View {
+    let preview: RecipeEditorMacroPreview
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        SavoroCard(style: .accent) {
+            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                HStack(spacing: SavoroSpacing.xs) {
+                    Text("Live · per serving")
+                        .font(SavoroTypography.micro)
+                        .foregroundStyle(SavoroColor.accentStrong)
+                        .textCase(.uppercase)
+                    Spacer()
+                    if preview.isPartial {
+                        HStack(spacing: SavoroSpacing.xxs) {
+                            Circle()
+                                .fill(SavoroColor.accentStrong)
+                                .frame(width: SavoroSpacing.xxs, height: SavoroSpacing.xxs)
+                            Text("Partial")
+                                .font(SavoroTypography.micro)
+                                .foregroundStyle(SavoroColor.textMuted)
+                        }
+                    }
+                }
+
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            calories
+                            macroDots
+                        }
+                    } else {
+                        HStack(alignment: .firstTextBaseline, spacing: SavoroSpacing.xs) {
+                            calories
+                            Spacer()
+                            macroDots
+                        }
+                    }
+                }
+
+                RecipeEditorMacroStackedBar(macros: preview.perServingMacros)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(preview.perServingSummaryText)
+        .accessibilityValue(preview.isPartial ? "Partial nutrition details" : "Nutrition details available")
     }
 
-    private func labeledTextField(label: String, text: Binding<String>, isRequired: Bool = false, axis: Axis = .horizontal) -> some View {
-        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-            Text(isRequired ? "\(label) required" : label)
-                .font(SavoroTypography.label)
-                .foregroundStyle(SavoroColor.textBody)
-            if dynamicTypeSize.isAccessibilitySize && axis == .vertical {
-                accessibilityVerticalTextField(
-                    label: label,
-                    text: text,
-                    accessibilityLabel: isRequired ? "\(label), required" : label
+    private var calories: some View {
+        HStack(alignment: .firstTextBaseline, spacing: SavoroSpacing.xxs) {
+            Text(preview.servings == nil ? "—" : format(preview.perServingMacros.calories))
+                .font(SavoroTypography.display)
+                .foregroundStyle(SavoroColor.textStrong)
+                .monospacedDigit()
+            Text("cal")
+                .font(SavoroTypography.callout)
+                .foregroundStyle(SavoroColor.textMuted)
+        }
+    }
+
+    private var macroDots: some View {
+        HStack(spacing: SavoroSpacing.sm) {
+            macroDot(kind: .protein, value: preview.perServingMacros.proteinGrams)
+            macroDot(kind: .carbs, value: preview.perServingMacros.carbsGrams)
+            macroDot(kind: .fat, value: preview.perServingMacros.fatGrams)
+        }
+    }
+
+    private func macroDot(kind: SavoroMacroKind, value: Double) -> some View {
+        HStack(spacing: SavoroSpacing.xxs) {
+            Circle()
+                .fill(kind.color)
+                .frame(
+                    width: SavoroSpacing.xs - SavoroSpacing.compact,
+                    height: SavoroSpacing.xs - SavoroSpacing.compact
                 )
-                .accessibilityIdentifier("recipe-editor-field-\(label.lowercased().replacingOccurrences(of: " ", with: "-"))")
-            } else {
-                TextField(label, text: text, prompt: fieldPrompt(label), axis: axis)
-                    .textFieldStyle(.roundedBorder)
-                    .accessibilityLabel(isRequired ? "\(label), required" : label)
-                    .accessibilityIdentifier("recipe-editor-field-\(label.lowercased().replacingOccurrences(of: " ", with: "-"))")
+            Text("\(kind.shortLabel) \(format(value))g")
+                .font(SavoroTypography.micro.monospacedDigit())
+                .foregroundStyle(SavoroColor.textMuted)
+        }
+    }
+
+    private func format(_ value: Double) -> String {
+        value.rounded() == value ? String(Int(value)) : String(format: "%.1f", value)
+    }
+}
+
+private struct RecipeEditorMacroStackedBar: View {
+    let macros: MacroTotals
+
+    private var weightedValues: [Double] {
+        [macros.proteinGrams * 4, macros.carbsGrams * 4, macros.fatGrams * 9]
+    }
+
+    private var total: Double {
+        weightedValues.reduce(0, +)
+    }
+
+    var body: some View {
+        GeometryReader { proxy in
+            HStack(spacing: SavoroSpacing.none) {
+                Rectangle()
+                    .fill(SavoroColor.macroProtein)
+                    .frame(width: segmentWidth(weightedValues[0], in: proxy.size.width))
+                Rectangle()
+                    .fill(SavoroColor.macroCarbs)
+                    .frame(width: segmentWidth(weightedValues[1], in: proxy.size.width))
+                Rectangle()
+                    .fill(SavoroColor.macroFat)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: SavoroSpacing.xs)
+        .background(SavoroColor.raised)
+        .clipShape(Capsule(style: .continuous))
+        .accessibilityHidden(true)
     }
 
-    private func accessibilityVerticalTextField(
-        label: String,
-        text: Binding<String>,
-        accessibilityLabel: String
-    ) -> some View {
-        ZStack(alignment: .topLeading) {
-            if text.wrappedValue.isEmpty {
-                Text(label)
-                    .font(SavoroTypography.body)
-                    .foregroundStyle(SavoroColor.fieldPlaceholder)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, SavoroSpacing.sm)
-                    .padding(.vertical, SavoroSpacing.xs)
-                    .allowsHitTesting(false)
+    private func segmentWidth(_ value: Double, in availableWidth: CGFloat) -> CGFloat {
+        guard total > 0 else { return 0 }
+        return availableWidth * CGFloat(value / total)
+    }
+}
+
+private struct RecipeEditorIngredientPickerSheetView: View {
+    let onAddFood: (RecipeEditorMockFoodSearchResult) -> Void
+    let onAddFreeText: (RecipeEditorIngredientRow) -> Void
+    @State private var query = ""
+    @State private var isAddingFreeText = false
+    @State private var freeTextIngredient = RecipeEditorIngredientRow.freeText(name: "")
+    @Environment(\.dismiss) private var dismiss
+
+    private var suggestions: [RecipeEditorMockFoodSearchResult] {
+        RecipeEditorMockFoodSearchResult.search(query)
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+                    if isAddingFreeText {
+                        freeTextForm
+                    } else {
+                        SavoroSearchField(placeholder: "Search foods or type your own", text: $query)
+                        if !suggestions.isEmpty {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                                Text("Suggestions")
+                                    .font(SavoroTypography.title2)
+                                    .foregroundStyle(SavoroColor.textStrong)
+                                ForEach(suggestions) { food in
+                                    Button {
+                                        onAddFood(food)
+                                        dismiss()
+                                    } label: {
+                                        SavoroCard(style: .strong, insets: .compact) {
+                                            HStack(spacing: SavoroSpacing.sm) {
+                                                VStack(alignment: .leading, spacing: SavoroSpacing.compact) {
+                                                    Text(food.name)
+                                                        .font(SavoroTypography.bodyEmphasized)
+                                                        .foregroundStyle(SavoroColor.textStrong)
+                                                    Text("\(food.defaultQuantityText) \(food.defaultUnit)")
+                                                        .font(SavoroTypography.callout.monospacedDigit())
+                                                        .foregroundStyle(SavoroColor.textMuted)
+                                                }
+                                                Spacer()
+                                                Image(systemName: "plus.circle.fill")
+                                                    .foregroundStyle(SavoroColor.accentStrong)
+                                            }
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                        }
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                        }
+
+                        SavoroButton(
+                            query.trimmedForRecipeEditor.isEmpty ? "Type your own" : "Add \"\(query)\" as free text",
+                            systemImage: "square.and.pencil",
+                            variant: .secondary
+                        ) {
+                            freeTextIngredient.name = query
+                            isAddingFreeText = true
+                        }
+                    }
+                }
+                .padding(SavoroSpacing.lg)
             }
-            TextField("", text: text, axis: .vertical)
-                .font(SavoroTypography.body)
-                .lineLimit(1...)
-                .padding(.horizontal, SavoroSpacing.sm)
-                .padding(.vertical, SavoroSpacing.xs)
+            .background(SavoroColor.page.ignoresSafeArea())
+            .navigationTitle("Add ingredient")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                }
+            }
         }
-        .background(SavoroColor.cardStrong)
-        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous)
-                .stroke(SavoroColor.borderStrong, lineWidth: 1)
-        )
-        .accessibilityLabel(accessibilityLabel)
     }
 
-    private func fieldPrompt(_ text: String) -> Text {
-        Text(text).foregroundStyle(SavoroColor.fieldPlaceholder)
+    private var freeTextForm: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+            recipeEditorEyebrow("Ingredient")
+            TextField(
+                "Ingredient name",
+                text: $freeTextIngredient.name,
+                prompt: Text("Ingredient name").foregroundStyle(SavoroColor.fieldPlaceholder)
+            )
+            .recipeEditorField()
+            recipeEditorEyebrow("Amount")
+            HStack(spacing: SavoroSpacing.sm) {
+                TextField(
+                    "Quantity",
+                    text: $freeTextIngredient.quantityText,
+                    prompt: Text("Qty").foregroundStyle(SavoroColor.fieldPlaceholder)
+                )
+                .keyboardType(.decimalPad)
+                .recipeEditorField()
+                TextField(
+                    "Unit",
+                    text: $freeTextIngredient.unit,
+                    prompt: Text("Unit").foregroundStyle(SavoroColor.fieldPlaceholder)
+                )
+                .recipeEditorField()
+            }
+            SavoroButton(
+                "Add ingredient",
+                variant: .ink,
+                isDisabled: freeTextIngredient.name.trimmedForRecipeEditor.isEmpty
+            ) {
+                onAddFreeText(freeTextIngredient)
+                dismiss()
+            }
+        }
     }
+}
 
-    @ViewBuilder
-    private var validationSummary: some View {
-        if !form.validationIssues.isEmpty {
-            SavoroCard(style: .plain) {
-                VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                    Text("Public publish validation")
+private struct RecipeEditorIngredientEditSheetView: View {
+    @Binding var ingredient: RecipeEditorIngredientRow
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                        recipeEditorEyebrow("Ingredient")
+                        TextField(
+                            "Ingredient name",
+                            text: $ingredient.name,
+                            prompt: Text("Ingredient name").foregroundStyle(SavoroColor.fieldPlaceholder)
+                        )
+                        .recipeEditorField()
+                    }
+
+                    VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                        recipeEditorEyebrow("Amount")
+                        HStack(spacing: SavoroSpacing.sm) {
+                            TextField(
+                                "Quantity",
+                                text: $ingredient.quantityText,
+                                prompt: Text("Qty").foregroundStyle(SavoroColor.fieldPlaceholder)
+                            )
+                            .keyboardType(.decimalPad)
+                            .recipeEditorField()
+                            TextField(
+                                "Unit",
+                                text: $ingredient.unit,
+                                prompt: Text("Unit").foregroundStyle(SavoroColor.fieldPlaceholder)
+                            )
+                            .recipeEditorField()
+                        }
+                    }
+
+                    if ingredient.hasIncompleteNutrition {
+                        SavoroCard(style: .accent) {
+                            Label(ingredient.nutritionStatusText, systemImage: "info.circle")
+                                .font(SavoroTypography.callout)
+                                .foregroundStyle(SavoroColor.textBody)
+                        }
+                    }
+                }
+                .padding(SavoroSpacing.lg)
+            }
+            .background(SavoroColor.page.ignoresSafeArea())
+            .navigationTitle("Edit ingredient")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+private struct RecipeEditorMacroDetailSheetView: View {
+    let preview: RecipeEditorMacroPreview
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+                    SavoroCard(style: .accent) {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            Text(preview.isPartial ? "Some details are still missing" : "Nutrition details")
+                                .font(SavoroTypography.title2)
+                                .foregroundStyle(SavoroColor.textStrong)
+                            Text(preview.statusText)
+                                .font(SavoroTypography.callout)
+                                .foregroundStyle(SavoroColor.textBody)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    Text(preview.totalSummaryText)
+                        .font(SavoroTypography.bodyEmphasized)
+                        .foregroundStyle(SavoroColor.textStrong)
+                    Text(preview.perServingSummaryText)
+                        .font(SavoroTypography.body)
+                        .foregroundStyle(SavoroColor.textBody)
+                }
+                .padding(SavoroSpacing.lg)
+            }
+            .background(SavoroColor.page.ignoresSafeArea())
+            .navigationTitle("Nutrition")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+private struct RecipeEditorRemixDetailSheetView: View {
+    let detailCopy: String
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+                SavoroCard(style: .accent) {
+                    Label("Remix source attached", systemImage: "arrow.triangle.branch")
                         .font(SavoroTypography.headline)
                         .foregroundStyle(SavoroColor.textStrong)
-                    Text("Complete these fields before previewing a public recipe. Nothing is posted while you review it.")
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textBody)
-                    ForEach(form.validationIssues, id: \.self) { issue in
-                        Label(issue.rawValue, systemImage: "info.circle")
-                    }
-                    .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textBody)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                Text(detailCopy)
+                    .font(SavoroTypography.body)
+                    .foregroundStyle(SavoroColor.textBody)
+                Spacer()
+            }
+            .padding(SavoroSpacing.lg)
+            .background(SavoroColor.page.ignoresSafeArea())
+            .navigationTitle("Remix details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") { dismiss() }
+                }
             }
         }
     }
+}
 
-    private var noticeCard: some View {
-        SavoroCard(style: .glass) {
-            Label(form.privacyCopy, systemImage: "shippingbox")
-                .font(SavoroTypography.callout)
-                .foregroundStyle(SavoroColor.textBody)
+private struct RecipeEditorPublishSheetView: View {
+    let form: RecipeEditorDraftForm
+    @Binding var selectedVisibilityOption: RecipeVisibilityOption
+    @Binding var communityShareSetup: RecipeCommunityShareSetup
+    let hasCommunitySetup: Bool
+    let onApplyVisibility: (RecipeVisibilityOption) -> Void
+    let onSaveCommunitySetup: (RecipeCommunityShareSetup) -> Void
+    @State private var isShowingVisibilityOptions = false
+    @State private var isShowingCommunityShareSetup = false
+    @State private var publishStatusCopy: String?
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+                    if !form.publicPublishValidationIssues.isEmpty {
+                        SavoroCard(style: .plain) {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                                Text("A few details to add")
+                                    .font(SavoroTypography.headline)
+                                    .foregroundStyle(SavoroColor.textStrong)
+                                ForEach(form.publicPublishValidationIssues, id: \.self) { issue in
+                                    Label(issue.rawValue, systemImage: "circle.fill")
+                                        .font(SavoroTypography.callout)
+                                        .foregroundStyle(SavoroColor.textBody)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+
+                    Button { isShowingVisibilityOptions = true } label: {
+                        SavoroCard(style: .strong) {
+                            HStack(spacing: SavoroSpacing.sm) {
+                                Image(systemName: selectedVisibilityOption.systemImage)
+                                    .foregroundStyle(SavoroColor.accentStrong)
+                                VStack(alignment: .leading, spacing: SavoroSpacing.compact) {
+                                    Text("Visibility")
+                                        .font(SavoroTypography.label)
+                                        .foregroundStyle(SavoroColor.textMuted)
+                                    Text(selectedVisibilityOption.title)
+                                        .font(SavoroTypography.bodyEmphasized)
+                                        .foregroundStyle(SavoroColor.textStrong)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(SavoroColor.textMuted)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityHint("Choose who can see this recipe.")
+
+                    if selectedVisibilityOption == .shareToCommunity {
+                        SavoroButton(
+                            hasCommunitySetup ? "Edit community" : "Choose community",
+                            systemImage: "person.3",
+                            variant: .secondary
+                        ) {
+                            isShowingCommunityShareSetup = true
+                        }
+                    }
+
+                    SavoroButton("Preview publish", variant: .ink) {
+                        publishStatusCopy = form.publishPreviewCopy
+                    }
+
+                    if let publishStatusCopy {
+                        Text(publishStatusCopy)
+                            .font(SavoroTypography.callout)
+                            .foregroundStyle(SavoroColor.textBody)
+                            .accessibilityIdentifier("recipe-editor-publish-status")
+                    }
+                }
+                .padding(SavoroSpacing.lg)
+            }
+            .background(SavoroColor.page.ignoresSafeArea())
+            .navigationTitle("Save & publish")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Close") { dismiss() }
+                }
+            }
+        }
+        .sheet(isPresented: $isShowingVisibilityOptions) {
+            RecipeVisibilityOptionSheetView(selectedOption: $selectedVisibilityOption) { option in
+                selectedVisibilityOption = option
+                onApplyVisibility(option)
+            }
+        }
+        .sheet(isPresented: $isShowingCommunityShareSetup) {
+            RecipeCommunityShareSetupSheetView(shareSetup: $communityShareSetup) { setup in
+                communityShareSetup = setup
+                onSaveCommunitySetup(setup)
+            }
         }
     }
+}
+
+private struct RecipeEditorFieldChrome: ViewModifier {
+    let isMultiline: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .font(SavoroTypography.body)
+            .foregroundStyle(SavoroColor.textStrong)
+            .padding(.horizontal, SavoroSpacing.md)
+            .padding(.vertical, isMultiline ? SavoroSpacing.sm : SavoroSpacing.xs)
+            .frame(
+                minHeight: SavoroControlSize.minimumTapTarget + SavoroSpacing.xs,
+                alignment: isMultiline ? .topLeading : .leading
+            )
+            .background(SavoroColor.cardStrong)
+            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                    .stroke(SavoroColor.border, lineWidth: SavoroSpacing.hairline)
+            )
+    }
+}
+
+private extension View {
+    func recipeEditorField(isMultiline: Bool = false) -> some View {
+        modifier(RecipeEditorFieldChrome(isMultiline: isMultiline))
+    }
+}
+
+private func recipeEditorEyebrow(_ title: String) -> some View {
+    Text(title.uppercased())
+        .font(SavoroTypography.micro)
+        .foregroundStyle(SavoroColor.textMuted)
 }
 
 struct RecipeVisibilityOptionSheetView: View {

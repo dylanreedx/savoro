@@ -107,7 +107,9 @@ final class SavoroSmokeJourneyTests: XCTestCase {
             "Warm shawarma-spiced chicken, rice, cucumber salad, and garlic yogurt sauce.",
             for: element("recipe-editor-field-short-description")
         )
-        assertValue("4", for: element("recipe-editor-field-servings"))
+        let servingCount = element("recipe-editor-serving-count")
+        XCTAssertTrue(servingCount.waitForExistence(timeout: 5))
+        XCTAssertEqual(servingCount.value as? String, "4")
         assertValue("4 bowls", for: element("recipe-editor-field-yield"))
         app.swipeUp()
         capture("15-remix-editor-copied-fields")

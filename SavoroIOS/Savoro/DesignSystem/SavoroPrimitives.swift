@@ -95,7 +95,7 @@ struct SavoroCard<Content: View>: View {
 }
 
 struct SavoroButton: View {
-    enum Variant { case primary, secondary, ghost, text }
+    enum Variant { case primary, secondary, soft, ink, ghost, text }
     enum Size { case regular, compact }
 
     private let title: String
@@ -166,7 +166,8 @@ struct SavoroButtonStyle: ButtonStyle {
     private var foreground: Color {
         switch variant {
         case .primary: SavoroColor.textOnAccent
-        case .secondary, .ghost: SavoroColor.textStrong
+        case .ink: SavoroColor.textInverse
+        case .secondary, .soft, .ghost: SavoroColor.textStrong
         case .text: SavoroColor.accentStrong
         }
     }
@@ -175,6 +176,8 @@ struct SavoroButtonStyle: ButtonStyle {
         switch variant {
         case .primary: isPressed ? SavoroColor.accentStrong : SavoroColor.accent
         case .secondary: isPressed ? SavoroColor.accentHighlight : SavoroColor.accentSoft
+        case .soft: isPressed ? SavoroColor.raised : SavoroColor.cardStrong
+        case .ink: isPressed ? SavoroColor.textBody : SavoroColor.inverseSurface
         case .ghost: isPressed ? SavoroColor.raised : .clear
         case .text: isPressed ? SavoroColor.accentSoft : .clear
         }
@@ -182,16 +185,16 @@ struct SavoroButtonStyle: ButtonStyle {
 
     private var border: Color {
         switch variant {
-        case .primary, .text: .clear
-        case .secondary: SavoroColor.glassBorder
+        case .primary, .ink, .text: .clear
+        case .secondary, .soft: SavoroColor.glassBorder
         case .ghost: SavoroColor.border
         }
     }
 
     private var borderWidth: CGFloat {
         switch variant {
-        case .primary, .text: 0
-        case .secondary, .ghost: 1
+        case .primary, .ink, .text: 0
+        case .secondary, .soft, .ghost: 1
         }
     }
 }

@@ -246,6 +246,7 @@ enum SavoroRadius {
 
 enum SavoroControlSize {
     static let minimumTapTarget: CGFloat = 44
+    static let photoDropZoneHeight: CGFloat = 170
 }
 
 enum SavoroShadow {
