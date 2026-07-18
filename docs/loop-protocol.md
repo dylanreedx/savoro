@@ -24,9 +24,11 @@ Fable 5 top session (this repo, root parked on main)
 │     (role files in .pi/agents/ are pinned: workers/reviewers gpt-5.6-sol,
 │      scouts gpt-5.6-terra)
 │
-└─ reviews every diff itself (Fable 5 subagents / code-review skill) before
-   landing. pi reviewers (.pi/agents/*-reviewer.md) may be used as extra
-   signal, but Fable review is the gate.
+└─ ALL task-layer work is gpt-5.6 via pi — Dylan's call (2026-07-17): no Fable
+   subagents. Deep reviews go to pi reviewers (.pi/agents/*-reviewer.md) on
+   gpt-5.6-sol when a diff warrants it. The single Fable orchestrator session
+   still gates every land itself: runs the tests, reads the diff, reads the
+   visual evidence, and is the only thing that touches main.
 ```
 
 ## Per-wake procedure

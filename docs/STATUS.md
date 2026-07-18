@@ -35,18 +35,18 @@ Max one active ticket per track; lands are serialized on `main`.
 
 | # | Ticket | Track | Status | Evidence (commit / run) |
 |---|---|---|---|---|
-| 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | queued | |
+| 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | paused — partial work preserved in worktree; resumes after L-36 lands | |
 | 2 | SAV-129 + L-1 — publish lifecycle, close public-draft logging hole, real `publishedAt` | backend | **landed** | `705510f`, 74/74 tests |
 | 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | queued | |
 | 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | **landed** | `f36349b`, 78/78 tests |
 | 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | queued | |
-| 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | in-progress | |
+| 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | **landed** | `e86cd9b`, 78/78 tests |
 | 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | queued | |
 | 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | queued | |
 | 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | queued — gated on #1 and #3 | |
 | 10 | L-24 — Today UAT bundle for Dylan (checklist + screenshots + limitations) | human-in-loop | queued — gated on #9 | |
-| 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | queued | |
-| 12 | **L-36 — TestFlight readiness (icon, plist, mock-mode Release, archive check, morning checklist) — MUST land tonight** | frontend | queued | |
+| 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | in-progress | |
+| 12 | **L-36 — TestFlight readiness (icon, plist, mock-mode Release, archive check, morning checklist) — MUST land tonight** | frontend | in-progress | |
 | 13 | L-35 — UI consistency guardrails (primitives, layout regression tests, token lint) | frontend | queued | |
 
 L-18 is superseded by #1/#3 (mock tier) and #9 (live tier).
@@ -106,6 +106,14 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 3 (2026-07-17 ~23:30, loop restarted).** Architecture per Dylan:
+gpt-5.6-only task layer, single Fable orchestrator (see loop-protocol.md).
+Landed: L-14 (`e86cd9b`, 78/78) and the final brand mark (`6b2bcdd` —
+chef's-kiss glyph SVG + 1024 icon, visually verified). Dispatched: L-36
+(TestFlight readiness, must-land) and SAV-131 (cookbook). L-20's partial work
+(UI-test target wiring, a11y IDs) preserved in its worktree; resumes after
+L-36 to avoid pbxproj collisions. Heartbeat re-armed.
 
 **Iteration 2 (2026-07-17 ~22:05).** L-12 landed as `f36349b`: goal creation now
 computes true inclusive overlap, rejects (422) ranges overlapping a later goal
