@@ -37,9 +37,9 @@ Max one active ticket per track; lands are serialized on `main`.
 |---|---|---|---|---|
 | 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | **landed** | `c688e00`, 204 unit + 1 UI journey green; 15 step screenshots visually reviewed |
 | 2 | SAV-129 + L-1 — publish lifecycle, close public-draft logging hole, real `publishedAt` | backend | **landed** | `705510f`, 74/74 tests |
-| 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | in-progress | |
+| 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | **landed** | `9e74efc`, 36 references across 9 screens; 213 unit/snapshot + 1 UI green |
 | 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | **landed** | `f36349b`, 78/78 tests |
-| 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | queued | |
+| 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | in-progress | |
 | 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | **landed** | `e86cd9b`, 78/78 tests |
 | 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | queued | |
 | 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | queued | |
@@ -110,6 +110,16 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 10.** L-21 landed (`9e74efc`): the agent-eyes harness is real —
+36 committed reference images (9 screens × light/dark × standard/XXXL, full
+matrix, no trimming), diff artifacts on failure, 213 unit/snapshot + 1 UI
+test green, independently verified. I visually confirmed the dark baseline
+captures the exact L-15 bug (nav title and ring number invisible
+white-on-cream). L-15 (adaptive dark palette) dispatched with a hard proof
+contract: re-record dark references only; light references must stay
+byte-identical. L-37 (USDA foods) still running on backend — the last
+backend ticket of the night.
 
 **Iteration 9 (2026-07-18 ~01:15).** L-28 landed (`583b602`, backend 117/117):
 follow/unfollow, friend request lifecycle with canonical unordered friendship
