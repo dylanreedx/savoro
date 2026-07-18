@@ -41,8 +41,8 @@ Max one active ticket per track; lands are serialized on `main`.
 | 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | **landed** | `f36349b`, 78/78 tests |
 | 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | **landed** | `b1d97e3`; 18 dark refs re-recorded, light refs byte-identical; dark Today visually verified legible + warm |
 | 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | **landed** | `e86cd9b`, 78/78 tests |
-| 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | in-progress | |
-| 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | queued | |
+| 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | **landed** | `9e42776`; 18 XXXL refs re-recorded, standard refs byte-identical; Cookbook XXXL visually verified stacked/unclipped |
+| 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | in-progress | |
 | 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | queued — gated on #1 and #3 | |
 | 10 | L-24 — Today UAT bundle for Dylan (checklist + screenshots + limitations) | human-in-loop | queued — gated on #9 | |
 | 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | **landed** | `d6c910f`, 84/84 tests (1 rework round: contract drift on `mine` fixed) |
@@ -110,6 +110,17 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 13 (2026-07-18 ~01:45).** L-16 landed (`9e42776`): accessibility
+reflow across all nine screens — segmented controls and filter rows stack
+vertically at XXXL, capsules wrap, no clipping. Proof contract held: 18
+*-accessibility-xxxl references re-recorded, standard references
+byte-identical, 213 + 1 UI green independently; Cookbook XXXL visually
+verified. Noted (pre-existing, not a regression): system nav-bar large titles
+render faint in snapshot transition states — cosmetic, snapshot-only. L-17
+(copy jargon sweep) dispatched with instructions to also harden the copy test
+that previously missed rendered strings. Remaining after L-17: L-35, L-23
+gate check.
 
 **Iteration 12 (2026-07-18 ~00:50).** L-15 landed (`b1d97e3`): SavoroColor
 semantic tokens are now dynamic (warm sand-900/950 dark ground, adapted brand
