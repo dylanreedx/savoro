@@ -33,7 +33,7 @@ struct RecipeDetailContentViewModel: Equatable {
         servingOptions = Self.options(around: recipe.currentVersion.servings)
         let requestedServings = selectedServings ?? recipe.currentVersion.servings
         self.selectedServings = Self.normalized(servings: requestedServings, fallback: recipe.currentVersion.servings)
-        servingSelectorHelpText = "Preview shows macros for \(Self.format(self.selectedServings)) selected servings from this frozen version; the base recipe stays at \(Self.format(recipe.currentVersion.servings)) servings."
+        servingSelectorHelpText = "Nutrition is shown for \(Self.format(self.selectedServings)) selected servings. The recipe itself stays at \(Self.format(recipe.currentVersion.servings)) servings."
         let scaledMacros = recipe.currentVersion.perServingMacros.scaled(by: self.selectedServings)
         macros = [
             SavoroMacroValue(kind: .calories, value: scaledMacros.calories),
@@ -201,9 +201,9 @@ struct RecipeDetailActionBarViewModel: Equatable {
         guard actions.contains(action) else { return nil }
         switch action {
         case .save:
-            return SavoroToast(title: "Saved on this device", message: "This recipe is saved locally for the demo only; nothing was published or shared.", style: .success)
+            return SavoroToast(title: "Saved on this device", message: "This recipe is in your cookbook on this device; nothing was published or shared.", style: .success)
         case .edit:
-            return SavoroToast(title: "Owner edit placeholder", message: "This screen shows local owner-only copy; no editor or visibility change was started.", style: .info)
+            return SavoroToast(title: "Ready to edit", message: "Your recipe is unchanged. Open the editor when you’re ready to update it.", style: .info)
         case .fork, .log, .share:
             return nil
         }
@@ -232,7 +232,7 @@ struct ForkRemixConfirmationSheetModel: Equatable {
         self.sourceVersionId = sourceVersionId
         self.sourceTitle = sourceTitle
         subtitle = "Create your own version of \(sourceTitle)."
-        attributionCopy = "Attribution and the source version stay attached so credit and provenance are preserved."
+        attributionCopy = "Credit and details about the source recipe stay with your private copy."
     }
 
     var visibleCopy: String {
@@ -432,7 +432,7 @@ struct RecipeDetailUnavailableViewModel: Equatable {
         case .unauthorized:
             title = "Recipe unavailable"
             message = "We can’t show this recipe right now. No recipe details or personal nutrition data are loaded."
-            supportText = "Try another public recipe placeholder. Nothing was posted, shared, or changed."
+            supportText = "Try another public recipe. Nothing was posted, shared, or changed."
         }
     }
 

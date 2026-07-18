@@ -734,7 +734,7 @@ public struct RecipeEditorIngredientRow: Identifiable, Equatable {
         }
     }
 
-    public static let incompleteNutritionNotice = "Nutrition details are incomplete because this ingredient has no local nutrition metadata. It is excluded from the partial macro preview."
+    public static let incompleteNutritionNotice = "Nutrition details aren’t available for this ingredient, so it isn’t included in the partial macro preview."
     public static let nonComputableMockNutritionNotice = "This food is not included in the partial macro preview until quantity and unit are supported."
 
     private mutating func markEditedEmptyRowAsFreeText() {
@@ -778,7 +778,7 @@ public enum RecipeEditorPhotoStatus: Equatable {
     public var message: String {
         switch self {
         case .idle:
-            return "Photo placeholder has not been invoked."
+            return "No photo selected yet."
         case .mockPlaceholderSelected(let message):
             return message
         }
@@ -795,7 +795,7 @@ public struct RecipeEditorPhotoCommand: Equatable {
         identifier: "mock-local-photo-placeholder",
         startsBackendUpload: false,
         storesPrivateImage: false,
-        feedbackMessage: "Photo noted locally. Picker, upload, and storage are not active in this preview."
+        feedbackMessage: "Photo choices are coming soon. Your recipe draft remains private."
     )
 
     public func invoke() -> RecipeEditorPhotoStatus {
@@ -812,7 +812,7 @@ public struct RecipeEditorPhotoHook: Equatable {
 
     public static let mockPlaceholder = RecipeEditorPhotoHook(
         title: "Recipe photo",
-        body: "Add photo is a local preview for a picker. Nothing is uploaded from this editor.",
+        body: "Photos stay private while you shape this recipe. Nothing is uploaded from this editor.",
         actionTitle: "Add photo",
         systemImage: "photo.badge.plus",
         mockUploadMetadata: [
@@ -1242,7 +1242,7 @@ public struct RecipeEditorPlaceholderView: View {
                     .accessibilityIdentifier("recipe-visibility-matrix-status")
                 if selectedVisibilityOption == .shareToCommunity {
                     if communityShareStore.hasSetup(draftKey: currentDraftKey) {
-                        Text("Mock community saved locally: \(communityShareSetup.selectedCommunity?.name ?? "Choose a community")")
+                        Text("Community saved: \(communityShareSetup.selectedCommunity?.name ?? "Choose a community")")
                             .font(SavoroTypography.callout)
                             .foregroundStyle(SavoroColor.textBody)
                             .accessibilityIdentifier("recipe-community-share-selected-community")
@@ -1251,7 +1251,7 @@ public struct RecipeEditorPlaceholderView: View {
                             .foregroundStyle(SavoroColor.textBody)
                             .accessibilityIdentifier("recipe-community-share-caption-preview")
                     } else {
-                        Text("No mock community setup saved yet. Choose a community and optional caption before this is treated as community-listed locally.")
+                        Text("No community selected yet. Choose a community and optional caption before sharing this recipe there.")
                             .font(SavoroTypography.callout)
                             .foregroundStyle(SavoroColor.textBody)
                             .accessibilityIdentifier("recipe-community-share-setup-needed")
@@ -1286,7 +1286,7 @@ public struct RecipeEditorPlaceholderView: View {
                 Text("Draft actions")
                     .font(SavoroTypography.headline)
                     .foregroundStyle(SavoroColor.textStrong)
-                Text("Save Draft records this form in a local in-session mock store. Publish is only a validation preview and does not create a public listing.")
+                Text("Save Draft keeps this recipe private in this app session. Previewing publish does not create a public listing.")
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textBody)
                 Group {
@@ -1456,7 +1456,7 @@ public struct RecipeEditorPlaceholderView: View {
                     Text("Public publish validation")
                         .font(SavoroTypography.headline)
                         .foregroundStyle(SavoroColor.textStrong)
-                    Text("Complete these fields before previewing a public recipe. This is local mock validation only; nothing is posted.")
+                    Text("Complete these fields before previewing a public recipe. Nothing is posted while you review it.")
                         .font(SavoroTypography.callout)
                         .foregroundStyle(SavoroColor.textBody)
                     ForEach(form.validationIssues, id: \.self) { issue in
@@ -1497,7 +1497,7 @@ struct RecipeVisibilityOptionSheetView: View {
                 VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
                     SavoroCard(style: .elevated) {
                         VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                            SavoroChip(title: "Local mock", systemImage: "eye", variant: .accent)
+                            SavoroChip(title: "Privacy first", systemImage: "eye", variant: .accent)
                             Text("Recipe visibility")
                                 .font(SavoroTypography.title2)
                                 .foregroundStyle(SavoroColor.textStrong)
@@ -1547,7 +1547,7 @@ struct RecipeVisibilityOptionSheetView: View {
                         }
                     }
 
-                    Text("Selected visibility: \(pendingSelection.title). This selection stays pending until you apply it for the current mock flow.")
+                    Text("Selected visibility: \(pendingSelection.title). This choice stays pending until you apply it.")
                         .font(SavoroTypography.callout)
                         .foregroundStyle(SavoroColor.textMuted)
                         .accessibilityIdentifier("recipe-visibility-selected-status")
@@ -1592,7 +1592,7 @@ struct RecipeCommunityShareSetupSheetView: View {
                 VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
                     SavoroCard(style: .elevated) {
                         VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                            SavoroChip(title: "Local mock", systemImage: "person.3", variant: .accent)
+                            SavoroChip(title: "Private setup", systemImage: "person.3", variant: .accent)
                             Text("Community share setup")
                                 .font(SavoroTypography.title2)
                                 .foregroundStyle(SavoroColor.textStrong)
@@ -1605,7 +1605,7 @@ struct RecipeCommunityShareSetupSheetView: View {
                     }
 
                     VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                        Text("Choose a mock community")
+                        Text("Choose a community")
                             .font(SavoroTypography.headline)
                             .foregroundStyle(SavoroColor.textStrong)
                         ForEach(choices) { community in
@@ -1650,7 +1650,7 @@ struct RecipeCommunityShareSetupSheetView: View {
                             Text("Caption")
                                 .font(SavoroTypography.headline)
                                 .foregroundStyle(SavoroColor.textStrong)
-                            Text("Optional public-facing recipe caption for this mock setup. It stays local and is not posted.")
+                            Text("Add an optional recipe caption. It stays private until you choose to publish.")
                                 .font(SavoroTypography.callout)
                                 .foregroundStyle(SavoroColor.textBody)
                             TextField(

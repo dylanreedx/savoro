@@ -22,10 +22,10 @@ struct SavoroDesignSystemGallery: View {
 
     private var galleryHeader: some View {
         VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-            Text("Savoro design-system gallery")
+            Text("Savoro style gallery")
                 .font(SavoroTypography.title1)
                 .foregroundStyle(SavoroColor.textStrong)
-            Text("Scaffold-only preview for tokens and reusable primitives; not a feature screen or visual parity claim.")
+            Text("A warm preview of colors, type, cards, and controls.")
                 .font(SavoroTypography.callout)
                 .foregroundStyle(SavoroColor.textMuted)
         }
@@ -33,7 +33,7 @@ struct SavoroDesignSystemGallery: View {
     }
 
     private var colorTokenSection: some View {
-        GallerySection(title: "Colors and tokens", subtitle: "Warm sand, blush, sage, macro colors, spacing, radius, shadows.") {
+        GallerySection(title: "Colors and style", subtitle: "Warm sand, blush, sage, nutrition colors, spacing, corners, and shadows.") {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: SavoroSpacing.sm)], spacing: SavoroSpacing.sm) {
                 ForEach(Self.colorSwatches) { swatch in
                     VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
@@ -49,24 +49,24 @@ struct SavoroDesignSystemGallery: View {
             }
 
             HStack(spacing: SavoroSpacing.sm) {
-                TokenPill(label: "Spacing md", value: "16")
-                TokenPill(label: "Card radius", value: "16")
-                TokenPill(label: "Glass shadow", value: "y 4")
+                TokenPill(label: "Medium spacing", value: "16")
+                TokenPill(label: "Card corners", value: "16")
+                TokenPill(label: "Soft shadow", value: "y 4")
             }
         }
     }
 
     private var cardsButtonsChipsSection: some View {
-        GallerySection(title: "Cards, buttons, chips, segmented, search", subtitle: "Common controls used by recipe, logging, and social surfaces.") {
+        GallerySection(title: "Cards, buttons, filters, and search", subtitle: "Common controls for recipes, logging, and community spaces.") {
             SavoroSearchField(placeholder: "Search recipes", text: $searchText)
             SavoroSegmentedControl(options: GallerySegment.allCases, selection: $segment)
 
             SavoroCard(style: .glass) {
                 VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                    Text("Reusable recipe card shell")
+                    Text("Reusable recipe card")
                         .font(SavoroTypography.headline)
                         .foregroundStyle(SavoroColor.textStrong)
-                    Text("Scaffold copy for inspecting card elevation, borders, text hierarchy, and actions.")
+                    Text("A calm place for recipe details, source notes, and helpful actions.")
                         .font(SavoroTypography.callout)
                         .foregroundStyle(SavoroColor.textMuted)
                     HStack { SavoroChip(title: "high-protein", variant: .positive); SavoroChip(title: "meal prep", isSelected: true); SavoroChip(title: "creator", variant: .accent) }
@@ -78,7 +78,7 @@ struct SavoroDesignSystemGallery: View {
     }
 
     private var macroNutritionSection: some View {
-        GallerySection(title: "Macro and nutrition primitives", subtitle: "Nutrition objects stay readable and non-shaming.") {
+        GallerySection(title: "Macros and nutrition", subtitle: "Nutrition stays readable, calm, and non-shaming.") {
             HStack { ForEach(Self.sampleMacros) { SavoroMacroPill(macro: $0) } }
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 120), spacing: SavoroSpacing.sm)], spacing: SavoroSpacing.sm) {
                 ForEach(Self.sampleMacros) { SavoroMacroStatBlock(macro: $0) }
@@ -90,7 +90,7 @@ struct SavoroDesignSystemGallery: View {
     }
 
     private var trustAvatarSection: some View {
-        GallerySection(title: "Trust and avatar primitives", subtitle: "Light provenance and friendly social identity without noisy gamification.") {
+        GallerySection(title: "Sources and profiles", subtitle: "Clear source details and friendly social identity without noisy gamification.") {
             FlowStack(spacing: SavoroSpacing.sm) {
                 SavoroTrustBadge(kind: .usdaVerified, detail: "Source attributed")
                 SavoroTrustBadge(kind: .labelVerified, detail: "Package label")
@@ -125,8 +125,8 @@ struct SavoroDesignSystemGallery: View {
 }
 
 private enum GallerySegment: String, CaseIterable, CustomStringConvertible {
-    case tokens = "Tokens"
-    case components = "Components"
+    case tokens = "Style"
+    case components = "Examples"
     case nutrition = "Nutrition"
 
     var description: String { rawValue }

@@ -518,7 +518,7 @@ enum SavoroTrustKind {
         case .openFoodFacts: "Open Food Facts"
         case .labelVerified: "Label verified"
         case .creatorRecipe: "Creator recipe"
-        case .savedSnapshot: "Nutrition snapshot saved"
+        case .savedSnapshot: "Saved as logged"
         }
     }
 

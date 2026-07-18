@@ -30,9 +30,9 @@ enum TodayQuickActionKind: String, CaseIterable, Equatable, Identifiable {
 
     var subtitle: String {
         switch self {
-        case .addMeal: "Private mock session only."
-        case .logRecipe: "Add a private in-memory mock log."
-        case .createRecipe: "Draft a reusable recipe later."
+        case .addMeal: "Choose something to log privately."
+        case .logRecipe: "Add a recipe to your private day."
+        case .createRecipe: "Draft a reusable recipe when you’re ready."
         }
     }
 
@@ -46,8 +46,8 @@ enum TodayQuickActionKind: String, CaseIterable, Equatable, Identifiable {
 
     var toast: SavoroToast {
         SavoroToast(
-            title: "\(title) is scaffolded",
-            message: "Placeholder only — no food log was changed.",
+            title: "\(title) is coming soon",
+            message: "Your private food log is unchanged.",
             style: .info
         )
     }
@@ -64,9 +64,9 @@ struct TodayRecentLogAgainItem: Equatable, Identifiable {
     init(entry: FoodLogEntry) {
         self.id = entry.recipeId ?? entry.foodId ?? entry.id
         self.title = entry.snapshot.displayName
-        self.subtitle = "Last logged as \(entry.mealType.displayTitle.lowercased()) • private snapshot"
+        self.subtitle = "Last logged for \(entry.mealType.displayTitle.lowercased()) • private"
         self.macroSummary = entry.snapshot.rowMacroValues
-        self.sourceLabel = entry.snapshot.sourceLabel ?? "Frozen log snapshot"
+        self.sourceLabel = entry.snapshot.userFacingSourceLabel
     }
 }
 
@@ -294,7 +294,7 @@ private struct TodayCalorieRingCard: View {
             Text(viewModel.calorieSupportText)
                 .font(SavoroTypography.callout)
                 .foregroundStyle(SavoroColor.textMuted)
-            SavoroTrustBadge(kind: .savedSnapshot, detail: "From frozen mock log data")
+            SavoroTrustBadge(kind: .savedSnapshot, detail: "Private to your day")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -325,7 +325,7 @@ private struct TodayQuickActionsCard: View {
                     Text("Quick actions")
                         .font(SavoroTypography.headline)
                         .foregroundStyle(SavoroColor.textStrong)
-                    Text("Fast private logging scaffolds. Mock session only — no backend persistence yet.")
+                    Text("Add to your day in a few taps. Your food log stays private.")
                         .font(SavoroTypography.callout)
                         .foregroundStyle(SavoroColor.textMuted)
                 }
@@ -393,7 +393,7 @@ private struct TodayRecentLogAgainRail: View {
                 Text("Recent & log again")
                     .font(SavoroTypography.headline)
                     .foregroundStyle(SavoroColor.textStrong)
-                Text("Reusable frozen snapshots from your private mock log.")
+                Text("Your recent private entries, ready when you want them.")
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textMuted)
             }
@@ -514,7 +514,7 @@ private struct TodayMealSectionsCard: View {
                 Text("Meal sections")
                     .font(SavoroTypography.headline)
                     .foregroundStyle(SavoroColor.textStrong)
-                Text("Frozen snapshots from today’s private mock log.")
+                Text("Your entries for today, kept private.")
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textMuted)
             }
@@ -645,9 +645,7 @@ private struct TodayMealEntryRow: View {
                 .font(SavoroTypography.micro)
                 .foregroundStyle(SavoroColor.textMuted)
             FlowMacroPills(macros: entry.snapshot.rowMacroValues)
-            if let sourceLabel = entry.snapshot.sourceLabel {
-                SavoroTrustBadge(kind: .savedSnapshot, detail: sourceLabel)
-            }
+            SavoroTrustBadge(kind: .savedSnapshot, detail: entry.snapshot.userFacingSourceLabel)
         }
     }
 }
@@ -678,7 +676,7 @@ private struct FlowMacroPills: View {
 
 private extension FoodLogEntry {
     var quantityText: String {
-        "\(quantity.formatted(.number.precision(.fractionLength(0...1)))) \(quantityUnit) • frozen nutrition snapshot"
+        "\(quantity.formatted(.number.precision(.fractionLength(0...1)))) \(quantityUnit) • saved as logged"
     }
 }
 
@@ -738,7 +736,7 @@ extension DayLog {
                     snapshot: NutritionSnapshot(
                         displayName: "Chicken Shawarma Bowl",
                         macros: try! MacroTotals(calories: 520, proteinGrams: 42, carbsGrams: 48, fatGrams: 18, fiberGrams: 7, sodiumMilligrams: 780),
-                        sourceLabel: "Recipe v20260606",
+                        sourceLabel: "The version you logged",
                         capturedAt: ISO8601DateFormatter().date(from: "2026-06-06T12:30:00Z")!
                     ),
                     sourceType: .recipe,

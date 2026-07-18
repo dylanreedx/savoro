@@ -83,6 +83,17 @@ struct NutritionSnapshot: Codable, Equatable, Sendable {
         self.sourceLabel = sourceLabel
         self.capturedAt = capturedAt
     }
+
+    var userFacingSourceLabel: String {
+        guard let sourceLabel else { return "Saved exactly as logged" }
+        let normalized = sourceLabel.lowercased()
+        let implementationTerms = ["mock", "fixture", "frozen", "recipe_", "version_", "fork_", "user_"]
+        let containsRawDatedVersion = normalized.range(of: #"\bv\d{6,}\b"#, options: .regularExpression) != nil
+        if implementationTerms.contains(where: normalized.contains) || containsRawDatedVersion {
+            return "The version you logged"
+        }
+        return sourceLabel
+    }
 }
 
 enum MealType: String, Codable, CaseIterable, Equatable, Sendable {

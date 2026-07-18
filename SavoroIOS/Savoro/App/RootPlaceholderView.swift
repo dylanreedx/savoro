@@ -481,11 +481,11 @@ struct SavoroTabShellView: View {
             }
             activeToast = SavoroToast(
                 title: "Added to Today privately",
-                message: "Frozen recipe snapshot added for this app session only.",
+                message: "Recipe added to your private day.",
                 style: .success
             )
             activeSheet = nil
-            return .succeeded("Frozen recipe snapshot added for this app session only.")
+            return .succeeded("Recipe added to your private day.")
         } catch {
             activeToast = SavoroToast(
                 title: "Log was not added",

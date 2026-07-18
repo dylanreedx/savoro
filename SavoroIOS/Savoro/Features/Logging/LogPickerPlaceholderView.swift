@@ -20,10 +20,10 @@ struct LogPickerViewModel: Equatable {
 
         var subtitle: String {
             switch self {
-            case .recents: "Private mock items from your recent logging context."
+            case .recents: "Entries you’ve logged before, kept private."
             case .saved: "Recipes you saved for quicker logging later."
             case .mine: "Your reusable recipe drafts and published recipes."
-            case .searchResults: "Local mock matches across foods and recipes."
+            case .searchResults: "Matches from your recipes, saved ideas, and foods."
             }
         }
     }
@@ -99,8 +99,8 @@ struct LogPickerViewModel: Equatable {
         self.mealType = mealType
         self.sections = sections ?? Self.defaultSections
         self.mockIssue = mockIssue
-        self.privacyCopy = "Your logs, goals, and daily progress stay private. These mock suggestions do not publish or sync anything."
-        self.scaffoldCopy = "Local mock search only — meal context is preserved for recipe handoff. No-result and retry states are local mock UI; no backend search or persistence is used."
+        self.privacyCopy = "Your logs, goals, and daily progress stay private. Choosing an item never shares it."
+        self.scaffoldCopy = "Choose a recipe to review servings, meal, and date before adding it."
     }
 
     var title: String { "Log picker" }
@@ -123,8 +123,8 @@ struct LogPickerViewModel: Equatable {
     var noResultsState: EmptyState {
         EmptyState(
             systemImage: "magnifyingglass",
-            title: "No local matches yet",
-            message: "We could not find a mock food or recipe for “\(query.trimmingCharacters(in: .whitespacesAndNewlines))”. Try a saved recipe name or clear search to browse quick picks.",
+            title: "No matches yet",
+            message: "We could not find a food or recipe for “\(query.trimmingCharacters(in: .whitespacesAndNewlines))”. Try a saved recipe name or clear search to browse quick picks.",
             primaryActionTitle: "Clear search",
             primaryActionMetadata: "clear-local-search-query",
             secondaryActionTitle: nil,
@@ -134,8 +134,8 @@ struct LogPickerViewModel: Equatable {
 
     static let recoverableErrorState = EmptyState(
         systemImage: "exclamationmark.triangle.fill",
-        title: "Mock search needs a refresh",
-        message: "This is a local test state. Your private Today data is unchanged, and no backend request was made.",
+        title: "Search needs a refresh",
+        message: "We couldn’t refresh these choices. Your private Today log is unchanged.",
         primaryActionTitle: "Try again",
         primaryActionMetadata: "retry-local-mock-search",
         secondaryActionTitle: "Clear search",
@@ -172,20 +172,20 @@ struct LogPickerViewModel: Equatable {
             Item(
                 id: "recent_shawarma_bowl",
                 title: "Chicken Shawarma Bowl",
-                subtitle: "Last logged privately for lunch • frozen recipe snapshot",
+                subtitle: "Last logged privately for lunch • saved as logged",
                 sectionKind: .recents,
                 itemType: .recipe,
                 recipeId: "recipe_shawarma_bowl",
                 recipeVersionId: "recipe_version_20260606",
                 foodId: nil,
-                sourceLabel: "Recipe v20260606",
+                sourceLabel: "The recipe you logged",
                 macros: try! MacroTotals(calories: 520, proteinGrams: 42, carbsGrams: 48, fatGrams: 18),
                 isPrivateContext: true
             ),
             Item(
                 id: "recent_greek_yogurt",
                 title: "Greek Yogurt",
-                subtitle: "Recent private food snapshot • one cup",
+                subtitle: "Recent private entry • one cup",
                 sectionKind: .recents,
                 itemType: .food,
                 recipeId: nil,
@@ -200,7 +200,7 @@ struct LogPickerViewModel: Equatable {
             Item(
                 id: "saved_lentil_soup",
                 title: "Lemony Lentil Soup",
-                subtitle: "Saved creator recipe • ready when search is wired",
+                subtitle: "Saved creator recipe • ready to log",
                 sectionKind: .saved,
                 itemType: .recipe,
                 recipeId: "recipe_lentil_soup",
@@ -215,7 +215,7 @@ struct LogPickerViewModel: Equatable {
             Item(
                 id: "mine_oat_bowl",
                 title: "Berry Oat Breakfast Bowl",
-                subtitle: "Your recipe • mock picker item",
+                subtitle: "Your recipe • ready to log",
                 sectionKind: .mine,
                 itemType: .recipe,
                 recipeId: "recipe_berry_oat_bowl",
@@ -443,7 +443,7 @@ private struct LogPickerItemRow: View {
         case .recipe:
             return mealType.map { "Opens Log Recipe with \($0.displayTitle) preselected. Today changes only after confirmation." } ?? "Opens Log Recipe. Today changes only after confirmation."
         case .food:
-            return mealType.map { "Food selection preserves \($0.displayTitle) context, but food logging is scaffolded and Today is unchanged." } ?? "Food logging is scaffolded; Today is unchanged."
+            return mealType.map { "Food logging is coming soon. Your \($0.displayTitle) choice is remembered, and Today is unchanged." } ?? "Food logging is coming soon; Today is unchanged."
         }
     }
 }

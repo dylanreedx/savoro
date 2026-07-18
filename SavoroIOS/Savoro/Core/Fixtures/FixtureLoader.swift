@@ -26,8 +26,8 @@ enum FixtureLoaderError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .missingFixture(let name):
-            return "Missing JSON fixture named \(name)."
+        case .missingFixture:
+            return "Something Savoro needs is unavailable right now."
         }
     }
 }

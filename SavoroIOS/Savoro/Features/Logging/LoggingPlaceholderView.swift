@@ -63,10 +63,10 @@ struct LogRecipeSheetViewModel: Equatable {
         self.locale = Locale(identifier: "en_US_POSIX")
         self.primaryButtonTitle = "Log privately"
         self.secondaryButtonTitle = "Not now"
-        self.scaffoldNotice = "Mock only — this adds a private in-memory log for this app session."
-        self.privacyCopy = "This mock log stays in your private Today state only. No backend or public surface is updated."
-        self.provenanceTitle = "Frozen log snapshot"
-        self.provenanceDetail = "Recipe version reference: \(recipeVersionId). The logged row keeps this version and frozen nutrition."
+        self.scaffoldNotice = "You can change the serving, meal, or date before adding it."
+        self.privacyCopy = "This entry stays in your private Today log and never appears on public surfaces."
+        self.provenanceTitle = "Saved as you log it"
+        self.provenanceDetail = "Savoro keeps the recipe and nutrition shown here with this entry."
         self.perServingMacros = mockRecipe.perServingMacros
     }
 
@@ -85,7 +85,7 @@ struct LogRecipeSheetViewModel: Equatable {
             recipeVersionId: "recipe_version_20260606",
             title: "Chicken Shawarma Bowl",
             creator: "Avery Kitchen",
-            sourceLabel: "Frozen mock recipe v20260606",
+            sourceLabel: "Recipe you selected",
             perServingMacros: try! MacroTotals(calories: 520, proteinGrams: 42, carbsGrams: 48, fatGrams: 18, fiberGrams: 7, sodiumMilligrams: 780)
         )
         let recipes = [
@@ -94,16 +94,16 @@ struct LogRecipeSheetViewModel: Equatable {
                 recipeId: "recipe_lentil_soup",
                 recipeVersionId: "recipe_version_lentil_20260604",
                 title: "Lemony Lentil Soup",
-                creator: "Creator recipe",
-                sourceLabel: "Frozen mock recipe lentil v20260604",
+                creator: "Maya Reed",
+                sourceLabel: "Creator recipe",
                 perServingMacros: try! MacroTotals(calories: 340, proteinGrams: 19, carbsGrams: 46, fatGrams: 9)
             ),
             MockRecipe(
                 recipeId: "recipe_berry_oat_bowl",
                 recipeVersionId: "recipe_version_oats_20260602",
                 title: "Berry Oat Breakfast Bowl",
-                creator: "Your recipe",
-                sourceLabel: "Frozen mock recipe oats v20260602",
+                creator: "You",
+                sourceLabel: "Your recipe",
                 perServingMacros: try! MacroTotals(calories: 410, proteinGrams: 24, carbsGrams: 58, fatGrams: 11)
             )
         ]
@@ -179,7 +179,7 @@ struct LogRecipeSheetViewModel: Equatable {
     }
 
     var versionCopy: String {
-        "Recipe version reserved: \(recipeVersionId)"
+        "Savoro will keep the version you log."
     }
 
     var macroPreviewTitle: String {
@@ -217,7 +217,7 @@ struct LogRecipeSheetViewModel: Equatable {
             snapshot: NutritionSnapshot(
                 displayName: title,
                 macros: snapshotMacros,
-                sourceLabel: "Recipe \(recipeVersionId)",
+                sourceLabel: "The version you logged",
                 capturedAt: now
             )
         )
@@ -241,11 +241,11 @@ struct LoggingPlaceholderView: View {
     var body: some View {
         PlaceholderFeatureView(
             title: "Logging",
-            subtitle: "Supporting flow scaffold for future log food/recipe sheets and frozen nutrition snapshots.",
+            subtitle: "Private food and recipe logging is coming soon.",
             foundationNotes: [
-                "Reserve serving, meal, date, and confirmation concepts for later logging work.",
-                "Emphasize that confirmed logs will store frozen nutrition snapshots.",
-                "Keep this as a mock session-only scaffold; no backend persistence is implemented."
+                "Choose a serving, meal, and date before you add an entry.",
+                "Entries keep the nutrition shown when you log them.",
+                "Your food log and daily nutrition stay private to you."
             ],
             accent: SavoroColor.protein
         )
@@ -292,7 +292,7 @@ struct LogRecipeSheetView: View {
                 LogRecipeMealDateCard(viewModel: viewModel, canEditInputs: submissionStatus.canEditInputs) { viewModel = $0 }
                 SavoroNutritionSnapshotCard(
                     title: viewModel.macroPreviewTitle,
-                    subtitle: "From frozen mock recipe nutrition. No daily goal data is shown here.",
+                    subtitle: "Nutrition for the serving amount above. Your daily goals stay private.",
                     macros: viewModel.macroPreview.map(\.savoroValue)
                 )
                 LogRecipePrivacyCard(viewModel: viewModel)
@@ -336,7 +336,7 @@ private struct LogRecipeIdentityCard: View {
     var body: some View {
         SavoroCard(style: .elevated) {
             VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                SavoroChip(title: "Recipe logging scaffold", systemImage: "fork.knife.circle.fill", variant: .accent)
+                SavoroChip(title: "Private recipe log", systemImage: "fork.knife.circle.fill", variant: .accent)
                 Text(viewModel.title)
                     .font(SavoroTypography.title2)
                     .foregroundStyle(SavoroColor.textStrong)
@@ -416,7 +416,7 @@ private struct LogRecipeServingCard: View {
                         }
                     }
                 }
-                Text("Local preview only. Range: 0.5–6 servings in 0.5 serving steps; changing this updates macros above without adding a food log.")
+                Text("Choose 0.5–6 servings in half-serving steps. The nutrition above updates before anything is added.")
                     .font(SavoroTypography.micro)
                     .foregroundStyle(SavoroColor.textMuted)
             }
@@ -466,7 +466,7 @@ private struct LogRecipeMealDateCard: View {
                         }
                     }
                 }
-                Text("Local preview only. Meal and date update this sheet metadata without opening search, calendar, or logging flows.")
+                Text("Choose where this belongs in your day. Nothing is added until you confirm.")
                     .font(SavoroTypography.micro)
                     .foregroundStyle(SavoroColor.textMuted)
             }
@@ -535,11 +535,11 @@ private struct LogRecipeSubmissionStateCard: View {
             case .idle:
                 EmptyView()
             case .submitting:
-                stateRow(icon: "hourglass", title: "Adding privately…", detail: "Saving this frozen snapshot to Today for this mock session.")
+                stateRow(icon: "hourglass", title: "Adding privately…", detail: "Keeping this version with your private Today entry.")
             case .succeeded(let message):
                 stateRow(icon: "checkmark.circle.fill", title: "Added privately", detail: message)
             case .errored(let message):
-                stateRow(icon: "exclamationmark.triangle.fill", title: "Could not add this mock log", detail: message)
+                stateRow(icon: "exclamationmark.triangle.fill", title: "Could not add this entry", detail: message)
             }
         }
     }

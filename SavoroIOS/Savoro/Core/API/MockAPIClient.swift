@@ -176,10 +176,10 @@ enum MockAPIClientError: LocalizedError, Equatable {
 
     var errorDescription: String? {
         switch self {
-        case .unimplemented(let path):
-            return "No mock response is registered for \(path)."
-        case .decoding(let path, let error):
-            return "Mock response for \(path) could not be decoded: \(error)"
+        case .unimplemented:
+            return "This action isn’t available right now."
+        case .decoding:
+            return "We couldn’t complete this action. Please try again."
         }
     }
 }
