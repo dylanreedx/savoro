@@ -56,7 +56,8 @@ work continues; only UAT-gated items park):
 
 | # | Ticket | Track | Status |
 |---|---|---|---|
-| S1 | L-3 — discover/search endpoints (gate met; foods half deferred to L-37) | backend | in-progress |
+| S1 | L-3 — discover/search endpoints (gate met; foods half deferred to L-37) | backend | **landed** — `9d3fbe3`, 91/91 tests |
+| S2b | SAV-133 — profiles/usernames (follow/friends stays L-28) | backend | in-progress |
 | S2 | SAV-133 — profiles/usernames endpoints | backend | queued |
 | S3 | L-2 — logs management endpoints | backend | queued |
 | S4 | SAV-72 — editor save/publish UX (mock-first) | frontend | queued |
@@ -106,6 +107,14 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 6 (2026-07-17 ~23:55).** L-3 landed (`9d3fbe3`, backend 91/91):
+discover rails (recent real, featured/trending = documented deterministic
+placeholder — no fake engagement data) + search with SQL-level
+public+published filtering verified in the diff; profiles/communities return
+contract-shaped empty sets pending their domains. SAV-133 (profiles/usernames)
+dispatched. L-20 (XCUITest) still building on the frontend track — long
+simulator cycles, process alive.
 
 **Iteration 5 (2026-07-17 ~23:30).** SAV-131 landed (`d6c910f`, backend now
 84/84) after one rework round — the review gate caught contract drift (`mine`
