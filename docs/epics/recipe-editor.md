@@ -16,6 +16,33 @@ Design reference: `savoro-mvp/project/app/screens-recipe.jsx` + design system.
 IDs are `RE-n`. Track is frontend unless marked (integration). Order within
 each cluster ≈ build order. ~8 batches, each independently landable.
 
+## Batch D — DESIGN FIRST (gates everything; nothing builds until Dylan approves D-3)
+
+The page's problem is not missing features — it works. It looks horrible and
+convoluted. So design is the first deliverable, and every later ticket is
+held to it visually, not just functionally.
+
+- **RE-D1 — Extract the design reference.** Render the Claude Design
+  prototype's recipe/editor screens (savoro-mvp/project — open in a browser,
+  screenshot at device width) plus its design-system tokens into
+  `docs/epics/recipe-editor-design/` as reference images. This is the taste
+  benchmark the implementation drifted from and was never held to.
+- **RE-D2 — Reduction pass (the anti-convolution spec).** Inventory every
+  element currently on the editor; for each: keep visible / move behind
+  progressive disclosure / delete. Rule: the page opens showing at most
+  photo slot, title, and one inviting "add ingredients" action — depth
+  reveals itself only when asked. Caveat walls, meters, and secondary
+  controls are collapsed by default. Output: one-page spec with wireframe
+  sketches per section state.
+- **RE-D3 — Editor visual redesign (the "make it beautiful" ticket).**
+  Reskin the editor to match RE-D1's reference + RE-D2's reduction spec —
+  layout, spacing, hierarchy, disclosure — BEFORE any new mechanics. Lands
+  as a full snapshot set that gets compared side-by-side against the
+  reference images. **Dylan reviews these snapshots and vetoes/approves the
+  direction here.** Every subsequent RE ticket must match this design; the
+  loop's review gate for this epic includes eyeballing new snapshots against
+  the D-1 references.
+
 ## Batch 0 — Dylan's named polish complaints (do first, small)
 
 - **RE-1 — Today card spacing audit.** (Today page, but Dylan-named.) Uniform
@@ -168,8 +195,15 @@ each cluster ≈ build order. ~8 batches, each independently landable.
 
 ## Execution notes for the loop
 
-- Order: Batch 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7. One ticket per worker, one
-  batch roughly per loop session; RE-19/RE-38 are integration-tracked.
+- Order: Batch D → 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7. Batch D is a HARD GATE:
+  RE-D3's approved snapshots become the visual contract; a later ticket that
+  drifts from them is a review blocker even if all tests pass. One ticket
+  per worker, one batch roughly per loop session; RE-19/RE-38 are
+  integration-tracked.
+- Review rule for this epic (adds to loop-protocol visual bar): every
+  frontend ticket's snapshots are compared side-by-side against
+  docs/epics/recipe-editor-design/ references — "tests green" without
+  "matches the design" is a rework, not a land.
 - Every ticket lands with: snapshot evidence (new/updated refs), guardrail
   tests where layout is involved, and zero banned-language regressions.
 - RE-3's IA decision gates Batches 2+ — it lands first with Dylan able to
