@@ -39,9 +39,9 @@ Max one active ticket per track; lands are serialized on `main`.
 | 2 | SAV-129 + L-1 — publish lifecycle, close public-draft logging hole, real `publishedAt` | backend | **landed** | `705510f`, 74/74 tests |
 | 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | **landed** | `9e74efc`, 36 references across 9 screens; 213 unit/snapshot + 1 UI green |
 | 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | **landed** | `f36349b`, 78/78 tests |
-| 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | in-progress | |
+| 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | **landed** | `b1d97e3`; 18 dark refs re-recorded, light refs byte-identical; dark Today visually verified legible + warm |
 | 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | **landed** | `e86cd9b`, 78/78 tests |
-| 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | queued | |
+| 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | in-progress | |
 | 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | queued | |
 | 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | queued — gated on #1 and #3 | |
 | 10 | L-24 — Today UAT bundle for Dylan (checklist + screenshots + limitations) | human-in-loop | queued — gated on #9 | |
@@ -110,6 +110,15 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 12 (2026-07-18 ~00:50).** L-15 landed (`b1d97e3`): SavoroColor
+semantic tokens are now dynamic (warm sand-900/950 dark ground, adapted brand
+accents), hardcoded whites fixed. Proof contract held exactly — 18 dark
+references re-recorded, ALL light references byte-identical, full suite green
+independently. I visually verified the new dark Today: legible everywhere,
+warm not black. Dark mode goes from unusable to genuinely good. L-16 (XXXL
+reflow) dispatched with the same style of proof contract (re-record only
+*-accessibility-xxxl refs; standard refs must stay byte-identical).
 
 **Iteration 11.** L-37 landed (`804cd84`, backend 124/124): foods +
 food_servings schema, GET /v1/foods/search and /v1/foods/:id with explicit
