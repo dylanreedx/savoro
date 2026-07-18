@@ -240,6 +240,25 @@ export async function listPublicRecipes(
   viewerUserId: string,
   options: RecipeListOptions,
 ): Promise<RecipeSummaryPage> {
+  return listPublicRecipePage(db, viewerUserId, options)
+}
+
+/** Public, published recipes owned by one public profile. */
+export async function listPublicRecipesByOwner(
+  db: Db,
+  viewerUserId: string,
+  ownerUserId: string,
+  options: RecipeListOptions,
+): Promise<RecipeSummaryPage> {
+  return listPublicRecipePage(db, viewerUserId, options, ownerUserId)
+}
+
+async function listPublicRecipePage(
+  db: Db,
+  viewerUserId: string,
+  options: RecipeListOptions,
+  ownerUserId?: string,
+): Promise<RecipeSummaryPage> {
   // All lifecycle-published versions have publishedAt. The fallback only keeps
   // legacy/imported public rows deterministic if that historical field is absent.
   const publishedSort = sql<string>`coalesce(${recipeVersions.publishedAt}, ${recipes.updatedAt})`
@@ -257,6 +276,7 @@ export async function listPublicRecipes(
       and(
         eq(recipes.visibility, 'public'),
         eq(recipes.status, 'published'),
+        ownerUserId === undefined ? undefined : eq(recipes.ownerUserId, ownerUserId),
         cursorFilter,
       ),
     )

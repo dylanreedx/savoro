@@ -31,10 +31,11 @@ export function mapRecipeSummary(rows: RecipeSummaryRows, viewerUserId: string) 
     forkedFromVersionId: recipe.forkedFromVersionId,
     creator: {
       userId: owner.id,
-      // Real usernames arrive with profiles (SAV-133). The user id is a safe
-      // placeholder; never derive this from email.
-      username: owner.id,
-      displayName: owner.displayName ?? owner.id,
+      // Username setup happens after account creation. Use the real username
+      // once present; pre-onboarding users keep a stable, non-email id fallback.
+      username: owner.username ?? owner.id,
+      displayName: owner.displayName ?? owner.username ?? owner.id,
+      avatarUrl: owner.avatarUrl,
     },
     perServingMacros: macros(version),
     tags: [],

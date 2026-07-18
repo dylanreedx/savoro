@@ -6,11 +6,23 @@ export const users = sqliteTable(
     id: text('id').primaryKey(),
     email: text('email').unique(),
     appleSub: text('apple_sub'),
+    username: text('username'),
     displayName: text('display_name'),
+    bio: text('bio'),
+    avatarUrl: text('avatar_url'),
+    websiteUrl: text('website_url'),
+    instagramUrl: text('instagram_url'),
+    tiktokUrl: text('tiktok_url'),
+    profileVisibility: text('profile_visibility', { enum: ['private', 'public'] })
+      .notNull()
+      .default('private'),
     createdAt: text('created_at').notNull(),
     updatedAt: text('updated_at').notNull(),
   },
-  (t) => [uniqueIndex('uq_users_apple_sub').on(t.appleSub)],
+  (t) => [
+    uniqueIndex('uq_users_apple_sub').on(t.appleSub),
+    uniqueIndex('uq_users_username').on(t.username),
+  ],
 )
 
 export const sessions = sqliteTable(
