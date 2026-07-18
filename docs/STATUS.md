@@ -45,7 +45,7 @@ Max one active ticket per track; lands are serialized on `main`.
 | 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | queued | |
 | 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | queued — gated on #1 and #3 | |
 | 10 | L-24 — Today UAT bundle for Dylan (checklist + screenshots + limitations) | human-in-loop | queued — gated on #9 | |
-| 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | in-progress | |
+| 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | rework (1 of 2) — implementation solid (84/84) but `mine` excluded archived recipes, contradicting contract "any status"; focused fix dispatched | |
 | 12 | **L-36 — TestFlight readiness (icon, plist, mock-mode Release, archive check, morning checklist) — MUST land tonight** | frontend | **landed** | `b851a2f`, 204/204 + Release archive OK; checklist at SavoroIOS/TestFlightChecklist.md |
 | 13 | L-35 — UI consistency guardrails (primitives, layout regression tests, token lint) | frontend | queued | |
 
