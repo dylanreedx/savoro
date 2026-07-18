@@ -210,6 +210,8 @@ enum SavoroTypography {
     static let callout = Font.system(size: 14, weight: .regular, design: fontDesign)
     static let label = Font.system(size: 12, weight: .semibold, design: fontDesign)
     static let micro = Font.system(size: 10, weight: .semibold, design: fontDesign)
+    static let stateSymbol = Font.system(size: 34, weight: .semibold)
+    static let heroSymbol = Font.system(size: 96, weight: .semibold)
 
     static let numericBody = body.monospacedDigit()
     static let numericHeadline = headline.monospacedDigit()
@@ -217,6 +219,10 @@ enum SavoroTypography {
 }
 
 enum SavoroSpacing {
+    static let avatarOverlap: CGFloat = -8
+    static let none: CGFloat = 0
+    static let hairline: CGFloat = 1
+    static let compact: CGFloat = 2
     static let xxs: CGFloat = 4
     static let xs: CGFloat = 8
     static let sm: CGFloat = 12
@@ -232,12 +238,18 @@ enum SavoroSpacing {
 enum SavoroRadius {
     static let chip: CGFloat = 10
     static let card: CGFloat = 16
+    static let overlayCard: CGFloat = 18
     static let glass: CGFloat = 20
     static let sheet: CGFloat = 28
     static let pill: CGFloat = 999
 }
 
+enum SavoroControlSize {
+    static let minimumTapTarget: CGFloat = 44
+}
+
 enum SavoroShadow {
+    static let none = ShadowToken(color: .clear, radius: 0, x: 0, y: 0)
     static let glass = ShadowToken(color: .black.opacity(0.05), radius: 24, x: 0, y: 4)
     static let glassLarge = ShadowToken(color: .black.opacity(0.08), radius: 40, x: 0, y: 8)
     static let floating = ShadowToken(color: .black.opacity(0.10), radius: 60, x: 0, y: 20)

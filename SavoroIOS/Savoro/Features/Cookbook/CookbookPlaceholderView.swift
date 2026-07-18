@@ -348,17 +348,8 @@ struct CookbookPlaceholderView: View {
             Text("Browse your recipes, saved public ideas, and private local drafts.")
                 .font(SavoroTypography.body)
                 .foregroundStyle(SavoroColor.textBody)
-            if dynamicTypeSize.isAccessibilitySize {
-                SavoroButton(viewModel.createRecipeTitle, systemImage: "plus.circle.fill") {
-                    onOpenRoute(CookbookLibraryViewModel.createRecipeRoute)
-                }
-            } else {
-                Button {
-                    onOpenRoute(CookbookLibraryViewModel.createRecipeRoute)
-                } label: {
-                    Label(viewModel.createRecipeTitle, systemImage: "plus.circle.fill")
-                }
-                .buttonStyle(.borderedProminent)
+            SavoroButton(viewModel.createRecipeTitle, systemImage: "plus.circle.fill") {
+                onOpenRoute(CookbookLibraryViewModel.createRecipeRoute)
             }
             Text(viewModel.createRecipeSubtitle)
                 .font(SavoroTypography.micro)

@@ -45,31 +45,28 @@ struct PlaceholderFeatureView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                    Text(Self.detailsHeading)
-                        .font(.headline)
-                        .foregroundStyle(SavoroColor.ink)
-                        .fixedSize(horizontal: false, vertical: true)
+                SavoroCard(style: .overlay) {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        Text(Self.detailsHeading)
+                            .font(.headline)
+                            .foregroundStyle(SavoroColor.ink)
+                            .fixedSize(horizontal: false, vertical: true)
 
-                    ForEach(foundationNotes, id: \.self) { note in
-                        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                            Circle()
-                                .fill(accent.opacity(0.22))
-                                .frame(width: SavoroSpacing.xs, height: SavoroSpacing.xs)
+                        ForEach(foundationNotes, id: \.self) { note in
+                            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                                Circle()
+                                    .fill(accent.opacity(0.22))
+                                    .frame(width: SavoroSpacing.xs, height: SavoroSpacing.xs)
 
-                            Text(note)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                                Text(note)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(SavoroSpacing.md)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(
-                    SavoroColor.cardOverlay,
-                    in: RoundedRectangle(cornerRadius: SavoroRadius.glass, style: .continuous)
-                )
 
                 Text(Self.footerCopy)
                     .font(.footnote)
@@ -86,8 +83,8 @@ struct PlaceholderFeatureView: View {
 
     private var standardBody: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+                VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
                     Text(Self.statusCopy)
                         .font(.caption.weight(.semibold))
                         .textCase(.uppercase)
@@ -102,34 +99,34 @@ struct PlaceholderFeatureView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text(Self.detailsHeading)
-                        .font(.headline)
-                        .foregroundStyle(SavoroColor.ink)
+                SavoroCard(style: .overlay) {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        Text(Self.detailsHeading)
+                            .font(.headline)
+                            .foregroundStyle(SavoroColor.ink)
 
-                    ForEach(foundationNotes, id: \.self) { note in
-                        HStack(alignment: .top, spacing: 10) {
-                            Circle()
-                                .fill(accent.opacity(0.22))
-                                .frame(width: 8, height: 8)
-                                .padding(.top, 6)
+                        ForEach(foundationNotes, id: \.self) { note in
+                            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                                Circle()
+                                    .fill(accent.opacity(0.22))
+                                    .frame(width: SavoroSpacing.xs, height: SavoroSpacing.xs)
+                                    .padding(.top, SavoroSpacing.xs)
 
-                            Text(note)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                                Text(note)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(SavoroColor.cardOverlay, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
 
                 Text(Self.footerCopy)
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                    .padding(.top, 4)
+                    .padding(.top, SavoroSpacing.xxs)
             }
-            .padding(20)
+            .padding(SavoroSpacing.lg)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(SavoroColor.warmSand)

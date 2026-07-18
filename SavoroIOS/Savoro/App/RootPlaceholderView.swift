@@ -731,29 +731,23 @@ struct SavoroToastHost: ViewModifier {
     }
 
     private func toastView(_ toast: SavoroToast) -> some View {
-        HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-            Image(systemName: systemImage(for: toast.style))
-                .foregroundStyle(accent(for: toast.style))
-            VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                Text(toast.title)
-                    .font(SavoroTypography.bodyEmphasized)
-                    .foregroundStyle(SavoroColor.textStrong)
-                if let message = toast.message {
-                    Text(message)
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textBody)
+        SavoroCard(style: .toast) {
+            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                Image(systemName: systemImage(for: toast.style))
+                    .foregroundStyle(accent(for: toast.style))
+                VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+                    Text(toast.title)
+                        .font(SavoroTypography.bodyEmphasized)
+                        .foregroundStyle(SavoroColor.textStrong)
+                    if let message = toast.message {
+                        Text(message)
+                            .font(SavoroTypography.callout)
+                            .foregroundStyle(SavoroColor.textBody)
+                    }
                 }
+                Spacer(minLength: 0)
             }
-            Spacer(minLength: 0)
         }
-        .padding(SavoroSpacing.md)
-        .background(SavoroColor.cardStrong)
-        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
-                .stroke(SavoroColor.glassBorder, lineWidth: 1)
-        )
-        .savoroShadow(SavoroShadow.glass)
         .accessibilityElement(children: .combine)
     }
 

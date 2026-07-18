@@ -317,7 +317,10 @@ struct ForkRemixConfirmationSheetView: View {
             Spacer(minLength: SavoroSpacing.lg)
 
             VStack(spacing: SavoroSpacing.sm) {
-                Button {
+                SavoroButton(
+                    isSubmitting ? "Creating private copy…" : model.confirmLabel,
+                    isDisabled: isSubmitting
+                ) {
                     guard !isSubmitting else { return }
                     isSubmitting = true
                     Task {
@@ -327,19 +330,12 @@ struct ForkRemixConfirmationSheetView: View {
                             dismiss()
                         }
                     }
-                } label: {
-                    Text(isSubmitting ? "Creating private copy…" : model.confirmLabel)
-                        .frame(maxWidth: .infinity)
                 }
-                .disabled(isSubmitting)
-                .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("fork-remix-confirm-button")
                 .accessibilityLabel("Confirm private editable copy")
                 .accessibilityHint("Creates a private editable remix, preserving attribution and source version without changing the original.")
 
-                Button(model.cancelLabel) { dismiss() }
-                    .buttonStyle(.bordered)
-                    .frame(maxWidth: .infinity)
+                SavoroButton(model.cancelLabel, variant: .secondary) { dismiss() }
                     .accessibilityIdentifier("fork-remix-cancel-button")
                     .accessibilityLabel("Cancel remix")
                     .accessibilityHint("Closes the confirmation sheet without recording a remix choice.")
@@ -746,7 +742,7 @@ struct RecipeDetailUnavailableStateView: View {
         SavoroCard(style: .elevated) {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
                 Image(systemName: viewModel.reason == .privateRecipe ? "lock.fill" : "exclamationmark.triangle.fill")
-                    .font(.system(size: 34, weight: .semibold))
+                    .font(SavoroTypography.stateSymbol)
                     .foregroundStyle(SavoroColor.accentStrong)
                 Text(viewModel.title)
                     .font(SavoroTypography.title2)
@@ -774,13 +770,13 @@ struct RecipeDetailStickyActionBar: View {
             if dynamicTypeSize.isAccessibilitySize {
                 VStack(spacing: SavoroSpacing.xs) {
                     ForEach(viewModel.actions) { action in
-                        actionButton(action, stacksLabel: false)
+                        actionButton(action)
                     }
                 }
             } else {
                 HStack(spacing: SavoroSpacing.xs) {
                     ForEach(viewModel.actions) { action in
-                        actionButton(action, stacksLabel: true)
+                        actionButton(action)
                     }
                 }
             }
@@ -804,34 +800,16 @@ struct RecipeDetailStickyActionBar: View {
         .accessibilityElement(children: .contain)
     }
 
-    private func actionButton(_ action: RecipeDetailActionKind, stacksLabel: Bool) -> some View {
-        Button { onSelect(action) } label: {
-            Group {
-                if stacksLabel {
-                    VStack(spacing: SavoroSpacing.xxs) {
-                        actionLabel(action)
-                    }
-                } else {
-                    HStack(spacing: SavoroSpacing.xs) {
-                        actionLabel(action)
-                    }
-                }
-            }
-            .font(SavoroTypography.label)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, SavoroSpacing.sm)
+    private func actionButton(_ action: RecipeDetailActionKind) -> some View {
+        SavoroButton(
+            action.label,
+            systemImage: action.systemImage,
+            variant: action == .log ? .primary : .secondary,
+            size: .compact
+        ) {
+            onSelect(action)
         }
-        .buttonStyle(.plain)
-        .foregroundStyle(action == .log ? SavoroColor.textOnAccent : SavoroColor.accentStrong)
-        .background(action == .log ? SavoroColor.accent : SavoroColor.accentSoft)
-        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
         .accessibilityIdentifier(action.accessibilityIdentifier)
-    }
-
-    @ViewBuilder
-    private func actionLabel(_ action: RecipeDetailActionKind) -> some View {
-        Image(systemName: action.systemImage)
-        Text(action.label)
     }
 }
 
@@ -861,7 +839,7 @@ struct RecipeDetailHeaderView: View {
             LinearGradient(colors: viewModel.heroGradient, startPoint: .topLeading, endPoint: .bottomTrailing)
                 .overlay(alignment: .topTrailing) {
                     Image(systemName: "fork.knife.circle.fill")
-                        .font(.system(size: 96, weight: .semibold))
+                        .font(SavoroTypography.heroSymbol)
                         .foregroundStyle(SavoroColor.decorativeOverlay)
                         .padding(SavoroSpacing.xl)
                 }
@@ -1030,7 +1008,7 @@ struct RecipeDetailContentSectionsView: View {
 
     private var ingredients: some View {
         RecipeDetailListSection(title: "Ingredients", subtitle: "Current version ingredients") {
-            VStack(spacing: 0) {
+            VStack(spacing: SavoroSpacing.none) {
                 ForEach(viewModel.ingredients) { ingredient in
                     Group {
                         if dynamicTypeSize.isAccessibilitySize {
@@ -1199,7 +1177,7 @@ struct RecipeDetailSocialContextBlock: View {
 
     @ViewBuilder
     private func friendContent(_ friendContext: RecipeDetailSocialContextViewModel.FriendContext) -> some View {
-        HStack(spacing: -8) {
+        HStack(spacing: SavoroSpacing.avatarOverlap) {
             ForEach(friendContext.avatarInitials, id: \.self) { initials in
                 Text(initials)
                     .font(SavoroTypography.micro)
@@ -1240,58 +1218,21 @@ struct RecipeDetailListSection<Content: View>: View {
 
 struct TrustBadgeView: View {
     let badge: RecipeDetailHeaderViewModel.TrustBadge
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    @ViewBuilder
     var body: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                Image(systemName: badge.systemImage)
-                    .foregroundStyle(SavoroColor.positive)
-                badgeText
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, SavoroSpacing.sm)
-            .padding(.vertical, SavoroSpacing.xs)
-            .background(SavoroColor.cardStrong)
-            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
-                    .stroke(SavoroColor.glassBorder, lineWidth: 1)
-            )
-            .accessibilityElement(children: .combine)
-        } else {
+        SavoroPill(style: .trust) {
             HStack(spacing: SavoroSpacing.xs) {
                 Image(systemName: badge.systemImage)
                     .foregroundStyle(SavoroColor.positive)
-                badgeText
-            }
-            .padding(.horizontal, SavoroSpacing.sm)
-            .padding(.vertical, SavoroSpacing.xs)
-            .background(SavoroColor.cardStrong)
-            .clipShape(Capsule(style: .continuous))
-            .overlay(Capsule(style: .continuous).stroke(SavoroColor.glassBorder, lineWidth: 1))
-            .accessibilityElement(children: .combine)
-        }
-    }
-
-    private var badgeText: some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(badge.title)
-                .font(SavoroTypography.label)
-                .foregroundStyle(SavoroColor.textStrong)
-            if dynamicTypeSize.isAccessibilitySize {
+                Text(badge.title)
+                    .font(SavoroTypography.label)
+                    .foregroundStyle(SavoroColor.textStrong)
                 Text(badge.detail)
                     .font(SavoroTypography.label)
                     .foregroundStyle(SavoroColor.textMuted)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                Text(badge.detail)
-                    .font(SavoroTypography.label)
-                    .foregroundStyle(SavoroColor.textMuted)
-                    .lineLimit(1)
             }
         }
+        .accessibilityElement(children: .combine)
     }
 }
 

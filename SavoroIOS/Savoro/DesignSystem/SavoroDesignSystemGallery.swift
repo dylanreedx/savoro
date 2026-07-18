@@ -49,9 +49,9 @@ struct SavoroDesignSystemGallery: View {
             }
 
             HStack(spacing: SavoroSpacing.sm) {
-                TokenPill(label: "Medium spacing", value: "16")
-                TokenPill(label: "Card corners", value: "16")
-                TokenPill(label: "Soft shadow", value: "y 4")
+                TokenSampleCard(label: "Medium spacing", value: "16")
+                TokenSampleCard(label: "Card corners", value: "16")
+                TokenSampleCard(label: "Soft shadow", value: "y 4")
             }
         }
     }
@@ -162,19 +162,17 @@ private struct GallerySection<Content: View>: View {
     }
 }
 
-private struct TokenPill: View {
+private struct TokenSampleCard: View {
     let label: String
     let value: String
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(SavoroTypography.micro).foregroundStyle(SavoroColor.textMuted)
-            Text(value).font(SavoroTypography.label).foregroundStyle(SavoroColor.textStrong)
+        SavoroCard(style: .strong, insets: .compact) {
+            VStack(alignment: .leading, spacing: SavoroSpacing.compact) {
+                Text(label).font(SavoroTypography.micro).foregroundStyle(SavoroColor.textMuted)
+                Text(value).font(SavoroTypography.label).foregroundStyle(SavoroColor.textStrong)
+            }
         }
-        .padding(SavoroSpacing.sm)
-        .background(SavoroColor.cardStrong)
-        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous).stroke(SavoroColor.border, lineWidth: 1))
     }
 }
 

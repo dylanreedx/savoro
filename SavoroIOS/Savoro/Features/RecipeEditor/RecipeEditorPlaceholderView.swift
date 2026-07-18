@@ -1068,8 +1068,9 @@ public struct RecipeEditorPlaceholderView: View {
                                 Label(ingredient.nutritionStatusText, systemImage: ingredient.hasIncompleteNutrition ? "info.circle" : "checkmark.circle")
                                     .font(SavoroTypography.callout)
                                     .foregroundStyle(SavoroColor.textBody)
-                                Button("Remove") { form.removeIngredient(id: ingredient.id) }
-                                    .buttonStyle(.borderless)
+                                SavoroButton("Remove", variant: .text, expandsHorizontally: false) {
+                                    form.removeIngredient(id: ingredient.id)
+                                }
                             }
                         } else {
                             HStack(alignment: .top, spacing: SavoroSpacing.sm) {
@@ -1085,8 +1086,9 @@ public struct RecipeEditorPlaceholderView: View {
                                     .font(SavoroTypography.callout)
                                     .foregroundStyle(SavoroColor.textBody)
                                 Spacer()
-                                Button("Remove") { form.removeIngredient(id: ingredient.id) }
-                                    .buttonStyle(.borderless)
+                                SavoroButton("Remove", variant: .text, expandsHorizontally: false) {
+                                    form.removeIngredient(id: ingredient.id)
+                                }
                             }
                         }
                     }
@@ -1112,9 +1114,10 @@ public struct RecipeEditorPlaceholderView: View {
     @ViewBuilder
     private var foodSuggestions: some View {
         ForEach(RecipeEditorMockFoodSearchResult.fixtureResults) { food in
-            Button(food.name) { form.addMockFood(food) }
-                .buttonStyle(.bordered)
-                .accessibilityHint("Adds a suggested food; no public search starts.")
+            SavoroButton(food.name, variant: .secondary, expandsHorizontally: false) {
+                form.addMockFood(food)
+            }
+            .accessibilityHint("Adds a suggested food; no public search starts.")
         }
     }
 
@@ -1189,23 +1192,34 @@ public struct RecipeEditorPlaceholderView: View {
 
     @ViewBuilder
     private func instructionButtons(_ step: RecipeEditorInstructionStep) -> some View {
-        Button("Move up") { form.moveInstructionUp(id: step.id) }
-            .buttonStyle(.borderless)
-            .disabled(step.order == 1)
-            .accessibilityLabel(step.moveUpAccessibilityLabel)
-            .accessibilityHint(step.moveUpAccessibilityHint)
-        Button("Move down") { form.moveInstructionDown(id: step.id) }
-            .buttonStyle(.borderless)
-            .disabled(step.order == form.instructions.count)
-            .accessibilityLabel(step.moveDownAccessibilityLabel)
-            .accessibilityHint(step.moveDownAccessibilityHint(totalSteps: form.instructions.count))
+        SavoroButton(
+            "Move up",
+            variant: .text,
+            isDisabled: step.order == 1,
+            expandsHorizontally: false
+        ) {
+            form.moveInstructionUp(id: step.id)
+        }
+        .accessibilityLabel(step.moveUpAccessibilityLabel)
+        .accessibilityHint(step.moveUpAccessibilityHint)
+        SavoroButton(
+            "Move down",
+            variant: .text,
+            isDisabled: step.order == form.instructions.count,
+            expandsHorizontally: false
+        ) {
+            form.moveInstructionDown(id: step.id)
+        }
+        .accessibilityLabel(step.moveDownAccessibilityLabel)
+        .accessibilityHint(step.moveDownAccessibilityHint(totalSteps: form.instructions.count))
         if !dynamicTypeSize.isAccessibilitySize {
             Spacer()
         }
-        Button("Remove") { form.removeInstruction(id: step.id) }
-            .buttonStyle(.borderless)
-            .accessibilityLabel(step.removeAccessibilityLabel)
-            .accessibilityHint("Removes this step from the local form only.")
+        SavoroButton("Remove", variant: .text, expandsHorizontally: false) {
+            form.removeInstruction(id: step.id)
+        }
+        .accessibilityLabel(step.removeAccessibilityLabel)
+        .accessibilityHint("Removes this step from the local form only.")
     }
 
     private var macroPreviewCard: some View {
@@ -1512,31 +1526,26 @@ struct RecipeVisibilityOptionSheetView: View {
                     VStack(spacing: SavoroSpacing.sm) {
                         ForEach(RecipeVisibilityOption.allCases) { option in
                             Button { pendingSelection = option } label: {
-                                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                                    Image(systemName: option.systemImage)
-                                        .foregroundStyle(SavoroColor.accentStrong)
-                                        .frame(width: 24)
-                                    VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                                        Text(option.title)
-                                            .font(SavoroTypography.bodyEmphasized)
-                                            .foregroundStyle(SavoroColor.textStrong)
-                                        Text(option.subtitle)
-                                            .font(SavoroTypography.callout)
-                                            .foregroundStyle(SavoroColor.textBody)
-                                    }
-                                    Spacer()
-                                    if pendingSelection == option {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(SavoroColor.positive)
+                                SavoroCard(style: .selection(isSelected: pendingSelection == option)) {
+                                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                                        Image(systemName: option.systemImage)
+                                            .foregroundStyle(SavoroColor.accentStrong)
+                                            .frame(width: 24)
+                                        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+                                            Text(option.title)
+                                                .font(SavoroTypography.bodyEmphasized)
+                                                .foregroundStyle(SavoroColor.textStrong)
+                                            Text(option.subtitle)
+                                                .font(SavoroTypography.callout)
+                                                .foregroundStyle(SavoroColor.textBody)
+                                        }
+                                        Spacer()
+                                        if pendingSelection == option {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(SavoroColor.positive)
+                                        }
                                     }
                                 }
-                                .padding(SavoroSpacing.md)
-                                .background(SavoroColor.cardStrong)
-                                .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
-                                        .stroke(pendingSelection == option ? SavoroColor.accent : SavoroColor.glassBorder, lineWidth: 1)
-                                )
                             }
                             .buttonStyle(.plain)
                             .accessibilityElement(children: .ignore)
@@ -1610,31 +1619,26 @@ struct RecipeCommunityShareSetupSheetView: View {
                             .foregroundStyle(SavoroColor.textStrong)
                         ForEach(choices) { community in
                             Button { pendingSetup.selectedCommunityId = community.id } label: {
-                                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                                    Image(systemName: "person.3.fill")
-                                        .foregroundStyle(SavoroColor.accentStrong)
-                                        .frame(width: 24)
-                                    VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                                        Text(community.name)
-                                            .font(SavoroTypography.bodyEmphasized)
-                                            .foregroundStyle(SavoroColor.textStrong)
-                                        Text(community.summary)
-                                            .font(SavoroTypography.callout)
-                                            .foregroundStyle(SavoroColor.textBody)
-                                    }
-                                    Spacer()
-                                    if pendingSetup.selectedCommunityId == community.id {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundStyle(SavoroColor.positive)
+                                SavoroCard(style: .selection(isSelected: pendingSetup.selectedCommunityId == community.id)) {
+                                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                                        Image(systemName: "person.3.fill")
+                                            .foregroundStyle(SavoroColor.accentStrong)
+                                            .frame(width: 24)
+                                        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+                                            Text(community.name)
+                                                .font(SavoroTypography.bodyEmphasized)
+                                                .foregroundStyle(SavoroColor.textStrong)
+                                            Text(community.summary)
+                                                .font(SavoroTypography.callout)
+                                                .foregroundStyle(SavoroColor.textBody)
+                                        }
+                                        Spacer()
+                                        if pendingSetup.selectedCommunityId == community.id {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .foregroundStyle(SavoroColor.positive)
+                                        }
                                     }
                                 }
-                                .padding(SavoroSpacing.md)
-                                .background(SavoroColor.cardStrong)
-                                .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
-                                        .stroke(pendingSetup.selectedCommunityId == community.id ? SavoroColor.accent : SavoroColor.glassBorder, lineWidth: 1)
-                                )
                             }
                             .buttonStyle(.plain)
                             .accessibilityElement(children: .ignore)

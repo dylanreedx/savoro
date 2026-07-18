@@ -421,30 +421,29 @@ private struct TodayQuickActionsCard: View {
 
                 ForEach(actions) { action in
                     Button { onAction(action) } label: {
-                        Group {
-                            if dynamicTypeSize.isAccessibilitySize {
-                                VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                                    quickActionIcon(action)
-                                    quickActionCopy(action)
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(SavoroColor.textMuted)
-                                }
-                            } else {
-                                HStack(spacing: SavoroSpacing.sm) {
-                                    quickActionIcon(action)
-                                    quickActionCopy(action)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.caption.weight(.semibold))
-                                        .foregroundStyle(SavoroColor.textMuted)
+                        SavoroCard(style: .strong, insets: .compact) {
+                            Group {
+                                if dynamicTypeSize.isAccessibilitySize {
+                                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                        quickActionIcon(action)
+                                        quickActionCopy(action)
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(SavoroColor.textMuted)
+                                    }
+                                } else {
+                                    HStack(spacing: SavoroSpacing.sm) {
+                                        quickActionIcon(action)
+                                        quickActionCopy(action)
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption.weight(.semibold))
+                                            .foregroundStyle(SavoroColor.textMuted)
+                                    }
                                 }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(SavoroSpacing.sm)
-                        .background(SavoroColor.cardStrong)
-                        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("today-quick-action-\(action.rawValue)")
@@ -537,9 +536,11 @@ private struct TodayRecentLogAgainCard: View {
                     .font(SavoroTypography.micro)
                     .foregroundStyle(SavoroColor.textMuted)
                 FlowMacroPills(macros: Array(item.macroSummary.prefix(3)))
-                Button(item.actionTitle, action: onLogAgain)
-                    .buttonStyle(.borderedProminent)
-                    .tint(SavoroColor.accent)
+                SavoroButton(
+                    item.actionTitle,
+                    expandsHorizontally: false,
+                    action: onLogAgain
+                )
             }
         }
     }
@@ -668,20 +669,19 @@ private struct TodayMealEmptyStateView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                    emptyStateContent
-                }
-            } else {
-                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                    emptyStateContent
+        SavoroCard(style: .accent, insets: .compact) {
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        emptyStateContent
+                    }
+                } else {
+                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                        emptyStateContent
+                    }
                 }
             }
         }
-        .padding(SavoroSpacing.sm)
-        .background(SavoroColor.accentSoft)
-        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
     }
 
     @ViewBuilder
@@ -704,21 +704,20 @@ private struct TodayMealEntryRow: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        Group {
-            if dynamicTypeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                    entryContent
-                }
-            } else {
-                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                    entryContent
-                    Spacer(minLength: 0)
+        SavoroCard(style: .strong, insets: .compact) {
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        entryContent
+                    }
+                } else {
+                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                        entryContent
+                        Spacer(minLength: 0)
+                    }
                 }
             }
         }
-        .padding(SavoroSpacing.sm)
-        .background(SavoroColor.cardStrong)
-        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
         .accessibilityIdentifier("today-log-entry-\(entry.id)")
     }
 

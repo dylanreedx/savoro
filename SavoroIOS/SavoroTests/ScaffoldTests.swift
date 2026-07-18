@@ -3393,6 +3393,211 @@ final class ScaffoldTests: XCTestCase {
         _ = RecipeEditorPlaceholderView(draftId: "draft_green_curry")
         _ = RecipeEditorPlaceholderView(form: RecipeEditorDraftForm(draftId: nil, title: "Snack Box", description: "", servingsText: "2", yieldText: "2 boxes", photoHook: .mockPlaceholder))
     }
+
+    @MainActor
+    func testRepresentativeRowsAndRailsKeepSiblingHeightsEqual() {
+        let shortCard = measuredViewSize(
+            representativeRailCard(title: "Greek yogurt", badge: "Saved"),
+            width: 260
+        )
+        let longCard = measuredViewSize(
+            representativeRailCard(
+                title: "Chicken shawarma bowl",
+                badge: "An intentionally enormous source badge that must remain one line"
+            ),
+            width: 260
+        )
+        XCTAssertEqual(shortCard.height, longCard.height, accuracy: 0.5)
+
+        let rowButtonHeights = [
+            measuredViewSize(SavoroButton("Add meal") {}, width: 220).height,
+            measuredViewSize(SavoroButton("Log recipe", variant: .secondary) {}, width: 220).height,
+            measuredViewSize(SavoroButton("Create recipe", variant: .ghost) {}, width: 220).height
+        ]
+        XCTAssertEqual(rowButtonHeights.min(), rowButtonHeights.max())
+    }
+
+    @MainActor
+    func testLongPillsAndButtonsStaySingleLineAtStandardType() {
+        assertLongControlsStaySingleLine(dynamicTypeSize: .large)
+    }
+
+    @MainActor
+    func testLongPillsAndButtonsStaySingleLineAtAccessibilityXXXL() {
+        assertLongControlsStaySingleLine(dynamicTypeSize: .accessibility5)
+    }
+
+    @MainActor
+    func testInteractivePrimitivesMeetMinimumTapTarget() {
+        for variant in [SavoroButton.Variant.primary, .secondary, .ghost, .text] {
+            let size = measuredViewSize(
+                SavoroButton("Action", variant: variant, expandsHorizontally: false) {},
+                width: 220
+            )
+            XCTAssertGreaterThanOrEqual(size.height, SavoroControlSize.minimumTapTarget)
+            XCTAssertGreaterThanOrEqual(size.width, SavoroControlSize.minimumTapTarget)
+        }
+
+        var selection = "One"
+        let segmentedControl = SavoroSegmentedControl(
+            options: ["One", "Two"],
+            selection: Binding(get: { selection }, set: { selection = $0 })
+        )
+        XCTAssertGreaterThanOrEqual(
+            measuredViewSize(segmentedControl, width: 320).height,
+            SavoroControlSize.minimumTapTarget
+        )
+
+        var searchText = ""
+        let searchField = SavoroSearchField(
+            placeholder: "Search recipes",
+            text: Binding(get: { searchText }, set: { searchText = $0 })
+        )
+        XCTAssertGreaterThanOrEqual(
+            measuredViewSize(searchField, width: 320).height,
+            SavoroControlSize.minimumTapTarget
+        )
+    }
+
+    func testViewCodeUsesDesignTokensForPaddingColorsAndSystemFonts() throws {
+        let sourceFiles = try viewCodeSourceFilesForLint()
+        let rules: [(name: String, expression: NSRegularExpression)] = [
+            (
+                "raw numeric padding",
+                try NSRegularExpression(pattern: #"\.padding\s*\(\s*(?:\.[A-Za-z]+\s*,\s*)?-?\d+(?:\.\d+)?"#)
+            ),
+            (
+                "raw RGB color",
+                try NSRegularExpression(pattern: #"\bColor\s*\(\s*red\s*:"#)
+            ),
+            (
+                "raw hex color",
+                try NSRegularExpression(pattern: #"(?:#[0-9A-Fa-f]{3,8}\b|\b0x[0-9A-Fa-f]{6,8}\b|\bColor\s*\(\s*hex\s*:)"#)
+            ),
+            (
+                "raw system font size",
+                try NSRegularExpression(pattern: #"\.font\s*\(\s*\.system\s*\(\s*size\s*:"#)
+            )
+        ]
+        var violations: [String] = []
+
+        for sourceFile in sourceFiles where !sourceFile.relativePath.hasPrefix("DesignSystem/") {
+            for (lineIndex, lineSubstring) in sourceFile.source.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
+                let line = String(lineSubstring)
+                let range = NSRange(line.startIndex..., in: line)
+                for rule in rules where rule.expression.firstMatch(in: line, range: range) != nil {
+                    violations.append("\(sourceFile.relativePath):\(lineIndex + 1): \(rule.name): \(line)")
+                }
+            }
+        }
+
+        XCTAssertFalse(sourceFiles.isEmpty, "The token lint must inspect bundled view source.")
+        XCTAssertTrue(
+            violations.isEmpty,
+            "View code bypasses design-system tokens:\n\(violations.joined(separator: "\n"))"
+        )
+    }
+
+    @MainActor
+    private func assertLongControlsStaySingleLine(dynamicTypeSize: DynamicTypeSize) {
+        let longTitle = "An absurdly long control title that must always scale instead of wrapping onto another line"
+        let shortPillHeight = measuredViewSize(
+            SavoroChip(title: "Short"),
+            width: 220,
+            dynamicTypeSize: dynamicTypeSize
+        ).height
+        let longPillHeight = measuredViewSize(
+            SavoroChip(title: longTitle),
+            width: 220,
+            dynamicTypeSize: dynamicTypeSize
+        ).height
+        XCTAssertLessThanOrEqual(
+            longPillHeight,
+            shortPillHeight + 0.5,
+            "A constrained long pill must scale or truncate instead of gaining a wrapped line."
+        )
+
+        let shortButtonHeight = measuredViewSize(
+            SavoroButton("Short") {},
+            width: 220,
+            dynamicTypeSize: dynamicTypeSize
+        ).height
+        let longButtonHeight = measuredViewSize(
+            SavoroButton(longTitle) {},
+            width: 220,
+            dynamicTypeSize: dynamicTypeSize
+        ).height
+        XCTAssertEqual(shortButtonHeight, longButtonHeight, accuracy: 0.5)
+    }
+}
+
+private struct ViewCodeSourceForLint {
+    let relativePath: String
+    let source: String
+}
+
+private func viewCodeSourceFilesForLint() throws -> [ViewCodeSourceForLint] {
+    let resourceDirectory = try XCTUnwrap(Bundle(for: ScaffoldTests.self).resourceURL)
+    let sourceDirectory = resourceDirectory.appendingPathComponent("Savoro", isDirectory: true)
+    let fileManager = FileManager.default
+    var sourceFiles: [ViewCodeSourceForLint] = []
+
+    for directoryName in ["App", "DesignSystem", "Features"] {
+        let directory = sourceDirectory.appendingPathComponent(directoryName, isDirectory: true)
+        guard let enumerator = fileManager.enumerator(
+            at: directory,
+            includingPropertiesForKeys: [.isRegularFileKey],
+            options: [.skipsHiddenFiles]
+        ) else {
+            XCTFail("Could not enumerate view source directory: \(directory.path)")
+            continue
+        }
+
+        for case let fileURL as URL in enumerator where fileURL.pathExtension == "swift" {
+            sourceFiles.append(
+                ViewCodeSourceForLint(
+                    relativePath: fileURL.path.replacingOccurrences(of: sourceDirectory.path + "/", with: ""),
+                    source: try String(contentsOf: fileURL, encoding: .utf8)
+                )
+            )
+        }
+    }
+
+    return sourceFiles
+}
+
+@MainActor
+private func measuredViewSize<Content: View>(
+    _ view: Content,
+    width: CGFloat,
+    dynamicTypeSize: DynamicTypeSize = .large
+) -> CGSize {
+    let controller = UIHostingController(
+        rootView: view
+            .environment(\.dynamicTypeSize, dynamicTypeSize)
+            .environment(\.locale, Locale(identifier: "en_US_POSIX"))
+            .frame(width: width)
+            .fixedSize(horizontal: false, vertical: true)
+    )
+    return controller.sizeThatFits(in: CGSize(width: width, height: 10_000))
+}
+
+private func representativeRailCard(title: String, badge: String) -> some View {
+    SavoroCard(style: .plain) {
+        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+            SavoroChip(title: badge, systemImage: "lock.fill")
+            Text(title)
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+            Text("Private recent item")
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textMuted)
+                .lineLimit(1)
+            SavoroButton("Log again", expandsHorizontally: false) {}
+        }
+    }
 }
 
 private struct ViewCodeStringLiteral {

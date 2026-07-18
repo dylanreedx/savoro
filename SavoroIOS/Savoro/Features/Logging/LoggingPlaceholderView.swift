@@ -351,34 +351,17 @@ private struct LogRecipeIdentityCard: View {
                 Text(viewModel.recipeIdentitySubtitle)
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textMuted)
-                Group {
-                    if dynamicTypeSize.isAccessibilitySize {
-                        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                            provenanceContent
+                SavoroPill(style: .positive) {
+                    Group {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                                provenanceContent
+                            }
+                        } else {
+                            HStack(spacing: SavoroSpacing.xs) {
+                                provenanceContent
+                            }
                         }
-                    } else {
-                        HStack(spacing: SavoroSpacing.xs) {
-                            provenanceContent
-                        }
-                    }
-                }
-                .foregroundStyle(SavoroColor.textBody)
-                .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : nil, alignment: .leading)
-                .padding(.horizontal, SavoroSpacing.sm)
-                .padding(.vertical, SavoroSpacing.xs)
-                .background(SavoroColor.positiveSoft)
-                .clipShape(
-                    dynamicTypeSize.isAccessibilitySize
-                        ? AnyShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
-                        : AnyShape(Capsule(style: .continuous))
-                )
-                .overlay {
-                    if dynamicTypeSize.isAccessibilitySize {
-                        RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
-                            .stroke(SavoroColor.positiveBorder, lineWidth: 1)
-                    } else {
-                        Capsule(style: .continuous)
-                            .stroke(SavoroColor.positiveBorder, lineWidth: 1)
                     }
                 }
             }
@@ -390,7 +373,7 @@ private struct LogRecipeIdentityCard: View {
     private var provenanceContent: some View {
         Image(systemName: "doc.text.magnifyingglass")
             .foregroundStyle(SavoroColor.positive)
-        VStack(alignment: .leading, spacing: 1) {
+        VStack(alignment: .leading, spacing: SavoroSpacing.hairline) {
             Text(viewModel.provenanceTitle)
                 .font(SavoroTypography.label)
             Text(viewModel.provenanceDetail)
@@ -433,16 +416,26 @@ private struct LogRecipeServingCard: View {
 
     @ViewBuilder
     private var servingControls: some View {
-        Button("−") { onChange(viewModel.steppingServings(by: -viewModel.servingStep)) }
-            .buttonStyle(.bordered)
-            .disabled(!canEditInputs || !viewModel.canDecreaseServings)
+        SavoroButton(
+            "−",
+            variant: .secondary,
+            isDisabled: !canEditInputs || !viewModel.canDecreaseServings,
+            expandsHorizontally: false
+        ) {
+            onChange(viewModel.steppingServings(by: -viewModel.servingStep))
+        }
         Text(viewModel.servingText)
             .font(SavoroTypography.numericHeadline.monospacedDigit())
             .foregroundStyle(SavoroColor.textStrong)
             .frame(maxWidth: .infinity)
-        Button("+") { onChange(viewModel.steppingServings(by: viewModel.servingStep)) }
-            .buttonStyle(.bordered)
-            .disabled(!canEditInputs || !viewModel.canIncreaseServings)
+        SavoroButton(
+            "+",
+            variant: .secondary,
+            isDisabled: !canEditInputs || !viewModel.canIncreaseServings,
+            expandsHorizontally: false
+        ) {
+            onChange(viewModel.steppingServings(by: viewModel.servingStep))
+        }
     }
 }
 
@@ -483,14 +476,24 @@ private struct LogRecipeMealDateCard: View {
 
     @ViewBuilder
     private var dateControls: some View {
-        Button("Previous day") { onChange(viewModel.updatingDate(byAddingDays: -1)) }
-            .buttonStyle(.bordered)
-            .disabled(!canEditInputs)
+        SavoroButton(
+            "Previous day",
+            variant: .secondary,
+            isDisabled: !canEditInputs,
+            expandsHorizontally: false
+        ) {
+            onChange(viewModel.updatingDate(byAddingDays: -1))
+        }
         SavoroChip(title: viewModel.dateTitle, systemImage: "calendar", variant: .neutral)
             .frame(maxWidth: .infinity)
-        Button("Next day") { onChange(viewModel.updatingDate(byAddingDays: 1)) }
-            .buttonStyle(.bordered)
-            .disabled(!canEditInputs)
+        SavoroButton(
+            "Next day",
+            variant: .secondary,
+            isDisabled: !canEditInputs,
+            expandsHorizontally: false
+        ) {
+            onChange(viewModel.updatingDate(byAddingDays: 1))
+        }
     }
 }
 
