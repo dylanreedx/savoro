@@ -38,9 +38,9 @@ Max one active ticket per track; lands are serialized on `main`.
 | 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | queued | |
 | 2 | SAV-129 + L-1 — publish lifecycle, close public-draft logging hole, real `publishedAt` | backend | **landed** | `705510f`, 74/74 tests |
 | 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | queued | |
-| 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | in-progress | |
+| 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | **landed** | `f36349b`, 78/78 tests |
 | 5 | L-15 — dark-mode fix (Today + app chrome first), proven via L-21 snapshots | frontend | queued | |
-| 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | queued | |
+| 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | in-progress | |
 | 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | queued | |
 | 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | queued | |
 | 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | queued — gated on #1 and #3 | |
@@ -106,6 +106,13 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 2 (2026-07-17 ~22:05).** L-12 landed as `f36349b`: goal creation now
+computes true inclusive overlap, rejects (422) ranges overlapping a later goal
+instead of splicing, closes only earlier-starting open goals; regression asserts
+no row can have `endDate < startDate`. Suite 74→78, verified independently before
+and after merge. L-14 (log contract parity) dispatched. L-20 (XCUITest) still
+running on the frontend track.
 
 **Iteration 1 (2026-07-17 ~21:50).** SAV-129+L-1 landed as `705510f`: publish/
 unpublish/archive endpoints per contract, real `publishedAt` (migration 0006 with
