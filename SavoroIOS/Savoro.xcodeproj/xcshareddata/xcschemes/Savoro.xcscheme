@@ -35,6 +35,20 @@
                ReferencedContainer = "container:Savoro.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "29AA0000000000000000005C"
+               BuildableName = "SavoroUITests.xctest"
+               BlueprintName = "SavoroUITests"
+               ReferencedContainer = "container:Savoro.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -51,6 +65,16 @@
                BlueprintIdentifier = "29AA0000000000000000002C"
                BuildableName = "SavoroTests.xctest"
                BlueprintName = "SavoroTests"
+               ReferencedContainer = "container:Savoro.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "29AA0000000000000000005C"
+               BuildableName = "SavoroUITests.xctest"
+               BlueprintName = "SavoroUITests"
                ReferencedContainer = "container:Savoro.xcodeproj">
             </BuildableReference>
          </TestableReference>

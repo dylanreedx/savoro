@@ -271,6 +271,7 @@ struct LogPickerPlaceholderView: View {
             .padding(SavoroSpacing.lg)
         }
         .background(SavoroColor.page.ignoresSafeArea())
+        .accessibilityIdentifier("log-picker-screen")
         .navigationTitle(viewModel.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close", action: onDismiss) } }
@@ -391,6 +392,7 @@ private struct LogPickerItemRow: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("log-picker-item-\(item.id)")
     }
 
     private var selectionCopy: String {

@@ -300,6 +300,7 @@ struct ForkRemixConfirmationSheetView: View {
                     Text(model.title)
                         .font(SavoroTypography.title2)
                         .foregroundStyle(SavoroColor.textStrong)
+                        .accessibilityIdentifier("fork-remix-confirmation-screen")
                     Text(model.subtitle)
                         .font(SavoroTypography.body)
                         .foregroundStyle(SavoroColor.textBody)
@@ -707,6 +708,7 @@ struct RecipeDetailPlaceholderView: View {
             .padding(.bottom, actionBarViewModel?.bottomContentPadding ?? SavoroSpacing.lg)
         }
         .background(SavoroColor.page.ignoresSafeArea())
+        .accessibilityIdentifier("recipe-detail-screen")
         .safeAreaInset(edge: .bottom) {
             if let actionBarViewModel {
                 RecipeDetailStickyActionBar(viewModel: actionBarViewModel, onSelect: handleAction)
@@ -843,6 +845,7 @@ struct RecipeDetailHeaderView: View {
                     .font(SavoroTypography.display)
                     .foregroundStyle(SavoroColor.textStrong)
                     .lineLimit(3)
+                    .accessibilityIdentifier("recipe-detail-title")
                     .minimumScaleFactor(0.82)
             }
             .padding(SavoroSpacing.md)

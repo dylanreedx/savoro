@@ -328,6 +328,7 @@ struct CookbookPlaceholderView: View {
             }
         }
         .background(SavoroColor.page.ignoresSafeArea())
+        .accessibilityIdentifier("screen-cookbook")
         .navigationTitle("Cookbook")
     }
 
@@ -450,6 +451,7 @@ struct CookbookPlaceholderView: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityHint(item.accessibilityHint)
+        .accessibilityIdentifier("cookbook-item-\(item.id)")
     }
 }
 

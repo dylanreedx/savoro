@@ -307,6 +307,7 @@ struct LogRecipeSheetView: View {
             .padding(SavoroSpacing.lg)
         }
         .background(SavoroColor.page.ignoresSafeArea())
+        .accessibilityIdentifier("log-recipe-screen")
         .navigationTitle("Log Recipe")
         .navigationBarTitleDisplayMode(.inline)
         .interactiveDismissDisabled(!submissionStatus.canDismiss)
@@ -495,8 +496,10 @@ private struct LogRecipeActionCard: View {
         VStack(spacing: SavoroSpacing.sm) {
             SavoroButton(isSubmitting ? "Adding privately…" : viewModel.primaryButtonTitle, systemImage: "lock.fill", variant: .primary, action: onConfirm)
                 .disabled(isSubmitting)
+                .accessibilityIdentifier("log-recipe-confirm-button")
             SavoroButton(viewModel.secondaryButtonTitle, systemImage: "xmark", variant: .secondary, action: onDismiss)
                 .disabled(isSubmitting)
+                .accessibilityIdentifier("log-recipe-cancel-button")
         }
     }
 }

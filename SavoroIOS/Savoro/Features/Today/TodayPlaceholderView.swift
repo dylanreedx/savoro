@@ -179,6 +179,7 @@ struct TodayPlaceholderView: View {
             .padding(SavoroSpacing.lg)
         }
         .background(SavoroColor.page.ignoresSafeArea())
+        .accessibilityIdentifier("screen-today")
         .navigationTitle("Today")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -315,6 +316,7 @@ private struct TodayQuickActionsCard: View {
                         .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier("today-quick-action-\(action.rawValue)")
                 }
             }
         }
@@ -506,6 +508,7 @@ private struct TodayMealEntryRow: View {
         .padding(SavoroSpacing.sm)
         .background(SavoroColor.cardStrong)
         .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+        .accessibilityIdentifier("today-log-entry-\(entry.id)")
     }
 }
 

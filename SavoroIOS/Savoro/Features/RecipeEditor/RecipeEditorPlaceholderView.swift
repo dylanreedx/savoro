@@ -912,6 +912,7 @@ public struct RecipeEditorPlaceholderView: View {
             .padding(SavoroSpacing.lg)
         }
         .background(SavoroColor.page.ignoresSafeArea())
+        .accessibilityIdentifier("recipe-editor-screen")
         .navigationTitle(form.draftId == nil ? "New recipe" : "Edit draft")
         .sheet(isPresented: $isShowingVisibilityOptions) {
             RecipeVisibilityOptionSheetView(selectedOption: $selectedVisibilityOption) { option in
@@ -945,6 +946,7 @@ public struct RecipeEditorPlaceholderView: View {
             Text(form.draftContextCopy)
                 .font(SavoroTypography.callout)
                 .foregroundStyle(SavoroColor.textBody)
+                .accessibilityIdentifier("recipe-editor-draft-context")
         }
     }
 
@@ -1279,6 +1281,7 @@ public struct RecipeEditorPlaceholderView: View {
             TextField(label, text: text, axis: axis)
                 .textFieldStyle(.roundedBorder)
                 .accessibilityLabel(isRequired ? "\(label), required" : label)
+                .accessibilityIdentifier("recipe-editor-field-\(label.lowercased().replacingOccurrences(of: " ", with: "-"))")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }

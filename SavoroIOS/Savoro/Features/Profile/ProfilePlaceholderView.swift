@@ -15,5 +15,6 @@ struct ProfilePlaceholderView: View {
             foundationNotes: Self.highlights,
             accent: SavoroColor.blush
         )
+        .accessibilityIdentifier("screen-profile")
     }
 }

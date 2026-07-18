@@ -15,5 +15,6 @@ struct CommunityPlaceholderView: View {
             foundationNotes: Self.highlights,
             accent: SavoroColor.fat
         )
+        .accessibilityIdentifier("screen-community")
     }
 }

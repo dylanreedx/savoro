@@ -15,5 +15,6 @@ struct DiscoverPlaceholderView: View {
             foundationNotes: Self.highlights,
             accent: SavoroColor.carbs
         )
+        .accessibilityIdentifier("screen-discover")
     }
 }

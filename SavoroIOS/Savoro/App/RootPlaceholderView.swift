@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum SavoroTab: String, CaseIterable, Identifiable {
     case today
@@ -27,6 +28,57 @@ enum SavoroTab: String, CaseIterable, Identifiable {
         case .community: return "person.2"
         case .profile: return "person.crop.circle"
         }
+    }
+}
+
+private struct SavoroTabBarAccessibilityIdentifierBridge: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        installIdentifiers(from: view)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+        installIdentifiers(from: uiView)
+    }
+
+    private func installIdentifiers(from view: UIView, attemptsRemaining: Int = 8) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            guard let tabBar = findTabBar(in: view.window) else {
+                if attemptsRemaining > 0 {
+                    installIdentifiers(from: view, attemptsRemaining: attemptsRemaining - 1)
+                }
+                return
+            }
+
+            let tabs = SavoroTab.allCases
+            for (item, tab) in zip(tabBar.items ?? [], tabs) {
+                item.accessibilityIdentifier = "tab-\(tab.rawValue)"
+            }
+
+            let controls = tabBar.subviews
+                .compactMap { $0 as? UIControl }
+                .filter { !$0.isHidden && $0.isUserInteractionEnabled }
+                .sorted { $0.frame.minX < $1.frame.minX }
+            guard controls.count >= tabs.count else {
+                if attemptsRemaining > 0 {
+                    installIdentifiers(from: view, attemptsRemaining: attemptsRemaining - 1)
+                }
+                return
+            }
+            for (control, tab) in zip(controls, tabs) {
+                control.accessibilityIdentifier = "tab-\(tab.rawValue)"
+            }
+        }
+    }
+
+    private func findTabBar(in view: UIView?) -> UITabBar? {
+        guard let view else { return nil }
+        if let tabBar = view as? UITabBar { return tabBar }
+        for subview in view.subviews {
+            if let tabBar = findTabBar(in: subview) { return tabBar }
+        }
+        return nil
     }
 }
 
@@ -244,11 +296,13 @@ struct SavoroTabShellView: View {
                 }
                 .tabItem {
                     Label(tab.title, systemImage: tab.systemImage)
+                        .accessibilityIdentifier("tab-\(tab.rawValue)")
                 }
                 .tag(tab)
             }
         }
         .tint(SavoroColor.accent)
+        .background(SavoroTabBarAccessibilityIdentifierBridge().frame(width: 0, height: 0))
         .sheet(item: $activeSheet) { route in
             sheetView(for: route)
         }
