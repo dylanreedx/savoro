@@ -18,6 +18,8 @@ final class SnapshotTests: XCTestCase {
         .deletingLastPathComponent()
     private static let recordAllMarkerURL = projectDirectory.appendingPathComponent(".snapshot-record-all")
     private static let recordDarkMarkerURL = projectDirectory.appendingPathComponent(".snapshot-record-dark")
+    private static let recordAccessibilityXXXLMarkerURL = projectDirectory
+        .appendingPathComponent(".snapshot-record-accessibility-xxxl")
     private static let workingReferenceDirectory = FileManager.default.temporaryDirectory
         .appendingPathComponent("SavoroSnapshotReferences", isDirectory: true)
     private static let referenceDirectory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]
@@ -168,7 +170,7 @@ final class SnapshotTests: XCTestCase {
     }
 
     /// `Scripts/record-snapshots.sh` enables Point-Free's `.all` record mode
-    /// for dark cases only, removes its marker, and verifies the full matrix.
+    /// for Accessibility XXXL cases only, removes its marker, and verifies the full matrix.
     @MainActor
     private func assertFullMatrix<Content: View>(
         @ViewBuilder screen: () -> Content,
@@ -214,5 +216,7 @@ final class SnapshotTests: XCTestCase {
         let fileManager = FileManager.default
         return fileManager.fileExists(atPath: recordAllMarkerURL.path)
             || (mode.colorScheme == .dark && fileManager.fileExists(atPath: recordDarkMarkerURL.path))
+            || (mode.dynamicTypeSize == .accessibility5
+                && fileManager.fileExists(atPath: recordAccessibilityXXXLMarkerURL.path))
     }
 }

@@ -292,6 +292,7 @@ struct CookbookPlaceholderView: View {
     @State private var searchText = ""
     @State private var selectedFilter: CookbookLibraryFilter = .all
     @ObservedObject private var localStore: CookbookMockLocalStore
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     private let onOpenRoute: (SavoroRoute) -> Void
 
     init(selectedSegment: CookbookLibrarySegment = .mine, localStore: CookbookMockLocalStore = CookbookMockLocalStore(), onOpenRoute: @escaping (SavoroRoute) -> Void = { _ in }) {
@@ -330,6 +331,7 @@ struct CookbookPlaceholderView: View {
         .background(SavoroColor.page.ignoresSafeArea())
         .accessibilityIdentifier("screen-cookbook")
         .navigationTitle("Cookbook")
+        .navigationBarTitleDisplayMode(dynamicTypeSize.isAccessibilitySize ? .inline : .automatic)
     }
 
     static let cardGridColumns: [GridItem] = [
@@ -346,12 +348,18 @@ struct CookbookPlaceholderView: View {
             Text("Browse your recipes, saved public ideas, and private local drafts.")
                 .font(SavoroTypography.body)
                 .foregroundStyle(SavoroColor.textBody)
-            Button {
-                onOpenRoute(CookbookLibraryViewModel.createRecipeRoute)
-            } label: {
-                Label(viewModel.createRecipeTitle, systemImage: "plus.circle.fill")
+            if dynamicTypeSize.isAccessibilitySize {
+                SavoroButton(viewModel.createRecipeTitle, systemImage: "plus.circle.fill") {
+                    onOpenRoute(CookbookLibraryViewModel.createRecipeRoute)
+                }
+            } else {
+                Button {
+                    onOpenRoute(CookbookLibraryViewModel.createRecipeRoute)
+                } label: {
+                    Label(viewModel.createRecipeTitle, systemImage: "plus.circle.fill")
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .buttonStyle(.borderedProminent)
             Text(viewModel.createRecipeSubtitle)
                 .font(SavoroTypography.micro)
                 .foregroundStyle(SavoroColor.textMuted)
@@ -367,12 +375,16 @@ struct CookbookPlaceholderView: View {
             )
                 .textFieldStyle(.roundedBorder)
                 .accessibilityLabel(viewModel.searchPrompt)
-            Picker(viewModel.filterShellTitle, selection: $selectedFilter) {
-                ForEach(CookbookLibraryFilter.allCases) { filter in
-                    Text(filter.description).tag(filter)
+            if dynamicTypeSize.isAccessibilitySize {
+                SavoroSegmentedControl(options: CookbookLibraryFilter.allCases, selection: $selectedFilter)
+            } else {
+                Picker(viewModel.filterShellTitle, selection: $selectedFilter) {
+                    ForEach(CookbookLibraryFilter.allCases) { filter in
+                        Text(filter.description).tag(filter)
+                    }
                 }
+                .pickerStyle(.segmented)
             }
-            .pickerStyle(.segmented)
         }
     }
 
@@ -405,6 +417,12 @@ struct CookbookPlaceholderView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+            } else if dynamicTypeSize.isAccessibilitySize {
+                LazyVStack(spacing: SavoroSpacing.md) {
+                    ForEach(items) { item in
+                        cookbookItemCard(item)
+                    }
+                }
             } else {
                 LazyVGrid(columns: Self.cardGridColumns, spacing: SavoroSpacing.md) {
                     ForEach(items) { item in
@@ -427,25 +445,50 @@ struct CookbookPlaceholderView: View {
                             .font(.title3)
                         Spacer()
                     }
-                    Text(item.title)
-                        .font(SavoroTypography.headline)
-                        .foregroundStyle(SavoroColor.textStrong)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                    Text(item.subtitle)
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textMuted)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                    HStack(spacing: SavoroSpacing.xs) {
-                        ForEach(item.badges) { badge in
-                            SavoroChip(title: badge.title, systemImage: badge.systemImage, variant: badge == .draft ? .accent : .neutral)
+                    Group {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            Text(item.title)
+                                .font(SavoroTypography.headline)
+                                .foregroundStyle(SavoroColor.textStrong)
+                                .multilineTextAlignment(.leading)
+                            Text(item.subtitle)
+                                .font(SavoroTypography.callout)
+                                .foregroundStyle(SavoroColor.textMuted)
+                                .multilineTextAlignment(.leading)
+                        } else {
+                            Text(item.title)
+                                .font(SavoroTypography.headline)
+                                .foregroundStyle(SavoroColor.textStrong)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                            Text(item.subtitle)
+                                .font(SavoroTypography.callout)
+                                .foregroundStyle(SavoroColor.textMuted)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                        }
+                    }
+                    Group {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                                itemBadges(item)
+                            }
+                        } else {
+                            HStack(spacing: SavoroSpacing.xs) {
+                                itemBadges(item)
+                            }
                         }
                     }
                     Text(item.updatedText).font(SavoroTypography.micro).foregroundStyle(SavoroColor.textMuted)
-                    HStack(spacing: SavoroSpacing.xs) {
-                        ForEach(item.tags, id: \.self) { tag in
-                            SavoroChip(title: tag, variant: item.isLocalOnly ? .accent : .neutral)
+                    Group {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                                itemTags(item)
+                            }
+                        } else {
+                            HStack(spacing: SavoroSpacing.xs) {
+                                itemTags(item)
+                            }
                         }
                     }
                 }
@@ -456,6 +499,24 @@ struct CookbookPlaceholderView: View {
         .accessibilityElement(children: .combine)
         .accessibilityHint(item.accessibilityHint)
         .accessibilityIdentifier("cookbook-item-\(item.id)")
+    }
+
+    @ViewBuilder
+    private func itemBadges(_ item: CookbookLibraryItem) -> some View {
+        ForEach(item.badges) { badge in
+            SavoroChip(
+                title: badge.title,
+                systemImage: badge.systemImage,
+                variant: badge == .draft ? .accent : .neutral
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func itemTags(_ item: CookbookLibraryItem) -> some View {
+        ForEach(item.tags, id: \.self) { tag in
+            SavoroChip(title: tag, variant: item.isLocalOnly ? .accent : .neutral)
+        }
     }
 }
 

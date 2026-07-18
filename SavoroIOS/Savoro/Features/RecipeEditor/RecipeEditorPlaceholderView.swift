@@ -863,6 +863,7 @@ public struct RecipeEditorPlaceholderView: View {
     @State private var communityShareSetup: RecipeCommunityShareSetup
     @State private var isShowingVisibilityOptions = false
     @State private var isShowingCommunityShareSetup = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     private let temporaryDraftKey: String
     private let photoCommand: RecipeEditorPhotoCommand
     private let onPhotoHookInvoked: (RecipeEditorPhotoCommand) -> RecipeEditorPhotoStatus
@@ -914,6 +915,7 @@ public struct RecipeEditorPlaceholderView: View {
         .background(SavoroColor.page.ignoresSafeArea())
         .accessibilityIdentifier("recipe-editor-screen")
         .navigationTitle(form.draftId == nil ? "New recipe" : "Edit draft")
+        .navigationBarTitleDisplayMode(dynamicTypeSize.isAccessibilitySize ? .inline : .automatic)
         .sheet(isPresented: $isShowingVisibilityOptions) {
             RecipeVisibilityOptionSheetView(selectedOption: $selectedVisibilityOption) { option in
                 applyVisibilityChange(option)
@@ -984,27 +986,41 @@ public struct RecipeEditorPlaceholderView: View {
                     .font(SavoroTypography.title2)
                     .foregroundStyle(SavoroColor.textStrong)
                 labeledTextField(label: "Recipe title", text: $form.title, isRequired: true)
-                labeledTextField(label: "Short description", text: $form.description, axis: .vertical)
-                    .lineLimit(3, reservesSpace: true)
-                HStack(alignment: .top, spacing: SavoroSpacing.md) {
-                    labeledTextField(label: "Servings", text: $form.servingsText, isRequired: true)
-                        .keyboardType(.numberPad)
-                    labeledTextField(label: "Yield", text: $form.yieldText, isRequired: true)
+                if dynamicTypeSize.isAccessibilitySize {
+                    labeledTextField(label: "Short description", text: $form.description, axis: .vertical)
+                    VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+                        servingAndYieldFields
+                    }
+                } else {
+                    labeledTextField(label: "Short description", text: $form.description, axis: .vertical)
+                        .lineLimit(3, reservesSpace: true)
+                    HStack(alignment: .top, spacing: SavoroSpacing.md) {
+                        servingAndYieldFields
+                    }
                 }
             }
         }
     }
 
+    @ViewBuilder
+    private var servingAndYieldFields: some View {
+        labeledTextField(label: "Servings", text: $form.servingsText, isRequired: true)
+            .keyboardType(.numberPad)
+        labeledTextField(label: "Yield", text: $form.yieldText, isRequired: true)
+    }
+
     private var ingredientsForm: some View {
         SavoroCard(style: .glass) {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-                HStack {
-                    Text("Ingredients")
-                        .font(SavoroTypography.title2)
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Spacer()
-                    SavoroButton("Add row", systemImage: "plus", variant: .secondary) {
-                        form.addIngredient()
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            ingredientsHeader
+                        }
+                    } else {
+                        HStack {
+                            ingredientsHeader
+                        }
                     }
                 }
                 Text("Add foods from suggestions or type a free-text ingredient. Foods with nutrition details update the macro preview as quantity, unit, or servings change.")
@@ -1013,11 +1029,15 @@ public struct RecipeEditorPlaceholderView: View {
 
                 macroPreviewCard
 
-                HStack(spacing: SavoroSpacing.sm) {
-                    ForEach(RecipeEditorMockFoodSearchResult.fixtureResults) { food in
-                        Button(food.name) { form.addMockFood(food) }
-                            .buttonStyle(.bordered)
-                            .accessibilityHint("Adds a suggested food; no public search starts.")
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            foodSuggestions
+                        }
+                    } else {
+                        HStack(spacing: SavoroSpacing.sm) {
+                            foodSuggestions
+                        }
                     }
                 }
 
@@ -1035,21 +1055,39 @@ public struct RecipeEditorPlaceholderView: View {
 
                 ForEach($form.ingredients) { $ingredient in
                     VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-                        HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                            TextField("Qty", text: $ingredient.quantityText, prompt: fieldPrompt("Qty"))
-                                .textFieldStyle(.roundedBorder)
-                            TextField("Unit", text: $ingredient.unit, prompt: fieldPrompt("Unit"))
-                                .textFieldStyle(.roundedBorder)
-                            TextField("Ingredient name", text: $ingredient.name, prompt: fieldPrompt("Ingredient name"))
-                                .textFieldStyle(.roundedBorder)
-                        }
-                        HStack {
-                            Label(ingredient.nutritionStatusText, systemImage: ingredient.hasIncompleteNutrition ? "info.circle" : "checkmark.circle")
-                                .font(SavoroTypography.callout)
-                                .foregroundStyle(SavoroColor.textBody)
-                            Spacer()
-                            Button("Remove") { form.removeIngredient(id: ingredient.id) }
-                                .buttonStyle(.borderless)
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                TextField("Qty", text: $ingredient.quantityText, prompt: fieldPrompt("Qty"))
+                                    .textFieldStyle(.roundedBorder)
+                                TextField("Unit", text: $ingredient.unit, prompt: fieldPrompt("Unit"))
+                                    .textFieldStyle(.roundedBorder)
+                                TextField("Ingredient name", text: $ingredient.name, prompt: fieldPrompt("Ingredient name"))
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                Label(ingredient.nutritionStatusText, systemImage: ingredient.hasIncompleteNutrition ? "info.circle" : "checkmark.circle")
+                                    .font(SavoroTypography.callout)
+                                    .foregroundStyle(SavoroColor.textBody)
+                                Button("Remove") { form.removeIngredient(id: ingredient.id) }
+                                    .buttonStyle(.borderless)
+                            }
+                        } else {
+                            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                                TextField("Qty", text: $ingredient.quantityText, prompt: fieldPrompt("Qty"))
+                                    .textFieldStyle(.roundedBorder)
+                                TextField("Unit", text: $ingredient.unit, prompt: fieldPrompt("Unit"))
+                                    .textFieldStyle(.roundedBorder)
+                                TextField("Ingredient name", text: $ingredient.name, prompt: fieldPrompt("Ingredient name"))
+                                    .textFieldStyle(.roundedBorder)
+                            }
+                            HStack {
+                                Label(ingredient.nutritionStatusText, systemImage: ingredient.hasIncompleteNutrition ? "info.circle" : "checkmark.circle")
+                                    .font(SavoroTypography.callout)
+                                    .foregroundStyle(SavoroColor.textBody)
+                                Spacer()
+                                Button("Remove") { form.removeIngredient(id: ingredient.id) }
+                                    .buttonStyle(.borderless)
+                            }
                         }
                     }
                     .padding(.vertical, SavoroSpacing.xs)
@@ -1058,16 +1096,40 @@ public struct RecipeEditorPlaceholderView: View {
         }
     }
 
+    @ViewBuilder
+    private var ingredientsHeader: some View {
+        Text("Ingredients")
+            .font(SavoroTypography.title2)
+            .foregroundStyle(SavoroColor.textStrong)
+        if !dynamicTypeSize.isAccessibilitySize {
+            Spacer()
+        }
+        SavoroButton("Add row", systemImage: "plus", variant: .secondary) {
+            form.addIngredient()
+        }
+    }
+
+    @ViewBuilder
+    private var foodSuggestions: some View {
+        ForEach(RecipeEditorMockFoodSearchResult.fixtureResults) { food in
+            Button(food.name) { form.addMockFood(food) }
+                .buttonStyle(.bordered)
+                .accessibilityHint("Adds a suggested food; no public search starts.")
+        }
+    }
+
     private var instructionsForm: some View {
         SavoroCard(style: .glass) {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-                HStack {
-                    Text("Instructions")
-                        .font(SavoroTypography.title2)
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Spacer()
-                    SavoroButton("Add step", systemImage: "plus", variant: .secondary) {
-                        form.addInstruction()
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            instructionsHeader
+                        }
+                    } else {
+                        HStack {
+                            instructionsHeader
+                        }
                     }
                 }
                 Text(RecipeEditorDraftForm.instructionHelperCopy)
@@ -1086,26 +1148,23 @@ public struct RecipeEditorPlaceholderView: View {
                         Text(step.displayNumber)
                             .font(SavoroTypography.label)
                             .foregroundStyle(SavoroColor.textBody)
-                        TextField("Instruction step", text: $step.body, prompt: fieldPrompt("Instruction step"), axis: .vertical)
-                            .textFieldStyle(.roundedBorder)
-                            .lineLimit(2...4)
-                            .accessibilityLabel(step.instructionFieldAccessibilityLabel)
-                        HStack(spacing: SavoroSpacing.sm) {
-                            Button("Move up") { form.moveInstructionUp(id: step.id) }
-                                .buttonStyle(.borderless)
-                                .disabled(step.order == 1)
-                                .accessibilityLabel(step.moveUpAccessibilityLabel)
-                                .accessibilityHint(step.moveUpAccessibilityHint)
-                            Button("Move down") { form.moveInstructionDown(id: step.id) }
-                                .buttonStyle(.borderless)
-                                .disabled(step.order == form.instructions.count)
-                                .accessibilityLabel(step.moveDownAccessibilityLabel)
-                                .accessibilityHint(step.moveDownAccessibilityHint(totalSteps: form.instructions.count))
-                            Spacer()
-                            Button("Remove") { form.removeInstruction(id: step.id) }
-                                .buttonStyle(.borderless)
-                                .accessibilityLabel(step.removeAccessibilityLabel)
-                                .accessibilityHint("Removes this step from the local form only.")
+                        if dynamicTypeSize.isAccessibilitySize {
+                            accessibilityVerticalTextField(
+                                label: "Instruction step",
+                                text: $step.body,
+                                accessibilityLabel: step.instructionFieldAccessibilityLabel
+                            )
+                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                instructionButtons(step)
+                            }
+                        } else {
+                            TextField("Instruction step", text: $step.body, prompt: fieldPrompt("Instruction step"), axis: .vertical)
+                                .textFieldStyle(.roundedBorder)
+                                .lineLimit(2...4)
+                                .accessibilityLabel(step.instructionFieldAccessibilityLabel)
+                            HStack(spacing: SavoroSpacing.sm) {
+                                instructionButtons(step)
+                            }
                         }
                     }
                     .padding(.vertical, SavoroSpacing.xs)
@@ -1113,6 +1172,40 @@ public struct RecipeEditorPlaceholderView: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private var instructionsHeader: some View {
+        Text("Instructions")
+            .font(SavoroTypography.title2)
+            .foregroundStyle(SavoroColor.textStrong)
+        if !dynamicTypeSize.isAccessibilitySize {
+            Spacer()
+        }
+        SavoroButton("Add step", systemImage: "plus", variant: .secondary) {
+            form.addInstruction()
+        }
+    }
+
+    @ViewBuilder
+    private func instructionButtons(_ step: RecipeEditorInstructionStep) -> some View {
+        Button("Move up") { form.moveInstructionUp(id: step.id) }
+            .buttonStyle(.borderless)
+            .disabled(step.order == 1)
+            .accessibilityLabel(step.moveUpAccessibilityLabel)
+            .accessibilityHint(step.moveUpAccessibilityHint)
+        Button("Move down") { form.moveInstructionDown(id: step.id) }
+            .buttonStyle(.borderless)
+            .disabled(step.order == form.instructions.count)
+            .accessibilityLabel(step.moveDownAccessibilityLabel)
+            .accessibilityHint(step.moveDownAccessibilityHint(totalSteps: form.instructions.count))
+        if !dynamicTypeSize.isAccessibilitySize {
+            Spacer()
+        }
+        Button("Remove") { form.removeInstruction(id: step.id) }
+            .buttonStyle(.borderless)
+            .accessibilityLabel(step.removeAccessibilityLabel)
+            .accessibilityHint("Removes this step from the local form only.")
     }
 
     private var macroPreviewCard: some View {
@@ -1171,16 +1264,15 @@ public struct RecipeEditorPlaceholderView: View {
                     }
                     .accessibilityHint("Opens community and caption setup. No community post starts.")
                 }
-                HStack(spacing: SavoroSpacing.sm) {
-                    SavoroButton("Change visibility", systemImage: "eye", variant: .secondary) {
-                        isShowingVisibilityOptions = true
-                    }
-                    .accessibilityHint("Opens visibility options. No publish or community post starts.")
-                    if selectedVisibilityOption != .keepPrivate {
-                        SavoroButton("Revert to private", systemImage: "lock", variant: .secondary) {
-                            revertVisibilityToPrivate()
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(spacing: SavoroSpacing.sm) {
+                            visibilityButtons
                         }
-                        .accessibilityHint("Returns this visibility preview to private. No public update starts.")
+                    } else {
+                        HStack(spacing: SavoroSpacing.sm) {
+                            visibilityButtons
+                        }
                     }
                 }
             }
@@ -1197,17 +1289,16 @@ public struct RecipeEditorPlaceholderView: View {
                 Text("Save Draft records this form in a local in-session mock store. Publish is only a validation preview and does not create a public listing.")
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textBody)
-                HStack(spacing: SavoroSpacing.sm) {
-                    SavoroButton("Save Draft", systemImage: "tray.and.arrow.down", variant: .primary) {
-                        saveDraft()
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(spacing: SavoroSpacing.sm) {
+                            draftActionButtons
+                        }
+                    } else {
+                        HStack(spacing: SavoroSpacing.sm) {
+                            draftActionButtons
+                        }
                     }
-                    .accessibilityLabel("Save Draft")
-                    .accessibilityHint("Saves this recipe draft for this app session only. No public publish or sharing starts.")
-                    SavoroButton("Preview public publish", systemImage: "checklist", variant: .secondary) {
-                        previewPublicPublish()
-                    }
-                    .accessibilityLabel("Preview public publish")
-                    .accessibilityHint("Checks required recipe details for a public publish preview. Nothing is posted or listed publicly.")
                 }
                 if let actionStatusCopy {
                     Label(actionStatusCopy, systemImage: form.canMockPublishPublicly ? "checkmark.circle" : "info.circle")
@@ -1220,6 +1311,34 @@ public struct RecipeEditorPlaceholderView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+    }
+
+    @ViewBuilder
+    private var visibilityButtons: some View {
+        SavoroButton("Change visibility", systemImage: "eye", variant: .secondary) {
+            isShowingVisibilityOptions = true
+        }
+        .accessibilityHint("Opens visibility options. No publish or community post starts.")
+        if selectedVisibilityOption != .keepPrivate {
+            SavoroButton("Revert to private", systemImage: "lock", variant: .secondary) {
+                revertVisibilityToPrivate()
+            }
+            .accessibilityHint("Returns this visibility preview to private. No public update starts.")
+        }
+    }
+
+    @ViewBuilder
+    private var draftActionButtons: some View {
+        SavoroButton("Save Draft", systemImage: "tray.and.arrow.down", variant: .primary) {
+            saveDraft()
+        }
+        .accessibilityLabel("Save Draft")
+        .accessibilityHint("Saves this recipe draft for this app session only. No public publish or sharing starts.")
+        SavoroButton("Preview public publish", systemImage: "checklist", variant: .secondary) {
+            previewPublicPublish()
+        }
+        .accessibilityLabel("Preview public publish")
+        .accessibilityHint("Checks required recipe details for a public publish preview. Nothing is posted or listed publicly.")
     }
 
     private var currentDraftKey: String {
@@ -1278,12 +1397,51 @@ public struct RecipeEditorPlaceholderView: View {
             Text(isRequired ? "\(label) required" : label)
                 .font(SavoroTypography.label)
                 .foregroundStyle(SavoroColor.textBody)
-            TextField(label, text: text, prompt: fieldPrompt(label), axis: axis)
-                .textFieldStyle(.roundedBorder)
-                .accessibilityLabel(isRequired ? "\(label), required" : label)
+            if dynamicTypeSize.isAccessibilitySize && axis == .vertical {
+                accessibilityVerticalTextField(
+                    label: label,
+                    text: text,
+                    accessibilityLabel: isRequired ? "\(label), required" : label
+                )
                 .accessibilityIdentifier("recipe-editor-field-\(label.lowercased().replacingOccurrences(of: " ", with: "-"))")
+            } else {
+                TextField(label, text: text, prompt: fieldPrompt(label), axis: axis)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityLabel(isRequired ? "\(label), required" : label)
+                    .accessibilityIdentifier("recipe-editor-field-\(label.lowercased().replacingOccurrences(of: " ", with: "-"))")
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func accessibilityVerticalTextField(
+        label: String,
+        text: Binding<String>,
+        accessibilityLabel: String
+    ) -> some View {
+        ZStack(alignment: .topLeading) {
+            if text.wrappedValue.isEmpty {
+                Text(label)
+                    .font(SavoroTypography.body)
+                    .foregroundStyle(SavoroColor.fieldPlaceholder)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, SavoroSpacing.sm)
+                    .padding(.vertical, SavoroSpacing.xs)
+                    .allowsHitTesting(false)
+            }
+            TextField("", text: text, axis: .vertical)
+                .font(SavoroTypography.body)
+                .lineLimit(1...)
+                .padding(.horizontal, SavoroSpacing.sm)
+                .padding(.vertical, SavoroSpacing.xs)
+        }
+        .background(SavoroColor.cardStrong)
+        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous)
+                .stroke(SavoroColor.borderStrong, lineWidth: 1)
+        )
+        .accessibilityLabel(accessibilityLabel)
     }
 
     private func fieldPrompt(_ text: String) -> Text {

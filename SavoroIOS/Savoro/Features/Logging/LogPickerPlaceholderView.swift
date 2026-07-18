@@ -308,21 +308,20 @@ private struct LogPickerStateCard: View {
     let state: LogPickerViewModel.EmptyState
     let primaryAction: () -> Void
     var secondaryAction: (() -> Void)? = nil
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .glass) {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                    Image(systemName: state.systemImage)
-                        .font(.title2)
-                        .foregroundStyle(SavoroColor.accent)
-                    VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                        Text(state.title)
-                            .font(SavoroTypography.headline)
-                            .foregroundStyle(SavoroColor.textStrong)
-                        Text(state.message)
-                            .font(SavoroTypography.callout)
-                            .foregroundStyle(SavoroColor.textBody)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            stateContent
+                        }
+                    } else {
+                        HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                            stateContent
+                        }
                     }
                 }
                 SavoroButton(state.primaryActionTitle, systemImage: "arrow.counterclockwise", variant: .primary, action: primaryAction)
@@ -334,6 +333,21 @@ private struct LogPickerStateCard: View {
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var stateContent: some View {
+        Image(systemName: state.systemImage)
+            .font(.title2)
+            .foregroundStyle(SavoroColor.accent)
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(state.title)
+                .font(SavoroTypography.headline)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(state.message)
+                .font(SavoroTypography.callout)
+                .foregroundStyle(SavoroColor.textBody)
+        }
     }
 }
 
@@ -360,28 +374,32 @@ private struct LogPickerItemRow: View {
     let item: LogPickerViewModel.Item
     let mealType: MealType?
     let onSelect: (LogPickerViewModel.Item, MealType?) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         Button { onSelect(item, mealType) } label: {
             SavoroCard(style: .plain) {
             VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                    Image(systemName: item.typeSystemImage)
-                        .foregroundStyle(item.itemType == .recipe ? SavoroColor.accent : SavoroColor.positive)
-                        .font(.title3)
-                    VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                        Text(item.title).font(SavoroTypography.bodyEmphasized).foregroundStyle(SavoroColor.textStrong)
-                        Text(item.subtitle).font(SavoroTypography.micro).foregroundStyle(SavoroColor.textMuted)
-                    }
-                    Spacer(minLength: 0)
-                    VStack(alignment: .trailing, spacing: SavoroSpacing.xxs) {
-                        SavoroChip(title: item.typeLabel, variant: item.itemType == .recipe ? .accent : .positive)
-                        SavoroChip(title: item.sourceLabel, variant: item.isPrivateContext ? .neutral : .positive)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            itemHeader
+                        }
+                    } else {
+                        HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                            itemHeader
+                        }
                     }
                 }
-                HStack(spacing: SavoroSpacing.xs) {
-                    ForEach(item.macroValues.prefix(3)) { macro in
-                        SavoroMacroPill(macro: macro, showsShortLabel: true)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                            macroPills
+                        }
+                    } else {
+                        HStack(spacing: SavoroSpacing.xs) {
+                            macroPills
+                        }
                     }
                 }
                 Text(selectionCopy)
@@ -393,6 +411,31 @@ private struct LogPickerItemRow: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("log-picker-item-\(item.id)")
+    }
+
+    @ViewBuilder
+    private var itemHeader: some View {
+        Image(systemName: item.typeSystemImage)
+            .foregroundStyle(item.itemType == .recipe ? SavoroColor.accent : SavoroColor.positive)
+            .font(.title3)
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(item.title).font(SavoroTypography.bodyEmphasized).foregroundStyle(SavoroColor.textStrong)
+            Text(item.subtitle).font(SavoroTypography.micro).foregroundStyle(SavoroColor.textMuted)
+        }
+        if !dynamicTypeSize.isAccessibilitySize {
+            Spacer(minLength: 0)
+        }
+        VStack(alignment: dynamicTypeSize.isAccessibilitySize ? .leading : .trailing, spacing: SavoroSpacing.xxs) {
+            SavoroChip(title: item.typeLabel, variant: item.itemType == .recipe ? .accent : .positive)
+            SavoroChip(title: item.sourceLabel, variant: item.isPrivateContext ? .neutral : .positive)
+        }
+    }
+
+    @ViewBuilder
+    private var macroPills: some View {
+        ForEach(item.macroValues.prefix(3)) { macro in
+            SavoroMacroPill(macro: macro, showsShortLabel: true)
+        }
     }
 
     private var selectionCopy: String {

@@ -206,60 +206,97 @@ private struct TodayHeaderView: View {
 private struct TodayPrivacyCard: View {
     let copy: String
     let supportCopy: String
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .glass) {
-            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                Image(systemName: "lock.shield.fill")
-                    .foregroundStyle(SavoroColor.accent)
-                    .font(.title3)
-                VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                    Text("Private nutrition space")
-                        .font(SavoroTypography.headline)
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Text(copy)
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textBody)
-                    Text(supportCopy)
-                        .font(SavoroTypography.micro)
-                        .foregroundStyle(SavoroColor.textMuted)
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        privacyIcon
+                        privacyCopy
+                    }
+                } else {
+                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                        privacyIcon
+                        privacyCopy
+                    }
                 }
             }
         }
         .accessibilityElement(children: .combine)
     }
+
+    private var privacyIcon: some View {
+        Image(systemName: "lock.shield.fill")
+            .foregroundStyle(SavoroColor.accent)
+            .font(.title3)
+    }
+
+    private var privacyCopy: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text("Private nutrition space")
+                .font(SavoroTypography.headline)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(copy)
+                .font(SavoroTypography.callout)
+                .foregroundStyle(SavoroColor.textBody)
+            Text(supportCopy)
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textMuted)
+        }
+    }
 }
 
 private struct TodayCalorieRingCard: View {
     let viewModel: TodaySummaryViewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .elevated) {
-            HStack(alignment: .center, spacing: SavoroSpacing.lg) {
-                SavoroMacroRing(
-                    value: viewModel.calorieProgress.value,
-                    goal: viewModel.calorieProgress.goal ?? 0,
-                    label: "Calories today",
-                    tint: SavoroColor.macroCalories
-                )
-                .frame(width: 132, height: 132)
-
-                VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                    Text("Calories today")
-                        .font(SavoroTypography.headline)
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Text(viewModel.calorieProgress.progressText)
-                        .font(SavoroTypography.numericHeadline.monospacedDigit())
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Text(viewModel.calorieSupportText)
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textMuted)
-                    SavoroTrustBadge(kind: .savedSnapshot, detail: "From frozen mock log data")
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
+                        calorieRing
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 180)
+                        calorieDetails
+                    }
+                } else {
+                    HStack(alignment: .center, spacing: SavoroSpacing.lg) {
+                        calorieRing
+                            .frame(width: 132, height: 132)
+                        calorieDetails
+                    }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    private var calorieRing: some View {
+        SavoroMacroRing(
+            value: viewModel.calorieProgress.value,
+            goal: viewModel.calorieProgress.goal ?? 0,
+            label: "Calories today",
+            tint: SavoroColor.macroCalories
+        )
+    }
+
+    private var calorieDetails: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+            Text("Calories today")
+                .font(SavoroTypography.headline)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(viewModel.calorieProgress.progressText)
+                .font(SavoroTypography.numericHeadline.monospacedDigit())
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(viewModel.calorieSupportText)
+                .font(SavoroTypography.callout)
+                .foregroundStyle(SavoroColor.textMuted)
+            SavoroTrustBadge(kind: .savedSnapshot, detail: "From frozen mock log data")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -279,6 +316,7 @@ private struct TodayMacroProgressCard: View {
 private struct TodayQuickActionsCard: View {
     let actions: [TodayQuickActionKind]
     let onAction: (TodayQuickActionKind) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .elevated) {
@@ -294,23 +332,27 @@ private struct TodayQuickActionsCard: View {
 
                 ForEach(actions) { action in
                     Button { onAction(action) } label: {
-                        HStack(spacing: SavoroSpacing.sm) {
-                            Image(systemName: action.systemImage)
-                                .foregroundStyle(SavoroColor.accent)
-                                .font(.title3)
-                            VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                                Text(action.title)
-                                    .font(SavoroTypography.bodyEmphasized)
-                                    .foregroundStyle(SavoroColor.textStrong)
-                                Text(action.subtitle)
-                                    .font(SavoroTypography.micro)
-                                    .foregroundStyle(SavoroColor.textMuted)
+                        Group {
+                            if dynamicTypeSize.isAccessibilitySize {
+                                VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                    quickActionIcon(action)
+                                    quickActionCopy(action)
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(SavoroColor.textMuted)
+                                }
+                            } else {
+                                HStack(spacing: SavoroSpacing.sm) {
+                                    quickActionIcon(action)
+                                    quickActionCopy(action)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(SavoroColor.textMuted)
+                                }
                             }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption.weight(.semibold))
-                                .foregroundStyle(SavoroColor.textMuted)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(SavoroSpacing.sm)
                         .background(SavoroColor.cardStrong)
                         .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
@@ -321,11 +363,29 @@ private struct TodayQuickActionsCard: View {
             }
         }
     }
+
+    private func quickActionIcon(_ action: TodayQuickActionKind) -> some View {
+        Image(systemName: action.systemImage)
+            .foregroundStyle(SavoroColor.accent)
+            .font(.title3)
+    }
+
+    private func quickActionCopy(_ action: TodayQuickActionKind) -> some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(action.title)
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(action.subtitle)
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textMuted)
+        }
+    }
 }
 
 private struct TodayRecentLogAgainRail: View {
     let items: [TodayRecentLogAgainItem]
     let onLogAgain: (TodayRecentLogAgainItem) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
@@ -338,14 +398,25 @@ private struct TodayRecentLogAgainRail: View {
                     .foregroundStyle(SavoroColor.textMuted)
             }
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: SavoroSpacing.md) {
-                    ForEach(items) { item in
-                        TodayRecentLogAgainCard(item: item, onLogAgain: { onLogAgain(item) })
-                    }
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SavoroSpacing.md) {
+                    recentCards
                 }
-                .padding(.vertical, SavoroSpacing.xs)
+            } else {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(alignment: .top, spacing: SavoroSpacing.md) {
+                        recentCards
+                    }
+                    .padding(.vertical, SavoroSpacing.xs)
+                }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var recentCards: some View {
+        ForEach(items) { item in
+            TodayRecentLogAgainCard(item: item, onLogAgain: { onLogAgain(item) })
         }
     }
 }
@@ -353,8 +424,20 @@ private struct TodayRecentLogAgainRail: View {
 private struct TodayRecentLogAgainCard: View {
     let item: TodayRecentLogAgainItem
     let onLogAgain: () -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     var body: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            card
+                .frame(maxWidth: .infinity, alignment: .leading)
+        } else {
+            card
+                .frame(width: 260)
+        }
+    }
+
+    private var card: some View {
         SavoroCard(style: .plain) {
             VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
                 SavoroChip(title: item.sourceLabel, systemImage: "lock.fill", variant: .neutral)
@@ -370,12 +453,12 @@ private struct TodayRecentLogAgainCard: View {
                     .tint(SavoroColor.accent)
             }
         }
-        .frame(width: 260)
     }
 }
 
 private struct TodaySummaryCard: View {
     let viewModel: TodaySummaryViewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .glass) {
@@ -389,13 +472,16 @@ private struct TodaySummaryCard: View {
                         .foregroundStyle(SavoroColor.textMuted)
                 }
 
-                HStack(alignment: .firstTextBaseline, spacing: SavoroSpacing.xs) {
-                    Text("\(Int(viewModel.totals.calories))")
-                        .font(SavoroTypography.numericTitle)
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Text("cal logged")
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textMuted)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                            calorieSummary
+                        }
+                    } else {
+                        HStack(alignment: .firstTextBaseline, spacing: SavoroSpacing.xs) {
+                            calorieSummary
+                        }
+                    }
                 }
 
                 FlowMacroPills(macros: viewModel.macroValues.filter { $0.kind != .calories })
@@ -406,6 +492,16 @@ private struct TodaySummaryCard: View {
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var calorieSummary: some View {
+        Text("\(Int(viewModel.totals.calories))")
+            .font(SavoroTypography.numericTitle)
+            .foregroundStyle(SavoroColor.textStrong)
+        Text("cal logged")
+            .font(SavoroTypography.callout)
+            .foregroundStyle(SavoroColor.textMuted)
     }
 }
 
@@ -432,16 +528,21 @@ private struct TodayMealSectionsCard: View {
 
 private struct TodayMealSectionView: View {
     let section: TodayMealSectionViewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .plain) {
             VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                HStack {
-                    Text(section.title)
-                        .font(SavoroTypography.bodyEmphasized)
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Spacer()
-                    SavoroChip(title: section.entryCountText, variant: section.isEmpty ? .neutral : .positive)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                            mealSectionHeading
+                        }
+                    } else {
+                        HStack {
+                            mealSectionHeading
+                        }
+                    }
                 }
 
                 if section.isEmpty {
@@ -458,67 +559,112 @@ private struct TodayMealSectionView: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel(section.accessibilityTitle)
     }
+
+    @ViewBuilder
+    private var mealSectionHeading: some View {
+        Text(section.title)
+            .font(SavoroTypography.bodyEmphasized)
+            .foregroundStyle(SavoroColor.textStrong)
+        if !dynamicTypeSize.isAccessibilitySize {
+            Spacer()
+        }
+        SavoroChip(title: section.entryCountText, variant: section.isEmpty ? .neutral : .positive)
+    }
 }
 
 private struct TodayMealEmptyStateView: View {
     let section: TodayMealSectionViewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-            Image(systemName: "sun.max.fill")
-                .foregroundStyle(SavoroColor.accent)
-            VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                Text(section.emptyTitle)
-                    .font(SavoroTypography.bodyEmphasized)
-                    .foregroundStyle(SavoroColor.textStrong)
-                Text(section.emptyBody)
-                    .font(SavoroTypography.callout)
-                    .foregroundStyle(SavoroColor.textMuted)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                    emptyStateContent
+                }
+            } else {
+                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                    emptyStateContent
+                }
             }
         }
         .padding(SavoroSpacing.sm)
         .background(SavoroColor.accentSoft)
         .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
     }
+
+    @ViewBuilder
+    private var emptyStateContent: some View {
+        Image(systemName: "sun.max.fill")
+            .foregroundStyle(SavoroColor.accent)
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(section.emptyTitle)
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(section.emptyBody)
+                .font(SavoroTypography.callout)
+                .foregroundStyle(SavoroColor.textMuted)
+        }
+    }
 }
 
 private struct TodayMealEntryRow: View {
     let entry: FoodLogEntry
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-            Image(systemName: entry.itemType == .recipe ? "fork.knife.circle.fill" : "leaf.circle.fill")
-                .foregroundStyle(SavoroColor.accent)
-                .font(.title3)
-
-            VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                Text(entry.snapshot.displayName)
-                    .font(SavoroTypography.bodyEmphasized)
-                    .foregroundStyle(SavoroColor.textStrong)
-                Text(entry.quantityText)
-                    .font(SavoroTypography.micro)
-                    .foregroundStyle(SavoroColor.textMuted)
-                FlowMacroPills(macros: entry.snapshot.rowMacroValues)
-                if let sourceLabel = entry.snapshot.sourceLabel {
-                    SavoroTrustBadge(kind: .savedSnapshot, detail: sourceLabel)
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                    entryContent
+                }
+            } else {
+                HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                    entryContent
+                    Spacer(minLength: 0)
                 }
             }
-            Spacer(minLength: 0)
         }
         .padding(SavoroSpacing.sm)
         .background(SavoroColor.cardStrong)
         .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
         .accessibilityIdentifier("today-log-entry-\(entry.id)")
     }
+
+    @ViewBuilder
+    private var entryContent: some View {
+        Image(systemName: entry.itemType == .recipe ? "fork.knife.circle.fill" : "leaf.circle.fill")
+            .foregroundStyle(SavoroColor.accent)
+            .font(.title3)
+
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(entry.snapshot.displayName)
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(entry.quantityText)
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textMuted)
+            FlowMacroPills(macros: entry.snapshot.rowMacroValues)
+            if let sourceLabel = entry.snapshot.sourceLabel {
+                SavoroTrustBadge(kind: .savedSnapshot, detail: sourceLabel)
+            }
+        }
+    }
 }
 
 private struct FlowMacroPills: View {
     let macros: [SavoroMacroValue]
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     var body: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: SavoroSpacing.xs) { pills }
+        if dynamicTypeSize.isAccessibilitySize {
             VStack(alignment: .leading, spacing: SavoroSpacing.xs) { pills }
+        } else {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: SavoroSpacing.xs) { pills }
+                VStack(alignment: .leading, spacing: SavoroSpacing.xs) { pills }
+            }
         }
     }
 

@@ -74,13 +74,28 @@ struct SavoroButton: View {
 
 struct SavoroButtonStyle: ButtonStyle {
     let variant: SavoroButton.Variant
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     func makeBody(configuration: Configuration) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            styledLabel(configuration)
+                .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                        .stroke(border, lineWidth: borderWidth)
+                )
+        } else {
+            styledLabel(configuration)
+                .clipShape(Capsule(style: .continuous))
+                .overlay(Capsule(style: .continuous).stroke(border, lineWidth: borderWidth))
+        }
+    }
+
+    private func styledLabel(_ configuration: Configuration) -> some View {
         configuration.label
             .foregroundStyle(foreground)
             .background(background(isPressed: configuration.isPressed))
-            .clipShape(Capsule(style: .continuous))
-            .overlay(Capsule(style: .continuous).stroke(border, lineWidth: borderWidth))
             .scaleEffect(configuration.isPressed ? 0.97 : 1)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
@@ -118,21 +133,44 @@ struct SavoroChip: View {
     var systemImage: String?
     var variant: Variant = .neutral
     var isSelected = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     var body: some View {
-        HStack(spacing: SavoroSpacing.xxs) {
-            if let systemImage {
-                Image(systemName: systemImage)
+        if dynamicTypeSize.isAccessibilitySize {
+            HStack(alignment: .firstTextBaseline, spacing: SavoroSpacing.xxs) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                }
+                Text(title)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            Text(title)
-        }
-        .font(SavoroTypography.label)
+            .font(SavoroTypography.label)
             .foregroundStyle(foreground)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.horizontal, SavoroSpacing.sm)
             .padding(.vertical, SavoroSpacing.xs)
             .background(background)
-            .clipShape(Capsule(style: .continuous))
-            .overlay(Capsule(style: .continuous).stroke(border, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                    .stroke(border, lineWidth: 1)
+            )
+        } else {
+            HStack(spacing: SavoroSpacing.xxs) {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                }
+                Text(title)
+            }
+            .font(SavoroTypography.label)
+                .foregroundStyle(foreground)
+                .padding(.horizontal, SavoroSpacing.sm)
+                .padding(.vertical, SavoroSpacing.xs)
+                .background(background)
+                .clipShape(Capsule(style: .continuous))
+                .overlay(Capsule(style: .continuous).stroke(border, lineWidth: 1))
+        }
     }
 
     private var foreground: Color { isSelected ? SavoroColor.textStrong : SavoroColor.textBody }
@@ -151,61 +189,120 @@ struct SavoroChip: View {
 struct SavoroSegmentedControl<Option: Hashable & CustomStringConvertible>: View {
     let options: [Option]
     @Binding var selection: Option
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     var body: some View {
-        HStack(spacing: SavoroSpacing.xs) {
-            ForEach(options, id: \.self) { option in
-                Button {
-                    selection = option
-                } label: {
-                    Text(option.description)
-                        .font(SavoroTypography.label)
-                        .foregroundStyle(selection == option ? SavoroColor.textStrong : SavoroColor.textMuted)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, SavoroSpacing.xs)
-                        .background(selection == option ? SavoroColor.cardStrong : .clear)
-                        .clipShape(Capsule(style: .continuous))
-                }
-                .buttonStyle(.plain)
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(spacing: SavoroSpacing.xs) {
+                optionsContent(usesCapsule: false)
             }
+            .padding(SavoroSpacing.xxs)
+            .background(SavoroColor.raised)
+            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                    .stroke(SavoroColor.border, lineWidth: 1)
+            )
+        } else {
+            HStack(spacing: SavoroSpacing.xs) {
+                optionsContent(usesCapsule: true)
+            }
+            .padding(SavoroSpacing.xxs)
+            .background(SavoroColor.raised)
+            .clipShape(Capsule(style: .continuous))
+            .overlay(Capsule(style: .continuous).stroke(SavoroColor.border, lineWidth: 1))
         }
-        .padding(SavoroSpacing.xxs)
-        .background(SavoroColor.raised)
-        .clipShape(Capsule(style: .continuous))
-        .overlay(Capsule(style: .continuous).stroke(SavoroColor.border, lineWidth: 1))
+    }
+
+    @ViewBuilder
+    private func optionsContent(usesCapsule: Bool) -> some View {
+        ForEach(options, id: \.self) { option in
+            Button {
+                selection = option
+            } label: {
+                Text(option.description)
+                    .font(SavoroTypography.label)
+                    .foregroundStyle(selection == option ? SavoroColor.textStrong : SavoroColor.textMuted)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, SavoroSpacing.xs)
+                    .background(selection == option ? SavoroColor.cardStrong : .clear)
+                    .clipShape(
+                        usesCapsule
+                            ? AnyShape(Capsule(style: .continuous))
+                            : AnyShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
+                    )
+            }
+            .buttonStyle(.plain)
+        }
     }
 }
 
 struct SavoroSearchField: View {
     let placeholder: String
     @Binding var text: String
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     var body: some View {
-        HStack(spacing: SavoroSpacing.sm) {
-            Image(systemName: "magnifyingglass")
-                .foregroundStyle(SavoroColor.textMuted)
-            TextField(
-                placeholder,
-                text: $text,
-                prompt: Text(placeholder).foregroundStyle(SavoroColor.fieldPlaceholder)
-            )
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(SavoroColor.textMuted)
+                TextField(
+                    placeholder,
+                    text: $text,
+                    prompt: Text(placeholder).foregroundStyle(SavoroColor.fieldPlaceholder),
+                    axis: .vertical
+                )
+                .lineLimit(1...)
                 .font(SavoroTypography.body)
                 .foregroundStyle(SavoroColor.textStrong)
                 .textInputAutocapitalization(.never)
-            if !text.isEmpty {
-                Button { text = "" } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(SavoroColor.textSubtle)
+                if !text.isEmpty {
+                    Button { text = "" } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(SavoroColor.textSubtle)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear search")
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Clear search")
             }
+            .padding(.horizontal, SavoroSpacing.md)
+            .padding(.vertical, SavoroSpacing.sm)
+            .background(SavoroColor.cardStrong)
+            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                    .stroke(SavoroColor.glassBorder, lineWidth: 1)
+            )
+        } else {
+            HStack(spacing: SavoroSpacing.sm) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(SavoroColor.textMuted)
+                TextField(
+                    placeholder,
+                    text: $text,
+                    prompt: Text(placeholder).foregroundStyle(SavoroColor.fieldPlaceholder)
+                )
+                    .font(SavoroTypography.body)
+                    .foregroundStyle(SavoroColor.textStrong)
+                    .textInputAutocapitalization(.never)
+                if !text.isEmpty {
+                    Button { text = "" } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(SavoroColor.textSubtle)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Clear search")
+                }
+            }
+            .padding(.horizontal, SavoroSpacing.md)
+            .padding(.vertical, SavoroSpacing.sm)
+            .background(SavoroColor.cardStrong)
+            .clipShape(Capsule(style: .continuous))
+            .overlay(Capsule(style: .continuous).stroke(SavoroColor.glassBorder, lineWidth: 1))
         }
-        .padding(.horizontal, SavoroSpacing.md)
-        .padding(.vertical, SavoroSpacing.sm)
-        .background(SavoroColor.cardStrong)
-        .clipShape(Capsule(style: .continuous))
-        .overlay(Capsule(style: .continuous).stroke(SavoroColor.glassBorder, lineWidth: 1))
     }
 }
 
@@ -263,34 +360,69 @@ struct SavoroMacroValue: Identifiable, Equatable {
 struct SavoroMacroPill: View {
     let macro: SavoroMacroValue
     var showsShortLabel = true
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     var body: some View {
-        HStack(spacing: SavoroSpacing.xxs) {
-            Circle().fill(macro.kind.color).frame(width: 7, height: 7)
-            Text(showsShortLabel ? macro.kind.shortLabel : macro.kind.label)
-                .font(SavoroTypography.micro)
-            Text(macro.displayValue)
-                .font(SavoroTypography.micro.monospacedDigit())
+        if dynamicTypeSize.isAccessibilitySize {
+            HStack(alignment: .firstTextBaseline, spacing: SavoroSpacing.xs) {
+                Circle().fill(macro.kind.color).frame(width: 7, height: 7)
+                VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+                    Text(showsShortLabel ? macro.kind.shortLabel : macro.kind.label)
+                        .font(SavoroTypography.micro)
+                    Text(macro.displayValue)
+                        .font(SavoroTypography.micro.monospacedDigit())
+                }
+            }
+            .foregroundStyle(SavoroColor.textStrong)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, SavoroSpacing.sm)
+            .padding(.vertical, SavoroSpacing.xs)
+            .background(SavoroColor.cardStrong)
+            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                    .stroke(SavoroColor.border, lineWidth: 1)
+            )
+            .accessibilityLabel("\(macro.kind.label), \(macro.displayValue)")
+        } else {
+            HStack(spacing: SavoroSpacing.xxs) {
+                Circle().fill(macro.kind.color).frame(width: 7, height: 7)
+                Text(showsShortLabel ? macro.kind.shortLabel : macro.kind.label)
+                    .font(SavoroTypography.micro)
+                Text(macro.displayValue)
+                    .font(SavoroTypography.micro.monospacedDigit())
+            }
+            .foregroundStyle(SavoroColor.textStrong)
+            .padding(.horizontal, SavoroSpacing.sm)
+            .padding(.vertical, SavoroSpacing.xs)
+            .background(SavoroColor.cardStrong)
+            .clipShape(Capsule(style: .continuous))
+            .overlay(Capsule(style: .continuous).stroke(SavoroColor.border, lineWidth: 1))
+            .accessibilityLabel("\(macro.kind.label), \(macro.displayValue)")
         }
-        .foregroundStyle(SavoroColor.textStrong)
-        .padding(.horizontal, SavoroSpacing.sm)
-        .padding(.vertical, SavoroSpacing.xs)
-        .background(SavoroColor.cardStrong)
-        .clipShape(Capsule(style: .continuous))
-        .overlay(Capsule(style: .continuous).stroke(SavoroColor.border, lineWidth: 1))
-        .accessibilityLabel("\(macro.kind.label), \(macro.displayValue)")
     }
 }
 
 struct SavoroMacroProgressBar: View {
     let macro: SavoroMacroValue
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-            HStack {
-                Text(macro.kind.label).font(SavoroTypography.label)
-                Spacer()
-                Text(macro.progressText).font(SavoroTypography.micro.monospacedDigit())
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+                        Text(macro.kind.label).font(SavoroTypography.label)
+                        Text(macro.progressText).font(SavoroTypography.micro.monospacedDigit())
+                    }
+                } else {
+                    HStack {
+                        Text(macro.kind.label).font(SavoroTypography.label)
+                        Spacer()
+                        Text(macro.progressText).font(SavoroTypography.micro.monospacedDigit())
+                    }
+                }
             }
             .foregroundStyle(SavoroColor.textBody)
 
@@ -403,25 +535,54 @@ enum SavoroTrustKind {
 struct SavoroTrustBadge: View {
     let kind: SavoroTrustKind
     var detail: String?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     var body: some View {
-        HStack(spacing: SavoroSpacing.xs) {
-            Image(systemName: kind.systemImage)
-                .foregroundStyle(SavoroColor.positive)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(kind.title).font(SavoroTypography.label)
-                if let detail {
-                    Text(detail).font(SavoroTypography.micro).foregroundStyle(SavoroColor.textMuted)
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                Image(systemName: kind.systemImage)
+                    .foregroundStyle(SavoroColor.positive)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(kind.title).font(SavoroTypography.label)
+                    if let detail {
+                        Text(detail)
+                            .font(SavoroTypography.micro)
+                            .foregroundStyle(SavoroColor.textMuted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
             }
+            .foregroundStyle(SavoroColor.textBody)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, SavoroSpacing.sm)
+            .padding(.vertical, SavoroSpacing.xs)
+            .background(SavoroColor.positiveSoft)
+            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                    .stroke(SavoroColor.positiveBorder, lineWidth: 1)
+            )
+            .accessibilityElement(children: .combine)
+        } else {
+            HStack(spacing: SavoroSpacing.xs) {
+                Image(systemName: kind.systemImage)
+                    .foregroundStyle(SavoroColor.positive)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(kind.title).font(SavoroTypography.label)
+                    if let detail {
+                        Text(detail).font(SavoroTypography.micro).foregroundStyle(SavoroColor.textMuted)
+                    }
+                }
+            }
+            .foregroundStyle(SavoroColor.textBody)
+            .padding(.horizontal, SavoroSpacing.sm)
+            .padding(.vertical, SavoroSpacing.xs)
+            .background(SavoroColor.positiveSoft)
+            .clipShape(Capsule(style: .continuous))
+            .overlay(Capsule(style: .continuous).stroke(SavoroColor.positiveBorder, lineWidth: 1))
+            .accessibilityElement(children: .combine)
         }
-        .foregroundStyle(SavoroColor.textBody)
-        .padding(.horizontal, SavoroSpacing.sm)
-        .padding(.vertical, SavoroSpacing.xs)
-        .background(SavoroColor.positiveSoft)
-        .clipShape(Capsule(style: .continuous))
-        .overlay(Capsule(style: .continuous).stroke(SavoroColor.positiveBorder, lineWidth: 1))
-        .accessibilityElement(children: .combine)
     }
 }
 

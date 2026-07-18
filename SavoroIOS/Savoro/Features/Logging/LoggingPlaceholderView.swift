@@ -331,6 +331,7 @@ struct LogRecipeSheetView: View {
 
 private struct LogRecipeIdentityCard: View {
     let viewModel: LogRecipeSheetViewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .elevated) {
@@ -342,26 +343,53 @@ private struct LogRecipeIdentityCard: View {
                 Text(viewModel.recipeIdentitySubtitle)
                     .font(SavoroTypography.callout)
                     .foregroundStyle(SavoroColor.textMuted)
-                HStack(spacing: SavoroSpacing.xs) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .foregroundStyle(SavoroColor.positive)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(viewModel.provenanceTitle)
-                            .font(SavoroTypography.label)
-                        Text(viewModel.provenanceDetail)
-                            .font(SavoroTypography.micro)
-                            .foregroundStyle(SavoroColor.textMuted)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                            provenanceContent
+                        }
+                    } else {
+                        HStack(spacing: SavoroSpacing.xs) {
+                            provenanceContent
+                        }
                     }
                 }
                 .foregroundStyle(SavoroColor.textBody)
+                .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : nil, alignment: .leading)
                 .padding(.horizontal, SavoroSpacing.sm)
                 .padding(.vertical, SavoroSpacing.xs)
                 .background(SavoroColor.positiveSoft)
-                .clipShape(Capsule(style: .continuous))
-                .overlay(Capsule(style: .continuous).stroke(SavoroColor.positiveBorder, lineWidth: 1))
+                .clipShape(
+                    dynamicTypeSize.isAccessibilitySize
+                        ? AnyShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+                        : AnyShape(Capsule(style: .continuous))
+                )
+                .overlay {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                            .stroke(SavoroColor.positiveBorder, lineWidth: 1)
+                    } else {
+                        Capsule(style: .continuous)
+                            .stroke(SavoroColor.positiveBorder, lineWidth: 1)
+                    }
+                }
             }
         }
         .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var provenanceContent: some View {
+        Image(systemName: "doc.text.magnifyingglass")
+            .foregroundStyle(SavoroColor.positive)
+        VStack(alignment: .leading, spacing: 1) {
+            Text(viewModel.provenanceTitle)
+                .font(SavoroTypography.label)
+            Text(viewModel.provenanceDetail)
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textMuted)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
 
@@ -369,6 +397,7 @@ private struct LogRecipeServingCard: View {
     let viewModel: LogRecipeSheetViewModel
     let canEditInputs: Bool
     let onChange: (LogRecipeSheetViewModel) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .plain) {
@@ -376,17 +405,16 @@ private struct LogRecipeServingCard: View {
                 Text("Serving count")
                     .font(SavoroTypography.headline)
                     .foregroundStyle(SavoroColor.textStrong)
-                HStack {
-                    Button("−") { onChange(viewModel.steppingServings(by: -viewModel.servingStep)) }
-                        .buttonStyle(.bordered)
-                        .disabled(!canEditInputs || !viewModel.canDecreaseServings)
-                    Text(viewModel.servingText)
-                        .font(SavoroTypography.numericHeadline.monospacedDigit())
-                        .foregroundStyle(SavoroColor.textStrong)
-                        .frame(maxWidth: .infinity)
-                    Button("+") { onChange(viewModel.steppingServings(by: viewModel.servingStep)) }
-                        .buttonStyle(.bordered)
-                        .disabled(!canEditInputs || !viewModel.canIncreaseServings)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(spacing: SavoroSpacing.sm) {
+                            servingControls
+                        }
+                    } else {
+                        HStack {
+                            servingControls
+                        }
+                    }
                 }
                 Text("Local preview only. Range: 0.5–6 servings in 0.5 serving steps; changing this updates macros above without adding a food log.")
                     .font(SavoroTypography.micro)
@@ -394,12 +422,27 @@ private struct LogRecipeServingCard: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var servingControls: some View {
+        Button("−") { onChange(viewModel.steppingServings(by: -viewModel.servingStep)) }
+            .buttonStyle(.bordered)
+            .disabled(!canEditInputs || !viewModel.canDecreaseServings)
+        Text(viewModel.servingText)
+            .font(SavoroTypography.numericHeadline.monospacedDigit())
+            .foregroundStyle(SavoroColor.textStrong)
+            .frame(maxWidth: .infinity)
+        Button("+") { onChange(viewModel.steppingServings(by: viewModel.servingStep)) }
+            .buttonStyle(.bordered)
+            .disabled(!canEditInputs || !viewModel.canIncreaseServings)
+    }
 }
 
 private struct LogRecipeMealDateCard: View {
     let viewModel: LogRecipeSheetViewModel
     let canEditInputs: Bool
     let onChange: (LogRecipeSheetViewModel) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .plain) {
@@ -412,15 +455,16 @@ private struct LogRecipeMealDateCard: View {
                     set: { onChange(viewModel.updatingMealType($0)) }
                 ))
                 .disabled(!canEditInputs)
-                HStack(spacing: SavoroSpacing.sm) {
-                    Button("Previous day") { onChange(viewModel.updatingDate(byAddingDays: -1)) }
-                        .buttonStyle(.bordered)
-                        .disabled(!canEditInputs)
-                    SavoroChip(title: viewModel.dateTitle, systemImage: "calendar", variant: .neutral)
-                        .frame(maxWidth: .infinity)
-                    Button("Next day") { onChange(viewModel.updatingDate(byAddingDays: 1)) }
-                        .buttonStyle(.bordered)
-                        .disabled(!canEditInputs)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            dateControls
+                        }
+                    } else {
+                        HStack(spacing: SavoroSpacing.sm) {
+                            dateControls
+                        }
+                    }
                 }
                 Text("Local preview only. Meal and date update this sheet metadata without opening search, calendar, or logging flows.")
                     .font(SavoroTypography.micro)
@@ -428,35 +472,62 @@ private struct LogRecipeMealDateCard: View {
             }
         }
     }
+
+    @ViewBuilder
+    private var dateControls: some View {
+        Button("Previous day") { onChange(viewModel.updatingDate(byAddingDays: -1)) }
+            .buttonStyle(.bordered)
+            .disabled(!canEditInputs)
+        SavoroChip(title: viewModel.dateTitle, systemImage: "calendar", variant: .neutral)
+            .frame(maxWidth: .infinity)
+        Button("Next day") { onChange(viewModel.updatingDate(byAddingDays: 1)) }
+            .buttonStyle(.bordered)
+            .disabled(!canEditInputs)
+    }
 }
 
 private struct LogRecipePrivacyCard: View {
     let viewModel: LogRecipeSheetViewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .glass) {
-            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                Image(systemName: "lock.shield.fill")
-                    .foregroundStyle(SavoroColor.accent)
-                VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                    Text("Private by default")
-                        .font(SavoroTypography.headline)
-                        .foregroundStyle(SavoroColor.textStrong)
-                    Text(viewModel.privacyCopy)
-                        .font(SavoroTypography.callout)
-                        .foregroundStyle(SavoroColor.textBody)
-                    Text(viewModel.scaffoldNotice)
-                        .font(SavoroTypography.micro)
-                        .foregroundStyle(SavoroColor.textMuted)
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        privacyContent
+                    }
+                } else {
+                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                        privacyContent
+                    }
                 }
             }
         }
         .accessibilityElement(children: .combine)
     }
+
+    @ViewBuilder
+    private var privacyContent: some View {
+        Image(systemName: "lock.shield.fill")
+            .foregroundStyle(SavoroColor.accent)
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text("Private by default")
+                .font(SavoroTypography.headline)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(viewModel.privacyCopy)
+                .font(SavoroTypography.callout)
+                .foregroundStyle(SavoroColor.textBody)
+            Text(viewModel.scaffoldNotice)
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textMuted)
+        }
+    }
 }
 
 private struct LogRecipeSubmissionStateCard: View {
     let status: LogRecipeSubmissionStatus
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         Group {
@@ -475,13 +546,26 @@ private struct LogRecipeSubmissionStateCard: View {
 
     private func stateRow(icon: String, title: String, detail: String) -> some View {
         SavoroCard(style: .glass) {
-            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                Image(systemName: icon).foregroundStyle(SavoroColor.accent)
-                VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                    Text(title).font(SavoroTypography.bodyEmphasized).foregroundStyle(SavoroColor.textStrong)
-                    Text(detail).font(SavoroTypography.callout).foregroundStyle(SavoroColor.textBody)
+            Group {
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                        stateContent(icon: icon, title: title, detail: detail)
+                    }
+                } else {
+                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                        stateContent(icon: icon, title: title, detail: detail)
+                    }
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func stateContent(icon: String, title: String, detail: String) -> some View {
+        Image(systemName: icon).foregroundStyle(SavoroColor.accent)
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(title).font(SavoroTypography.bodyEmphasized).foregroundStyle(SavoroColor.textStrong)
+            Text(detail).font(SavoroTypography.callout).foregroundStyle(SavoroColor.textBody)
         }
     }
 }

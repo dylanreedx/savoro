@@ -767,31 +767,34 @@ struct RecipeDetailUnavailableStateView: View {
 struct RecipeDetailStickyActionBar: View {
     let viewModel: RecipeDetailActionBarViewModel
     let onSelect: (RecipeDetailActionKind) -> Void
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
-            HStack(spacing: SavoroSpacing.xs) {
-                ForEach(viewModel.actions) { action in
-                    Button { onSelect(action) } label: {
-                        VStack(spacing: 4) {
-                            Image(systemName: action.systemImage)
-                            Text(action.label)
-                        }
-                        .font(SavoroTypography.label)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, SavoroSpacing.sm)
+            if dynamicTypeSize.isAccessibilitySize {
+                VStack(spacing: SavoroSpacing.xs) {
+                    ForEach(viewModel.actions) { action in
+                        actionButton(action, stacksLabel: false)
                     }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(action == .log ? SavoroColor.textOnAccent : SavoroColor.accentStrong)
-                    .background(action == .log ? SavoroColor.accent : SavoroColor.accentSoft)
-                    .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
-                    .accessibilityIdentifier(action.accessibilityIdentifier)
+                }
+            } else {
+                HStack(spacing: SavoroSpacing.xs) {
+                    ForEach(viewModel.actions) { action in
+                        actionButton(action, stacksLabel: true)
+                    }
                 }
             }
-            Text(viewModel.scaffoldCopy)
-                .font(SavoroTypography.micro)
-                .foregroundStyle(SavoroColor.textMuted)
-                .lineLimit(2)
+            if dynamicTypeSize.isAccessibilitySize {
+                Text(viewModel.scaffoldCopy)
+                    .font(SavoroTypography.micro)
+                    .foregroundStyle(SavoroColor.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text(viewModel.scaffoldCopy)
+                    .font(SavoroTypography.micro)
+                    .foregroundStyle(SavoroColor.textMuted)
+                    .lineLimit(2)
+            }
         }
         .padding(.horizontal, SavoroSpacing.md)
         .padding(.top, SavoroSpacing.sm)
@@ -800,10 +803,41 @@ struct RecipeDetailStickyActionBar: View {
         .overlay(alignment: .top) { Divider().foregroundStyle(SavoroColor.border) }
         .accessibilityElement(children: .contain)
     }
+
+    private func actionButton(_ action: RecipeDetailActionKind, stacksLabel: Bool) -> some View {
+        Button { onSelect(action) } label: {
+            Group {
+                if stacksLabel {
+                    VStack(spacing: SavoroSpacing.xxs) {
+                        actionLabel(action)
+                    }
+                } else {
+                    HStack(spacing: SavoroSpacing.xs) {
+                        actionLabel(action)
+                    }
+                }
+            }
+            .font(SavoroTypography.label)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, SavoroSpacing.sm)
+        }
+        .buttonStyle(.plain)
+        .foregroundStyle(action == .log ? SavoroColor.textOnAccent : SavoroColor.accentStrong)
+        .background(action == .log ? SavoroColor.accent : SavoroColor.accentSoft)
+        .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
+        .accessibilityIdentifier(action.accessibilityIdentifier)
+    }
+
+    @ViewBuilder
+    private func actionLabel(_ action: RecipeDetailActionKind) -> some View {
+        Image(systemName: action.systemImage)
+        Text(action.label)
+    }
 }
 
 struct RecipeDetailHeaderView: View {
     let viewModel: RecipeDetailHeaderViewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: SavoroSpacing.md) {
@@ -836,17 +870,26 @@ struct RecipeDetailHeaderView: View {
                 )
 
             VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
-                HStack(spacing: SavoroSpacing.xs) {
-                    ForEach(viewModel.tags, id: \.self) { tag in
-                        SavoroChip(title: tag, variant: .neutral)
+                if dynamicTypeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                        recipeTags
                     }
+                    Text(viewModel.title)
+                        .font(SavoroTypography.display)
+                        .foregroundStyle(SavoroColor.textStrong)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("recipe-detail-title")
+                } else {
+                    HStack(spacing: SavoroSpacing.xs) {
+                        recipeTags
+                    }
+                    Text(viewModel.title)
+                        .font(SavoroTypography.display)
+                        .foregroundStyle(SavoroColor.textStrong)
+                        .lineLimit(3)
+                        .accessibilityIdentifier("recipe-detail-title")
+                        .minimumScaleFactor(0.82)
                 }
-                Text(viewModel.title)
-                    .font(SavoroTypography.display)
-                    .foregroundStyle(SavoroColor.textStrong)
-                    .lineLimit(3)
-                    .accessibilityIdentifier("recipe-detail-title")
-                    .minimumScaleFactor(0.82)
             }
             .padding(SavoroSpacing.md)
         }
@@ -856,28 +899,46 @@ struct RecipeDetailHeaderView: View {
         .padding(.top, SavoroSpacing.sm)
     }
 
+    @ViewBuilder
+    private var recipeTags: some View {
+        ForEach(viewModel.tags, id: \.self) { tag in
+            SavoroChip(title: tag, variant: .neutral)
+        }
+    }
+
+    @ViewBuilder
     private var creatorAndTrustRow: some View {
-        HStack(alignment: .center, spacing: SavoroSpacing.sm) {
-            ZStack {
-                Circle().fill(SavoroColor.accentSoft)
-                Text(String(viewModel.creatorDisplayName.prefix(1)))
-                    .font(SavoroTypography.title2)
-                    .foregroundStyle(SavoroColor.accentStrong)
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                creatorIdentity
+                TrustBadgeView(badge: viewModel.trustBadge)
             }
-            .frame(width: 42, height: 42)
-
-            VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                Text(viewModel.creatorHandle)
-                    .font(SavoroTypography.bodyEmphasized)
-                    .foregroundStyle(SavoroColor.textStrong)
-                Text(viewModel.updatedText)
-                    .font(SavoroTypography.label)
-                    .foregroundStyle(SavoroColor.textMuted)
+        } else {
+            HStack(alignment: .center, spacing: SavoroSpacing.sm) {
+                creatorIdentity
+                Spacer(minLength: SavoroSpacing.xs)
+                TrustBadgeView(badge: viewModel.trustBadge)
             }
+        }
+    }
 
-            Spacer(minLength: SavoroSpacing.xs)
+    @ViewBuilder
+    private var creatorIdentity: some View {
+        ZStack {
+            Circle().fill(SavoroColor.accentSoft)
+            Text(String(viewModel.creatorDisplayName.prefix(1)))
+                .font(SavoroTypography.title2)
+                .foregroundStyle(SavoroColor.accentStrong)
+        }
+        .frame(width: 42, height: 42)
 
-            TrustBadgeView(badge: viewModel.trustBadge)
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(viewModel.creatorHandle)
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(viewModel.updatedText)
+                .font(SavoroTypography.label)
+                .foregroundStyle(SavoroColor.textMuted)
         }
     }
 }
@@ -885,6 +946,7 @@ struct RecipeDetailHeaderView: View {
 struct RecipeDetailContentSectionsView: View {
     let viewModel: RecipeDetailContentViewModel
     @Binding var selectedServings: Double
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: SavoroSpacing.lg) {
@@ -897,24 +959,27 @@ struct RecipeDetailContentSectionsView: View {
     private var macroSummary: some View {
         SavoroCard(style: .elevated) {
             VStack(alignment: .leading, spacing: SavoroSpacing.md) {
-                HStack(alignment: .firstTextBaseline) {
-                    VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                        Text("Macros")
-                            .font(SavoroTypography.title2)
-                            .foregroundStyle(SavoroColor.textStrong)
-                        Text(viewModel.versionText)
-                            .font(SavoroTypography.micro)
-                            .foregroundStyle(SavoroColor.textMuted)
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                            macroHeading
+                        }
+                    } else {
+                        HStack(alignment: .firstTextBaseline) {
+                            macroHeading
+                        }
                     }
-                    Spacer()
-                    Text("Selected servings preview")
-                        .font(SavoroTypography.label)
-                        .foregroundStyle(SavoroColor.accentStrong)
                 }
 
-                HStack(spacing: SavoroSpacing.sm) {
-                    ForEach(viewModel.macros) { macro in
-                        SavoroMacroStatBlock(macro: macro, caption: "selected servings")
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                            macroBlocks
+                        }
+                    } else {
+                        HStack(spacing: SavoroSpacing.sm) {
+                            macroBlocks
+                        }
                     }
                 }
 
@@ -931,6 +996,31 @@ struct RecipeDetailContentSectionsView: View {
         }
     }
 
+    @ViewBuilder
+    private var macroHeading: some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text("Macros")
+                .font(SavoroTypography.title2)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(viewModel.versionText)
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textMuted)
+        }
+        if !dynamicTypeSize.isAccessibilitySize {
+            Spacer()
+        }
+        Text("Selected servings preview")
+            .font(SavoroTypography.label)
+            .foregroundStyle(SavoroColor.accentStrong)
+    }
+
+    @ViewBuilder
+    private var macroBlocks: some View {
+        ForEach(viewModel.macros) { macro in
+            SavoroMacroStatBlock(macro: macro, caption: "selected servings")
+        }
+    }
+
     private var servingSelection: Binding<ServingOption> {
         Binding(
             get: { ServingOption(value: selectedServings) },
@@ -942,21 +1032,15 @@ struct RecipeDetailContentSectionsView: View {
         RecipeDetailListSection(title: "Ingredients", subtitle: "Current version ingredients") {
             VStack(spacing: 0) {
                 ForEach(viewModel.ingredients) { ingredient in
-                    HStack(alignment: .firstTextBaseline, spacing: SavoroSpacing.sm) {
-                        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                            Text(ingredient.title)
-                                .font(SavoroTypography.bodyEmphasized)
-                                .foregroundStyle(SavoroColor.textStrong)
-                            Text(ingredient.amountText)
-                                .font(SavoroTypography.label)
-                                .foregroundStyle(SavoroColor.textMuted)
-                        }
-                        Spacer()
-                        if let sourceText = ingredient.sourceText {
-                            Text(sourceText)
-                                .font(SavoroTypography.micro)
-                                .foregroundStyle(SavoroColor.textSubtle)
-                                .multilineTextAlignment(.trailing)
+                    Group {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                ingredientContent(ingredient)
+                            }
+                        } else {
+                            HStack(alignment: .firstTextBaseline, spacing: SavoroSpacing.sm) {
+                                ingredientContent(ingredient)
+                            }
                         }
                     }
                     .padding(.vertical, SavoroSpacing.sm)
@@ -966,25 +1050,59 @@ struct RecipeDetailContentSectionsView: View {
         }
     }
 
+    @ViewBuilder
+    private func ingredientContent(_ ingredient: RecipeDetailContentViewModel.IngredientRow) -> some View {
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(ingredient.title)
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(ingredient.amountText)
+                .font(SavoroTypography.label)
+                .foregroundStyle(SavoroColor.textMuted)
+        }
+        if !dynamicTypeSize.isAccessibilitySize {
+            Spacer()
+        }
+        if let sourceText = ingredient.sourceText {
+            Text(sourceText)
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textSubtle)
+                .multilineTextAlignment(dynamicTypeSize.isAccessibilitySize ? .leading : .trailing)
+        }
+    }
+
     private var instructions: some View {
         RecipeDetailListSection(title: "Instructions", subtitle: "Steps for this version") {
             VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
                 ForEach(viewModel.instructions) { step in
-                    HStack(alignment: .top, spacing: SavoroSpacing.sm) {
-                        Text("\(step.number)")
-                            .font(SavoroTypography.label.monospacedDigit())
-                            .foregroundStyle(SavoroColor.accentStrong)
-                            .frame(width: 28, height: 28)
-                            .background(SavoroColor.accentSoft)
-                            .clipShape(Circle())
-                        Text(step.body)
-                            .font(SavoroTypography.body)
-                            .foregroundStyle(SavoroColor.textBody)
-                            .lineSpacing(3)
+                    Group {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                instructionContent(step)
+                            }
+                        } else {
+                            HStack(alignment: .top, spacing: SavoroSpacing.sm) {
+                                instructionContent(step)
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func instructionContent(_ step: RecipeDetailContentViewModel.InstructionRow) -> some View {
+        Text("\(step.number)")
+            .font(SavoroTypography.label.monospacedDigit())
+            .foregroundStyle(SavoroColor.accentStrong)
+            .frame(width: 28, height: 28)
+            .background(SavoroColor.accentSoft)
+            .clipShape(Circle())
+        Text(step.body)
+            .font(SavoroTypography.body)
+            .foregroundStyle(SavoroColor.textBody)
+            .lineSpacing(3)
     }
 }
 
@@ -995,6 +1113,7 @@ private struct ServingOption: Hashable, CustomStringConvertible {
 
 struct RecipeDetailSocialContextBlock: View {
     let viewModel: RecipeDetailSocialContextViewModel
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         SavoroCard(style: .glass) {
@@ -1009,41 +1128,30 @@ struct RecipeDetailSocialContextBlock: View {
                 }
 
                 if let community = viewModel.community {
-                    HStack(alignment: .center, spacing: SavoroSpacing.sm) {
-                        RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
-                            .fill(LinearGradient(colors: [SavoroColor.accentSoft, SavoroColor.accentHighlight], startPoint: .topLeading, endPoint: .bottomTrailing))
-                            .frame(width: 42, height: 42)
-                            .overlay(Image(systemName: "person.3.fill").foregroundStyle(SavoroColor.accentStrong))
-                        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
-                            Text(community.title)
-                                .font(SavoroTypography.bodyEmphasized)
-                                .foregroundStyle(SavoroColor.textStrong)
-                            Text(community.subtitle)
-                                .font(SavoroTypography.label)
-                                .foregroundStyle(SavoroColor.textMuted)
-                            Text(community.note)
-                                .font(SavoroTypography.micro)
-                                .foregroundStyle(SavoroColor.textSubtle)
+                    Group {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                communityContent(community)
+                            }
+                        } else {
+                            HStack(alignment: .center, spacing: SavoroSpacing.sm) {
+                                communityContent(community)
+                            }
                         }
                     }
                 }
 
                 if let friendContext = viewModel.friendContext {
-                    HStack(spacing: SavoroSpacing.sm) {
-                        HStack(spacing: -8) {
-                            ForEach(friendContext.avatarInitials, id: \.self) { initials in
-                                Text(initials)
-                                    .font(SavoroTypography.micro)
-                                    .foregroundStyle(SavoroColor.accentStrong)
-                                    .frame(width: 28, height: 28)
-                                    .background(SavoroColor.accentSoft)
-                                    .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
-                                    .overlay(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous).stroke(SavoroColor.cardStrong, lineWidth: 2))
+                    Group {
+                        if dynamicTypeSize.isAccessibilitySize {
+                            VStack(alignment: .leading, spacing: SavoroSpacing.sm) {
+                                friendContent(friendContext)
+                            }
+                        } else {
+                            HStack(spacing: SavoroSpacing.sm) {
+                                friendContent(friendContext)
                             }
                         }
-                        Text(friendContext.text)
-                            .font(SavoroTypography.body)
-                            .foregroundStyle(SavoroColor.textBody)
                     }
                 }
 
@@ -1068,6 +1176,43 @@ struct RecipeDetailSocialContextBlock: View {
             }
         }
         .accessibilityElement(children: .contain)
+    }
+
+    @ViewBuilder
+    private func communityContent(_ community: RecipeDetailSocialContextViewModel.CommunityContext) -> some View {
+        RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+            .fill(LinearGradient(colors: [SavoroColor.accentSoft, SavoroColor.accentHighlight], startPoint: .topLeading, endPoint: .bottomTrailing))
+            .frame(width: 42, height: 42)
+            .overlay(Image(systemName: "person.3.fill").foregroundStyle(SavoroColor.accentStrong))
+        VStack(alignment: .leading, spacing: SavoroSpacing.xxs) {
+            Text(community.title)
+                .font(SavoroTypography.bodyEmphasized)
+                .foregroundStyle(SavoroColor.textStrong)
+            Text(community.subtitle)
+                .font(SavoroTypography.label)
+                .foregroundStyle(SavoroColor.textMuted)
+            Text(community.note)
+                .font(SavoroTypography.micro)
+                .foregroundStyle(SavoroColor.textSubtle)
+        }
+    }
+
+    @ViewBuilder
+    private func friendContent(_ friendContext: RecipeDetailSocialContextViewModel.FriendContext) -> some View {
+        HStack(spacing: -8) {
+            ForEach(friendContext.avatarInitials, id: \.self) { initials in
+                Text(initials)
+                    .font(SavoroTypography.micro)
+                    .foregroundStyle(SavoroColor.accentStrong)
+                    .frame(width: 28, height: 28)
+                    .background(SavoroColor.accentSoft)
+                    .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: SavoroRadius.chip, style: .continuous).stroke(SavoroColor.cardStrong, lineWidth: 2))
+            }
+        }
+        Text(friendContext.text)
+            .font(SavoroTypography.body)
+            .foregroundStyle(SavoroColor.textBody)
     }
 }
 
@@ -1095,27 +1240,58 @@ struct RecipeDetailListSection<Content: View>: View {
 
 struct TrustBadgeView: View {
     let badge: RecipeDetailHeaderViewModel.TrustBadge
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
+    @ViewBuilder
     var body: some View {
-        HStack(spacing: SavoroSpacing.xs) {
-            Image(systemName: badge.systemImage)
-                .foregroundStyle(SavoroColor.positive)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(badge.title)
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: SavoroSpacing.xs) {
+                Image(systemName: badge.systemImage)
+                    .foregroundStyle(SavoroColor.positive)
+                badgeText
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, SavoroSpacing.sm)
+            .padding(.vertical, SavoroSpacing.xs)
+            .background(SavoroColor.cardStrong)
+            .clipShape(RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: SavoroRadius.card, style: .continuous)
+                    .stroke(SavoroColor.glassBorder, lineWidth: 1)
+            )
+            .accessibilityElement(children: .combine)
+        } else {
+            HStack(spacing: SavoroSpacing.xs) {
+                Image(systemName: badge.systemImage)
+                    .foregroundStyle(SavoroColor.positive)
+                badgeText
+            }
+            .padding(.horizontal, SavoroSpacing.sm)
+            .padding(.vertical, SavoroSpacing.xs)
+            .background(SavoroColor.cardStrong)
+            .clipShape(Capsule(style: .continuous))
+            .overlay(Capsule(style: .continuous).stroke(SavoroColor.glassBorder, lineWidth: 1))
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    private var badgeText: some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(badge.title)
+                .font(SavoroTypography.label)
+                .foregroundStyle(SavoroColor.textStrong)
+            if dynamicTypeSize.isAccessibilitySize {
+                Text(badge.detail)
                     .font(SavoroTypography.label)
-                    .foregroundStyle(SavoroColor.textStrong)
+                    .foregroundStyle(SavoroColor.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
                 Text(badge.detail)
                     .font(SavoroTypography.label)
                     .foregroundStyle(SavoroColor.textMuted)
                     .lineLimit(1)
             }
         }
-        .padding(.horizontal, SavoroSpacing.sm)
-        .padding(.vertical, SavoroSpacing.xs)
-        .background(SavoroColor.cardStrong)
-        .clipShape(Capsule(style: .continuous))
-        .overlay(Capsule(style: .continuous).stroke(SavoroColor.glassBorder, lineWidth: 1))
-        .accessibilityElement(children: .combine)
     }
 }
 
