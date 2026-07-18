@@ -41,6 +41,10 @@
 		29AA00000000000000000066 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 29AA00000000000000000068 /* SnapshotTesting */; };
 		29AA00000000000000000069 /* SnapshotTests in Resources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000006A /* SnapshotTests */; };
 		29AA0000000000000000006B /* ViewCodeSource in Resources */ = {isa = PBXBuildFile; fileRef = 29AA0000000000000000006C /* ViewCodeSource */; };
+		29AA0000000000000000006D /* RecipeEditorPrototypeViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000071 /* RecipeEditorPrototypeViews.swift */; };
+		29AA0000000000000000006E /* RecipeEditorPrototypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000072 /* RecipeEditorPrototypeTests.swift */; };
+		29AA0000000000000000006F /* RecipeEditorPrototypeSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000073 /* RecipeEditorPrototypeSnapshotTests.swift */; };
+		29AA00000000000000000070 /* RecipeEditorPrototypeSnapshotTests in Resources */ = {isa = PBXBuildFile; fileRef = 29AA00000000000000000074 /* RecipeEditorPrototypeSnapshotTests */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -86,6 +90,10 @@
 		29AA00000000000000000064 /* SnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTests.swift; sourceTree = "<group>"; };
 		29AA0000000000000000006A /* SnapshotTests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__/SnapshotTests; sourceTree = "<group>"; };
 		29AA0000000000000000006C /* ViewCodeSource */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ViewCodeSource; path = ../Savoro; sourceTree = "<group>"; };
+		29AA00000000000000000071 /* RecipeEditorPrototypeViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Features/RecipeEditor/RecipeEditorPrototypeViews.swift; sourceTree = "<group>"; };
+		29AA00000000000000000072 /* RecipeEditorPrototypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeEditorPrototypeTests.swift; sourceTree = "<group>"; };
+		29AA00000000000000000073 /* RecipeEditorPrototypeSnapshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeEditorPrototypeSnapshotTests.swift; sourceTree = "<group>"; };
+		29AA00000000000000000074 /* RecipeEditorPrototypeSnapshotTests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__/RecipeEditorPrototypeSnapshotTests; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,10 +128,11 @@
 				29AA00000000000000000019 /* ProfilePlaceholderView.swift */,
 				29AA0000000000000000001B /* RecipeDetailPlaceholderView.swift */,
 				29AA0000000000000000001D /* RecipeEditorPlaceholderView.swift */,
+				29AA00000000000000000071 /* RecipeEditorPrototypeViews.swift */,
 				29AA0000000000000000001F /* TodayPlaceholderView.swift */,
 				29AA00000000000000000021 /* Assets.xcassets */,
 			); path = Savoro; sourceTree = "<group>"; };
-		29AA00000000000000000030 /* SavoroTests */ = {isa = PBXGroup; children = (29AA0000000000000000003B /* ScaffoldTests.swift */, 29AA00000000000000000064 /* SnapshotTests.swift */, 29AA0000000000000000006A /* SnapshotTests */, 29AA0000000000000000006C /* ViewCodeSource */, 29AA0000000000000000003D /* health.json */, 29AA00000000000000000045 /* day-log.json */, 29AA00000000000000000049 /* recipe-detail.json */, 29AA0000000000000000004D /* social-surface.json */,); path = SavoroTests; sourceTree = "<group>"; };
+		29AA00000000000000000030 /* SavoroTests */ = {isa = PBXGroup; children = (29AA0000000000000000003B /* ScaffoldTests.swift */, 29AA00000000000000000064 /* SnapshotTests.swift */, 29AA00000000000000000072 /* RecipeEditorPrototypeTests.swift */, 29AA00000000000000000073 /* RecipeEditorPrototypeSnapshotTests.swift */, 29AA0000000000000000006A /* SnapshotTests */, 29AA00000000000000000074 /* RecipeEditorPrototypeSnapshotTests */, 29AA0000000000000000006C /* ViewCodeSource */, 29AA0000000000000000003D /* health.json */, 29AA00000000000000000045 /* day-log.json */, 29AA00000000000000000049 /* recipe-detail.json */, 29AA0000000000000000004D /* social-surface.json */,); path = SavoroTests; sourceTree = "<group>"; };
 		29AA0000000000000000005B /* SavoroUITests */ = {isa = PBXGroup; children = (29AA00000000000000000058 /* SavoroSmokeJourneyTests.swift */,); path = SavoroUITests; sourceTree = "<group>"; };
 		29AA00000000000000000031 /* Products */ = {isa = PBXGroup; children = (29AA00000000000000000023 /* Savoro.app */, 29AA00000000000000000024 /* SavoroTests.xctest */, 29AA00000000000000000059 /* SavoroUITests.xctest */,); name = Products; sourceTree = "<group>"; };
 /* End PBXGroup section */
@@ -140,7 +149,7 @@
 
 /* Begin PBXResourcesBuildPhase section */
 		29AA00000000000000000026 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (29AA00000000000000000022 /* Assets.xcassets in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
-		29AA00000000000000000029 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (29AA0000000000000000003E /* health.json in Resources */, 29AA00000000000000000046 /* day-log.json in Resources */, 29AA0000000000000000004A /* recipe-detail.json in Resources */, 29AA0000000000000000004E /* social-surface.json in Resources */, 29AA00000000000000000069 /* SnapshotTests in Resources */, 29AA0000000000000000006B /* ViewCodeSource in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
+		29AA00000000000000000029 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (29AA0000000000000000003E /* health.json in Resources */, 29AA00000000000000000046 /* day-log.json in Resources */, 29AA0000000000000000004A /* recipe-detail.json in Resources */, 29AA0000000000000000004E /* social-surface.json in Resources */, 29AA00000000000000000069 /* SnapshotTests in Resources */, 29AA00000000000000000070 /* RecipeEditorPrototypeSnapshotTests in Resources */, 29AA0000000000000000006B /* ViewCodeSource in Resources */,); runOnlyForDeploymentPostprocessing = 0; };
 		29AA0000000000000000005D /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
@@ -169,9 +178,10 @@
 				29AA0000000000000000001A /* ProfilePlaceholderView.swift in Sources */,
 				29AA0000000000000000001C /* RecipeDetailPlaceholderView.swift in Sources */,
 				29AA0000000000000000001E /* RecipeEditorPlaceholderView.swift in Sources */,
+				29AA0000000000000000006D /* RecipeEditorPrototypeViews.swift in Sources */,
 				29AA00000000000000000020 /* TodayPlaceholderView.swift in Sources */,
 			); runOnlyForDeploymentPostprocessing = 0; };
-		29AA00000000000000000028 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (29AA0000000000000000003C /* ScaffoldTests.swift in Sources */, 29AA00000000000000000065 /* SnapshotTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
+		29AA00000000000000000028 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (29AA0000000000000000003C /* ScaffoldTests.swift in Sources */, 29AA00000000000000000065 /* SnapshotTests.swift in Sources */, 29AA0000000000000000006E /* RecipeEditorPrototypeTests.swift in Sources */, 29AA0000000000000000006F /* RecipeEditorPrototypeSnapshotTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 		29AA0000000000000000005E /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (29AA00000000000000000057 /* SavoroSmokeJourneyTests.swift in Sources */,); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
