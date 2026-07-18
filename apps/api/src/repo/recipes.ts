@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, like, lt, ne, or } from 'drizzle-orm'
+import { and, asc, desc, eq, like, lt, ne, or, sql } from 'drizzle-orm'
 import type { BatchItem } from 'drizzle-orm/batch'
 import type { Db } from '../db/client'
 import {
@@ -232,6 +232,66 @@ export async function listSavedRecipes(
     nextCursor:
       found.length > options.limit && last ? { sortAt: last.savedAt, recipeId: last.recipe.id } : null,
   }
+}
+
+/** Public, published recipes ordered by current-version publication time. */
+export async function listPublicRecipes(
+  db: Db,
+  viewerUserId: string,
+  options: RecipeListOptions,
+): Promise<RecipeSummaryPage> {
+  // All lifecycle-published versions have publishedAt. The fallback only keeps
+  // legacy/imported public rows deterministic if that historical field is absent.
+  const publishedSort = sql<string>`coalesce(${recipeVersions.publishedAt}, ${recipes.updatedAt})`
+  const cursorFilter = options.cursor
+    ? or(
+        lt(publishedSort, options.cursor.sortAt),
+        and(eq(publishedSort, options.cursor.sortAt), lt(recipes.id, options.cursor.recipeId)),
+      )
+    : undefined
+  const found = await db
+    .select({ recipe: recipes, sortAt: publishedSort })
+    .from(recipes)
+    .innerJoin(recipeVersions, eq(recipes.currentVersionId, recipeVersions.id))
+    .where(
+      and(
+        eq(recipes.visibility, 'public'),
+        eq(recipes.status, 'published'),
+        cursorFilter,
+      ),
+    )
+    .orderBy(desc(publishedSort), desc(recipes.id))
+    .limit(options.limit + 1)
+  const pageRows = found.slice(0, options.limit)
+  const items = await Promise.all(pageRows.map(({ recipe }) => loadRecipeSummary(db, recipe, viewerUserId)))
+  const last = pageRows.at(-1)
+  return {
+    items,
+    nextCursor:
+      found.length > options.limit && last ? { sortAt: last.sortAt, recipeId: last.recipe.id } : null,
+  }
+}
+
+/** Title-only search over public, published current recipe versions. */
+export async function searchPublicRecipes(
+  db: Db,
+  viewerUserId: string,
+  query: string,
+): Promise<RecipeSummaryRows[]> {
+  const publishedSort = sql<string>`coalesce(${recipeVersions.publishedAt}, ${recipes.updatedAt})`
+  const found = await db
+    .select({ recipe: recipes })
+    .from(recipes)
+    .innerJoin(recipeVersions, eq(recipes.currentVersionId, recipeVersions.id))
+    .where(
+      and(
+        eq(recipes.visibility, 'public'),
+        eq(recipes.status, 'published'),
+        like(recipeVersions.title, `%${query}%`),
+      ),
+    )
+    .orderBy(desc(publishedSort), desc(recipes.id))
+  return Promise.all(found.map(({ recipe }) => loadRecipeSummary(db, recipe, viewerUserId)))
 }
 
 function slugify(title: string): string {

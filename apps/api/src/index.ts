@@ -3,9 +3,11 @@ import type { AppEnv } from './app-env'
 import { ApiError, errorResponse } from './errors'
 import { auth } from './routes/auth'
 import { cookbook } from './routes/cookbook'
+import { discover } from './routes/discover'
 import { goals } from './routes/goals'
 import { logs } from './routes/logs'
 import { recipes } from './routes/recipes'
+import { search } from './routes/search'
 
 const app = new Hono<AppEnv>()
 
@@ -26,5 +28,7 @@ app.route('/v1/logs', logs)
 app.route('/v1/goals', goals)
 app.route('/v1/recipes', recipes)
 app.route('/v1/cookbook', cookbook)
+app.route('/v1/discover', discover)
+app.route('/v1/search', search)
 
 export default app
