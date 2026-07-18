@@ -45,7 +45,7 @@ Max one active ticket per track; lands are serialized on `main`.
 | 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | queued | |
 | 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | queued — gated on #1 and #3 | |
 | 10 | L-24 — Today UAT bundle for Dylan (checklist + screenshots + limitations) | human-in-loop | queued — gated on #9 | |
-| 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | rework (1 of 2) — implementation solid (84/84) but `mine` excluded archived recipes, contradicting contract "any status"; focused fix dispatched | |
+| 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | **landed** | `d6c910f`, 84/84 tests (1 rework round: contract drift on `mine` fixed) |
 | 12 | **L-36 — TestFlight readiness (icon, plist, mock-mode Release, archive check, morning checklist) — MUST land tonight** | frontend | **landed** | `b851a2f`, 204/204 + Release archive OK; checklist at SavoroIOS/TestFlightChecklist.md |
 | 13 | L-35 — UI consistency guardrails (primitives, layout regression tests, token lint) | frontend | queued | |
 
@@ -56,7 +56,7 @@ work continues; only UAT-gated items park):
 
 | # | Ticket | Track | Status |
 |---|---|---|---|
-| S1 | L-3 — discover/search endpoints (gated on #2 SAV-129) | backend | queued |
+| S1 | L-3 — discover/search endpoints (gate met; foods half deferred to L-37) | backend | in-progress |
 | S2 | SAV-133 — profiles/usernames endpoints | backend | queued |
 | S3 | L-2 — logs management endpoints | backend | queued |
 | S4 | SAV-72 — editor save/publish UX (mock-first) | frontend | queued |
@@ -106,6 +106,15 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 5 (2026-07-17 ~23:30).** SAV-131 landed (`d6c910f`, backend now
+84/84) after one rework round — the review gate caught contract drift (`mine`
+excluded archived; contract says any status) and a focused fix resolved it.
+Notable landed semantics: idempotent save/unsave (both 204), no existence
+leaks, hidden saves persist but filter out of `saved`, `mine`/`drafts` by
+creation time, `saved` by save time, real `isSaved` in recipe detail. L-3
+(discover rails + search, foods deferred to L-37) dispatched on the backend
+track. L-20 (XCUITest) still running on frontend.
 
 **Iteration 4 (2026-07-17 ~23:05).** **L-36 LANDED (`b851a2f`) — morning
 TestFlight path is fully unblocked.** Gate evidence: independent 204/204 test
