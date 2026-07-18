@@ -35,7 +35,7 @@ Max one active ticket per track; lands are serialized on `main`.
 
 | # | Ticket | Track | Status | Evidence (commit / run) |
 |---|---|---|---|---|
-| 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | paused — partial work preserved in worktree; resumes after L-36 lands | |
+| 1 | L-20 — XCUITest scaffolding + smoke journey w/ screenshot artifacts | frontend | in-progress (fresh run from post-L-36 main; stale partial work discarded to avoid pbxproj conflicts) | |
 | 2 | SAV-129 + L-1 — publish lifecycle, close public-draft logging hole, real `publishedAt` | backend | **landed** | `705510f`, 74/74 tests |
 | 3 | L-21 — snapshot harness: {light,dark}×{standard,XXXL} matrix ("agent eyes") | frontend | queued | |
 | 4 | L-12 — goal date-range integrity (no `endDate < startDate`) | backend | **landed** | `f36349b`, 78/78 tests |
@@ -46,7 +46,7 @@ Max one active ticket per track; lands are serialized on `main`.
 | 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | queued — gated on #1 and #3 | |
 | 10 | L-24 — Today UAT bundle for Dylan (checklist + screenshots + limitations) | human-in-loop | queued — gated on #9 | |
 | 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | in-progress | |
-| 12 | **L-36 — TestFlight readiness (icon, plist, mock-mode Release, archive check, morning checklist) — MUST land tonight** | frontend | in-progress | |
+| 12 | **L-36 — TestFlight readiness (icon, plist, mock-mode Release, archive check, morning checklist) — MUST land tonight** | frontend | **landed** | `b851a2f`, 204/204 + Release archive OK; checklist at SavoroIOS/TestFlightChecklist.md |
 | 13 | L-35 — UI consistency guardrails (primitives, layout regression tests, token lint) | frontend | queued | |
 
 L-18 is superseded by #1/#3 (mock tier) and #9 (live tier).
@@ -106,6 +106,16 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 4 (2026-07-17 ~23:05).** **L-36 LANDED (`b851a2f`) — morning
+TestFlight path is fully unblocked.** Gate evidence: independent 204/204 test
+run, unsigned Release archive verified (bundle com.savoro.Savoro, 0.1.0 (1),
+encryption-exempt, AppIcon present), icon asset visually confirmed to be the
+brand mark, coming-soon copy on the three stub tabs with banned-term regression
+tests. Dylan's morning steps: SavoroIOS/TestFlightChecklist.md. L-20
+redispatched fresh from post-L-36 main (stale partial pbxproj work discarded
+deliberately — rebasing uncommitted pbxproj edits across L-36's project changes
+risked corruption). SAV-131 (cookbook) still running on the backend track.
 
 **Iteration 3 (2026-07-17 ~23:30, loop restarted).** Architecture per Dylan:
 gpt-5.6-only task layer, single Fable orchestrator (see loop-protocol.md).
