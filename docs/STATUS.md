@@ -43,11 +43,11 @@ Max one active ticket per track; lands are serialized on `main`.
 | 6 | L-14 — log-create response matches contract (`{entry, dayLog}` only) | backend | **landed** | `e86cd9b`, 78/78 tests |
 | 7 | L-16 — XXXL/Dynamic Type reflow (Today + chrome first), proven via snapshots | frontend | **landed** | `9e42776`; 18 XXXL refs re-recorded, standard refs byte-identical; Cookbook XXXL visually verified stacked/unclipped |
 | 8 | L-17 — remove jargon/raw IDs/banned words from visible copy | frontend | **landed** | `7b91e72`; badge now "Saved as logged · Private to your day", hardened copy test; 214 + 1 UI green |
-| 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | in-progress — gates met (L-20 `c688e00`, L-21 `9e74efc`) | |
+| 9 | L-23 — vertical slice: Today live against local Worker (auth, day log, goals, log create) | integration | **landed** | `825a827`; live UI journey green (real D1 data: 0→520 cal, frozen `rcv_dev_bowl_v1`), Release stays mock, zero apps/api changes |
 | 10 | L-24 — Today UAT bundle for Dylan (checklist + screenshots + limitations) | human-in-loop | queued — gated on #9 | |
 | 11 | SAV-131 — cookbook save/unsave + mine/saved/drafts endpoints | backend | **landed** | `d6c910f`, 84/84 tests (1 rework round: contract drift on `mine` fixed) |
 | 12 | **L-36 — TestFlight readiness (icon, plist, mock-mode Release, archive check, morning checklist) — MUST land tonight** | frontend | **landed** | `b851a2f`, 204/204 + Release archive OK; checklist at SavoroIOS/TestFlightChecklist.md |
-| 13 | L-35 — UI consistency guardrails (primitives, layout regression tests, token lint) | frontend | queued | |
+| 13 | L-35 — UI consistency guardrails (primitives, layout regression tests, token lint) | frontend | in-progress — final queued ticket of the night | |
 
 L-18 is superseded by #1/#3 (mock tier) and #9 (live tier).
 
@@ -110,6 +110,17 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 15 (2026-07-18 ~03:30). THE MILESTONE: L-23 landed (`825a827`) —
+Savoro's app talked to its real backend for the first time.** Live UI journey
+against a seeded local Worker: real GET day/goals, real POST log, Today went
+0→520 cal from actual D1 rows with the frozen version reference intact
+(`rcv_dev_bowl_v1`), screenshot-evidenced (live-01..05 in .ui-artifacts).
+Environment selection is Debug-only + env-var gated with an explicit
+allowsLiveConfiguration guard — Release/TestFlight remains fully
+self-contained mock. Zero apps/api changes were needed: the contract held
+across the wire untouched. Mock suite 220 green + snapshots byte-identical.
+L-35 (UI consistency guardrails) dispatched — the last queued ticket.
 
 **Iteration 14 (2026-07-18 ~02:40).** L-17 landed (`7b91e72`): the copy sweep.
 Verified with eyes and greps — the Today badge now reads "Saved as logged ·
