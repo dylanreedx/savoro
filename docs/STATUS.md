@@ -111,7 +111,25 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 
 ## Last run report
 
-**FINAL — LOOP COMPLETE (2026-07-18 ~04:00). Queues drained; every dispatched
+**FOCUS LOOP — PARKED FOR DYLAN'S DESIGN VERDICT (2026-07-18 ~09:10).**
+Create Recipe epic, Batch D + Batch 0 complete:
+- RE-D1/RE-D2 (`f6134d9`): design references extracted from the Claude Design
+  prototype (docs/epics/recipe-editor-design/) + the binding reduction spec.
+- RE-D3 (`f6909fa`): the editor redesigned to the reference — opening state
+  is photo / title / folded description / servings row / conditional live
+  macro strip / ingredients / sticky Save-Publish bar; every sentenced
+  element deleted or folded; capabilities preserved. One rework round
+  (design gate caught missing bottom-bar scrim + malformed steppers).
+- RE-1 (`33e20cf`): Today card rhythm normalized — 12pt insets, 16pt gaps,
+  geometry regression test. Rebased over RE-D3, reverified.
+
+**WAITING ON DYLAN:** review the new editor —
+`SavoroIOS/SavoroTests/__Snapshots__/SnapshotTests/testRecipeEditorSnapshots.*.png`
+vs `docs/epics/recipe-editor-design/editor.png` (or run the app). Approve →
+Batch 1 (RE-3..RE-9) dispatches. Veto → say what's off; RE-D3 has one
+rework round left before it re-plans. Nothing dispatches until then.
+
+**PREVIOUS — OVERNIGHT LOOP COMPLETE (2026-07-18 ~04:00). Queues drained; every dispatched
 ticket landed. 17 tickets in one night, zero left blocked.**
 
 The night's ledger (all squash commits on main, each independently verified
