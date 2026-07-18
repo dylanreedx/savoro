@@ -59,7 +59,8 @@ work continues; only UAT-gated items park):
 | S1 | L-3 — discover/search endpoints (gate met; foods half deferred to L-37) | backend | **landed** — `9d3fbe3`, 91/91 tests |
 | S2b | SAV-133 — profiles/usernames (follow/friends stays L-28) | backend | **landed** — `7ea855f`, 98/98 tests |
 | S3 | L-2 — logs management endpoints | backend | **landed** — `3f431dd`, 107/107 tests |
-| S7b | L-28 — follow/friends + activity | backend | in-progress |
+| S7b | L-28 — follow/friends + activity | backend | **landed** — `583b602`, 117/117 tests |
+| S8b | L-37 — USDA foods: schema/endpoints/importer (code complete; real data import deferred to Dylan — no overnight downloads) | backend | in-progress |
 | S2 | SAV-133 — profiles/usernames endpoints | backend | queued |
 | S3 | L-2 — logs management endpoints | backend | queued |
 | S4 | SAV-72 — editor save/publish UX (mock-first) | frontend | queued |
@@ -109,6 +110,16 @@ L-19 (reconcile stale planning docs), L-11 (dedupe prototype bundles — exact d
 - Anything touching `docs/api-contract.md` — contract changes require human approval, always.
 
 ## Last run report
+
+**Iteration 9 (2026-07-18 ~01:15).** L-28 landed (`583b602`, backend 117/117):
+follow/unfollow, friend request lifecycle with canonical unordered friendship
+storage, real `followState`, and an activity feed that is a read-time
+projection of public+published recipes only (privacy denylist tested).
+Dispatched L-37 (USDA foods) scoped code-complete-only: schema, endpoints,
+ported importer, small committed fixture — the real SR Legacy import is
+Dylan's daytime task (no overnight downloads). This is the LAST backend
+stretch ticket; after it the backend track parks. L-21 (snapshot harness)
+still running on frontend.
 
 **Iteration 8 (2026-07-18 ~00:50).** Double land. **L-20** (`c688e00`): UI-test
 target live, 15-step journey (tabs → log → fork → editor) green at 86s, 204
