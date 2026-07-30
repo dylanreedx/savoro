@@ -123,6 +123,15 @@ Create Recipe epic, Batch D + Batch 0 complete:
 - RE-1 (`33e20cf`): Today card rhythm normalized — 12pt insets, 16pt gaps,
   geometry regression test. Rebased over RE-D3, reverified.
 
+**VERDICT 1 DECIDED (2026-07-30): Dylan picked the SHEET-BUILD editor model**
+(RC-1 variant B — rendered lists + focused add sheet; the inline composer is
+rejected). Still pending: import-spec approval incl. its 4 questions (verdict
+2), LLM provider + cost ceiling (verdict 3 / RC-3), then the RC-4 contract
+diff. No work ran between 2026-07-18 and 2026-07-30 — main sat parked at
+`3ff415b`. Dylan's next goal: a personally usable TestFlight build (real
+calorie/recipe tracking) ASAP — note this needs a DEPLOYED Worker (L-4) and
+a live-pointing Release config, which are undone and undecided.
+
 **PHASE A COMPLETE — PARKED FOR DYLAN'S THREE VERDICTS (2026-07-18 ~13:20).**
 Landed: RC-2 (`727050e`) import flow spec (12 sections, exact copy proposals,
 4 confirmations requested at its end); RC-1 (`bbec3e2`) both guided-editor
