@@ -37,7 +37,13 @@ start_loop() {
   if pid_live; then echo "already running: pid $(pid_value)"; return 0; fi
   [ ! -f "$STOP_FILE" ] || { echo "STOP is present; run '$0 arm' first" >&2; return 2; }
   [ "$(git branch --show-current)" = "$EXPECTED_BRANCH" ] || { echo "wrong branch: expected $EXPECTED_BRANCH" >&2; return 2; }
-  [ -z "$(unexpected_status)" ] || { echo "tracked/non-authorized changes present:" >&2; unexpected_status >&2; return 2; }
+  if [ -n "${RESUME_TICKET:-}" ]; then
+    ONBOARDING_PREFLIGHT_ONLY=1 "$LOOP_SCRIPT" || { echo "resume preflight failed; loop not started" >&2; return 2; }
+  elif [ -n "$(unexpected_status)" ]; then
+    echo "tracked/non-authorized changes present:" >&2
+    unexpected_status >&2
+    return 2
+  fi
   : > "$SUPERVISOR_LOG"
   nohup caffeinate -is "$LOOP_SCRIPT" >> "$SUPERVISOR_LOG" 2>&1 &
   printf '%s\n' "$!" > "$CONTROL_DIR/launcher.pid"

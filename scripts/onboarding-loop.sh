@@ -22,6 +22,11 @@ PI_WORKER_THINKING="${PI_WORKER_THINKING:-max}"
 PI_REVIEW_THINKING="${PI_REVIEW_THINKING:-xhigh}"
 PUSH_AFTER_COMMIT="${PUSH_AFTER_COMMIT:-0}"
 ALLOWED_UNTRACKED="${ALLOWED_UNTRACKED:-.codex/}"
+RESUME_TICKET="${RESUME_TICKET:-}"
+RESUME_REVIEW_FILE="${RESUME_REVIEW_FILE:-}"
+RESUME_REVIEW_SHA256="${RESUME_REVIEW_SHA256:-}"
+RESUME_CANDIDATE_SHA256="${RESUME_CANDIDATE_SHA256:-}"
+RESUME_STATUS_SHA256="${RESUME_STATUS_SHA256:-}"
 IOS_DESTINATION="${IOS_DESTINATION:-platform=iOS Simulator,name=iPhone 17}"
 ROOT_PI_DIR="${ROOT_PI_DIR:-$HOME/.pi}"
 CONTROL_DIR="${CONTROL_DIR:-$ROOT_PI_DIR/onboarding-loop-control/$(basename "$(git rev-parse --show-toplevel)")}"
@@ -70,6 +75,14 @@ changed_paths() {
       if (NF) print
     }
   '
+}
+
+candidate_snapshot() {
+  local newfile
+  git diff --binary
+  git ls-files --others --exclude-standard | while IFS= read -r newfile; do
+    [ -n "$newfile" ] && printf '\n--- new file: %s ---\n' "$newfile" && cat "$newfile" 2>/dev/null
+  done
 }
 
 write_status() {
@@ -267,10 +280,7 @@ run_review() {
   local diff="$task_dir/candidate-$round.diff" request="$task_dir/review-request-$round.md"
   local worker_report="$task_dir/worker-$round.md" ledger_evidence="$task_dir/ledger-evidence-$round.txt"
   local output="$task_dir/review-final-$round.md" session="$task_dir/reviewer-session-$round" rc
-  git diff --binary > "$diff"
-  git ls-files --others --exclude-standard | while IFS= read -r newfile; do
-    [ -n "$newfile" ] && printf '\n--- new file: %s ---\n' "$newfile" >> "$diff" && cat "$newfile" >> "$diff" 2>/dev/null
-  done
+  candidate_snapshot > "$diff"
   cat > "$request" <<EOF
 Review the candidate implementation for $ticket.
 
@@ -402,10 +412,88 @@ EOF
 }
 
 preflight() {
+  local eligible resume_task_dir resume_run_dir review_name review_round source_candidate
+  local candidate_review candidate_round review_hash source_hash current_hash status_file status_hash duplicate_status_keys
+  local latest_review="" latest_round=-1
   [ "$(git branch --show-current)" = "$EXPECTED_BRANCH" ] || { echo "wrong branch: expected $EXPECTED_BRANCH" >&2; return 1; }
   [ ! -f "$STOP_FILE" ] || { echo "STOP is present" >&2; return 1; }
   [ -f "$QUEUE_FILE" ] && [ -f "$LEDGER_FILE" ] && [ -f "$PROMPT_FILE" ] || { echo "program files missing" >&2; return 1; }
-  if [ -n "$(unexpected_status)" ]; then
+  if [ -n "$RESUME_TICKET" ]; then
+    [ -f "$PROGRAM_DIR/$RESUME_TICKET" ] || { echo "resume packet does not exist: $RESUME_TICKET" >&2; return 1; }
+    [ -n "$RESUME_REVIEW_FILE" ] && [ -f "$RESUME_REVIEW_FILE" ] || { echo "resume review file does not exist" >&2; return 1; }
+    [ ! -L "$RESUME_REVIEW_FILE" ] || { echo "resume review file must not be a symlink" >&2; return 1; }
+    printf '%s\n' "$RESUME_REVIEW_SHA256" | grep -Eq '^[0-9a-f]{64}$' || { echo "valid RESUME_REVIEW_SHA256 is required" >&2; return 1; }
+    printf '%s\n' "$RESUME_CANDIDATE_SHA256" | grep -Eq '^[0-9a-f]{64}$' || { echo "valid RESUME_CANDIDATE_SHA256 is required" >&2; return 1; }
+    printf '%s\n' "$RESUME_STATUS_SHA256" | grep -Eq '^[0-9a-f]{64}$' || { echo "valid RESUME_STATUS_SHA256 is required" >&2; return 1; }
+    [ -x /usr/bin/jq ] || { echo "/usr/bin/jq is required for resume status validation" >&2; return 1; }
+    resume_task_dir="$(cd "$(dirname "$RESUME_REVIEW_FILE")" 2>/dev/null && pwd -P)" || { echo "cannot resolve resume review directory" >&2; return 1; }
+    review_name="$(basename "$RESUME_REVIEW_FILE")"
+    RESUME_REVIEW_FILE="$resume_task_dir/$review_name"
+    case "$RESUME_REVIEW_FILE" in
+      "$RUN_ROOT"/run-*/tasks/iteration-*-$RESUME_TICKET/review-final-[0-9]*.md) ;;
+      *) echo "resume review is not a matching harness review artifact: $RESUME_REVIEW_FILE" >&2; return 1 ;;
+    esac
+    [ -f "$resume_task_dir/task.json" ] && [ ! -L "$resume_task_dir/task.json" ] && grep -Fq "\"ticket\":\"$RESUME_TICKET\"" "$resume_task_dir/task.json" || {
+      echo "resume review task metadata does not match $RESUME_TICKET" >&2; return 1
+    }
+    review_round="${review_name#review-final-}"; review_round="${review_round%.md}"
+    source_candidate="$resume_task_dir/candidate-$review_round.diff"
+    [ -f "$source_candidate" ] && [ ! -L "$source_candidate" ] || { echo "matching source candidate artifact is missing" >&2; return 1; }
+    review_hash="$(shasum -a 256 "$RESUME_REVIEW_FILE" | awk '{print $1}')"
+    source_hash="$(shasum -a 256 "$source_candidate" | awk '{print $1}')"
+    current_hash="$(candidate_snapshot | shasum -a 256 | awk '{print $1}')"
+    [ "$review_hash" = "$RESUME_REVIEW_SHA256" ] || { echo "resume review hash mismatch" >&2; return 1; }
+    [ "$source_hash" = "$RESUME_CANDIDATE_SHA256" ] || { echo "source candidate hash mismatch" >&2; return 1; }
+    [ "$current_hash" = "$RESUME_CANDIDATE_SHA256" ] || { echo "current candidate does not match reviewed source" >&2; return 1; }
+    [ "$(awk 'NF { line=$0 } END { print line }' "$RESUME_REVIEW_FILE")" = 'DECISION: REWORK' ] || {
+      echo "resume review is not a REWORK decision" >&2; return 1
+    }
+    for candidate_review in "$resume_task_dir"/review-final-[0-9]*.md; do
+      [ -f "$candidate_review" ] || continue
+      candidate_round="${candidate_review##*/review-final-}"; candidate_round="${candidate_round%.md}"
+      case "$candidate_round" in *[!0-9]*|'') continue ;; esac
+      if [ "$candidate_round" -gt "$latest_round" ]; then
+        latest_round="$candidate_round"
+        latest_review="$candidate_review"
+      fi
+    done
+    [ "$RESUME_REVIEW_FILE" = "$latest_review" ] || { echo "resume review is not the latest harness review" >&2; return 1; }
+    resume_run_dir="$(dirname "$(dirname "$resume_task_dir")")"
+    status_file="$resume_run_dir/status.json"
+    [ -f "$status_file" ] && [ ! -L "$status_file" ] || { echo "resume source status is missing" >&2; return 1; }
+    status_hash="$(shasum -a 256 "$status_file" | awk '{print $1}')"
+    [ "$status_hash" = "$RESUME_STATUS_SHA256" ] || { echo "resume source status hash mismatch" >&2; return 1; }
+    duplicate_status_keys="$(/usr/bin/jq --stream -r 'select(length == 2 and (.[0] | length) == 1) | .[0][0]' "$status_file" 2>/dev/null | LC_ALL=C sort | uniq -d)" || {
+      echo "resume source status is not valid JSON" >&2; return 1
+    }
+    [ -z "$duplicate_status_keys" ] || { echo "resume source status contains duplicate keys" >&2; return 1; }
+    /usr/bin/jq --stream -s -e 'all(.[]; (length != 2) or ((.[0] | length) == 1))' "$status_file" >/dev/null || {
+      echo "resume source status must be a flat JSON object" >&2; return 1
+    }
+    /usr/bin/jq -e --arg ticket "$RESUME_TICKET" '
+      type == "object" and
+      (keys | sort) == ["childPid", "detail", "head", "iteration", "loopPid", "startHead", "state", "ticket", "updatedAt"] and
+      (.state | type) == "string" and
+      (.detail | type) == "string" and
+      (.updatedAt | type) == "string" and
+      (.iteration | type) == "number" and
+      (.ticket | type) == "string" and
+      (.loopPid | type) == "string" and
+      (.childPid | type) == "string" and
+      (.startHead | type) == "string" and
+      (.head | type) == "string" and
+      .state == "stopped" and
+      .detail == ("review-rework-limit:" + $ticket) and
+      .ticket == $ticket
+    ' "$status_file" >/dev/null || {
+      echo "resume source run did not stop at this ticket's rework limit" >&2; return 1
+    }
+    eligible="$(first_eligible_ticket || true)"
+    [ "$eligible" = "$RESUME_TICKET" ] || { echo "resume ticket is not first eligible: $RESUME_TICKET (expected ${eligible:-none})" >&2; return 1; }
+    [ "$(queue_field "$RESUME_TICKET" 6)" != supervised ] || { echo "cannot resume a supervised ticket" >&2; return 1; }
+    git diff --cached --quiet || { echo "resume requires an unstaged candidate" >&2; return 1; }
+    validate_scope "$RESUME_TICKET" || { echo "resume candidate failed scope validation" >&2; return 1; }
+  elif [ -n "$(unexpected_status)" ]; then
     echo "tree is dirty (resolve or commit before looping — see _RUNBOOK.md preconditions):" >&2
     unexpected_status >&2
     return 1
@@ -425,9 +513,14 @@ write_status running starting
 
 for ITERATION in $(seq 1 "$MAX_ITER"); do
   [ ! -f "$STOP_FILE" ] || { finish stop-file; break; }
-  [ -z "$(unexpected_status)" ] || { finish dirty-before-ticket; break; }
-
-  CURRENT_TICKET="$(first_eligible_ticket || true)"
+  resume_review_file=""
+  if [ "$ITERATION" -eq 1 ] && [ -n "$RESUME_TICKET" ]; then
+    CURRENT_TICKET="$RESUME_TICKET"
+    resume_review_file="$RESUME_REVIEW_FILE"
+  else
+    [ -z "$(unexpected_status)" ] || { finish dirty-before-ticket; break; }
+    CURRENT_TICKET="$(first_eligible_ticket || true)"
+  fi
   if [ -z "$CURRENT_TICKET" ]; then
     if grep -q '| pending |' "$LEDGER_FILE"; then finish dependencies-blocked; else finish queue-drained; fi
     break
@@ -445,7 +538,7 @@ for ITERATION in $(seq 1 "$MAX_ITER"); do
   printf '{"ticket":"%s","worker":"%s","reviewer":"%s","startedAt":"%s","beforeHead":"%s"}\n' \
     "$CURRENT_TICKET" "$model" "$reviewer" "$(now_utc)" "$before_head" > "$task_dir/task.json"
 
-  if ! run_worker "$CURRENT_TICKET" "$model" "$task_dir" 1; then finish "worker-failed:$CURRENT_TICKET"; break; fi
+  if ! run_worker "$CURRENT_TICKET" "$model" "$task_dir" 1 "$resume_review_file"; then finish "worker-failed:$CURRENT_TICKET"; break; fi
   [ "$(git rev-parse HEAD)" = "$before_head" ] || { finish "worker-committed:$CURRENT_TICKET"; break; }
   if ! validate_scope "$CURRENT_TICKET"; then finish "scope-failed:$CURRENT_TICKET"; break; fi
 
@@ -477,6 +570,8 @@ for ITERATION in $(seq 1 "$MAX_ITER"); do
 
   log "$CURRENT_TICKET committed as $(git rev-parse --short HEAD)"
   write_status running "ticket-complete"
+  RESUME_TICKET=""
+  RESUME_REVIEW_FILE=""
 done
 
 if [ "$STOP_REASON" = running ]; then finish max-iterations; fi
