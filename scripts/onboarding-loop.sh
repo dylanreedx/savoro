@@ -239,7 +239,7 @@ This is a repair pass. Address only blocking findings in $review_file."
 $(cat "$PROMPT_FILE")"
 
   log "$ticket worker pass $pass ($model, thinking=$PI_WORKER_THINKING)"
-  pi --approve --model "$model" --thinking "$PI_WORKER_THINKING" \
+  pi --approve --no-extensions --model "$model" --thinking "$PI_WORKER_THINKING" \
     --session-dir "$session_dir" --name "onboarding-$ITERATION-worker-$pass" --mode text -p "$prompt" \
     > "$output" 2> "$task_dir/worker-$pass.stderr" &
   CURRENT_CHILD=$!
@@ -297,7 +297,7 @@ End with exactly DECISION: APPROVE or DECISION: REWORK.
 EOF
   mkdir -p "$session"
   log "$ticket review round $round ($model, thinking=$PI_REVIEW_THINKING)"
-  pi --no-approve --model "$model" --thinking "$PI_REVIEW_THINKING" --tools read,grep,find,ls \
+  pi --no-approve --no-extensions --model "$model" --thinking "$PI_REVIEW_THINKING" --tools read,grep,find,ls \
     --session-dir "$session" --name "onboarding-$ITERATION-review-$round" --mode text -p "@$request" \
     > "$output" 2> "$task_dir/review-$round.stderr" &
   CURRENT_CHILD=$!
