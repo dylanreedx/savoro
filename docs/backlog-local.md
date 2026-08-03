@@ -295,3 +295,21 @@ Recipe**. The full 50-ticket epic lives in `docs/epics/recipe-editor.md`
 without Dylan's say-so, except RE-1 (Today card spacing — his named
 complaint). Breadth work and new surfaces are frozen until RE-50 (his UAT)
 passes.
+
+## FOCUS DIRECTIVE (2026-08-02, Dylan) — supersedes the 2026-07-18 directive
+
+Recipe-editor work is parked (RC-1 verdict chose the sheet-build model; it
+resumes as Checkpoint B work). The focus program is now **Account &
+Onboarding to Checkpoint A**: `docs/tickets/01-onboarding/` — a 50-ticket
+dependency queue (`_QUEUE.md`) with locked design direction (`_DESIGN.md`),
+operating contract (`_RUNBOOK.md`), execution ledger (`_LEDGER.md`), and
+one self-contained packet per ticket. It folds in and supersedes
+**L-25, L-26, R-4**, the deploy half of **L-4**, and the prose epic
+`docs/epics/onboarding.md`. Decisions recorded in the hosted roadmap
+(plan-649320e6605c4dcf, approved 2026-08-02): Checkpoint A ships first;
+email/password + Apple at signup; username collected on its own signup
+page; targets are calories-first with derived macros and a designed skip.
+Five supervised gates stop the loop for Dylan: P0.8 (contracts + design),
+P1.2 (Cloudflare provisioning), P7.3 (visual review), P8.4 (physical-device
+Apple check), P8.5 (Checkpoint A UAT). Nothing outside this program gets
+dispatched without Dylan's say-so.
