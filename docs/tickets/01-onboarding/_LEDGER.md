@@ -2,7 +2,7 @@
 
 ## heartbeat
 
-last-touch 2026-08-02T00:00:00Z · ticket — · attempt — · pid — · status queue-authored
+last-touch 2026-08-03T15:11:56Z · ticket P0.1-program-guard.md · attempt 1 · pid — · status done
 
 ## states
 
@@ -14,7 +14,7 @@ witness where the packet names one, and honest limits. The orchestrator alone ed
 
 | Ticket | State | Commit | Updated | Note |
 |---|---|---|---|---|
-| `P0.1-program-guard.md` | pending | — | — | — |
+| `P0.1-program-guard.md` | done | this commit | 2026-08-03T15:11:56Z | Commands: `bash -n scripts/check-onboarding-program.sh` (0); `bash scripts/check-onboarding-program.sh` (0, `onboarding program guard: 50 rows checked, 50 packets checked`); `cd apps/api && bun run test && bun run typecheck` (0, `Tests 124 passed (124)`, typecheck clean; backend 124→124). Five isolated scratch-copy witnesses each exited 1: deleted row — `VIOLATION: /tmp/savoro-program-guard-supervisor-witnesses/deleted-queue-row/_QUEUE.md: expected 50 data rows, found 49 (queue row count)`; duplicate filename — `VIOLATION: /tmp/savoro-program-guard-supervisor-witnesses/duplicate-ticket-filename/_QUEUE.md row 16: duplicate ticket filename 'P0.3-preland-script.md' (also row 15)`; invalid state — <code>VIOLATION: /tmp/savoro-program-guard-supervisor-witnesses/invalid-ledger-state/_LEDGER.md row 18 ticket 'P0.2-status-ledger-reconciliation.md': invalid state 'paused'; expected pending&#124;in-progress&#124;done&#124;blocked</code>; missing packet — `VIOLATION: /tmp/savoro-program-guard-supervisor-witnesses/missing-packet-file/_QUEUE.md row 14 ticket 'P0.2-status-ledger-reconciliation.md': packet file does not exist: /tmp/savoro-program-guard-supervisor-witnesses/missing-packet-file/P0.2-status-ledger-reconciliation.md`; forged supervised row — `VIOLATION: /tmp/savoro-program-guard-supervisor-witnesses/forged-supervised-row/_QUEUE.md: supervised-set expected exactly 5 rows [P0.8 P1.2 P7.3 P8.4 P8.5], found 4`. Independent review approved. Evidence: `/Users/dylan/.pi/onboarding-runs/savoro/run-20260803T104715/tasks/iteration-001-P0.1-program-guard.md/{program-guard.log,backend-checks.log,supervisor-negative-witnesses.log,review-final-2.md}`. Honest limit: ShellCheck was unavailable to the worker. |
 | `P0.2-status-ledger-reconciliation.md` | pending | — | — | — |
 | `P0.3-preland-script.md` | pending | — | — | — |
 | `P0.4-contract-first-run-account-state.md` | pending | — | — | — |
