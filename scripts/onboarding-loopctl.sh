@@ -23,9 +23,10 @@ json_string() {
   sed -nE "s/.*\"$key\"[[:space:]]*:[[:space:]]*\"([^\"]*)\".*/\1/p" "$file" 2>/dev/null | head -1
 }
 unexpected_status() {
-  git status --porcelain | awk -v allowed="$ALLOWED_UNTRACKED" '
+  git status --porcelain | awk -v allowed="$ALLOWED_UNTRACKED" -v stop="$STOP_FILE" '
     BEGIN { n = split(allowed, list, ":") }
     $1 == "??" {
+      if ($2 == stop) next
       for (i = 1; i <= n; i++) if (list[i] != "" && index($2, list[i]) == 1) next
     }
     { print }

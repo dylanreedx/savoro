@@ -47,9 +47,10 @@ json_escape() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g; s/	/\\t/g'; }
 log() { printf '[%s] %s\n' "$(now_utc)" "$*" | tee -a "$EVENTS_FILE"; }
 
 unexpected_status() {
-  git status --porcelain | awk -v allowed="$ALLOWED_UNTRACKED" '
+  git status --porcelain | awk -v allowed="$ALLOWED_UNTRACKED" -v stop="$STOP_FILE" '
     BEGIN { n = split(allowed, list, ":") }
     $1 == "??" {
+      if ($2 == stop) next
       for (i = 1; i <= n; i++) if (list[i] != "" && index($2, list[i]) == 1) next
     }
     { print }
@@ -61,9 +62,10 @@ changed_paths() {
     git diff --name-only
     git diff --cached --name-only
     git ls-files --others --exclude-standard
-  } | LC_ALL=C sort -u | awk -v allowed="$ALLOWED_UNTRACKED" '
+  } | LC_ALL=C sort -u | awk -v allowed="$ALLOWED_UNTRACKED" -v stop="$STOP_FILE" '
     BEGIN { n = split(allowed, list, ":") }
     {
+      if ($0 == stop) next
       for (i = 1; i <= n; i++) if (list[i] != "" && index($0, list[i]) == 1) next
       if (NF) print
     }
@@ -284,9 +286,9 @@ Read:
 
 Be strict about correctness, packet architecture, privacy (no raw ids, no credential exposure, DTO
 privacy projection), banned copy in visible strings, file scope, deterministic proof (including the
-packet's required negative witness), and gate weakening. The worker must not edit `_LEDGER.md`;
-instead, verify that `$ledger_evidence` contains every ticket-specific fact the packet requires in
-its `commands`, `counts`, `evidence`, `negative-witness`, and `limits` fields. After approval and
+packet's required negative witness), and gate weakening. The worker must not edit _LEDGER.md;
+instead, verify that $ledger_evidence contains every ticket-specific fact the packet requires in
+its commands, counts, evidence, negative-witness, and limits fields. After approval and
 final checks, the harness copies that evidence into the row verbatim. Do not reject a candidate
 merely because the orchestrator-owned ledger update has not happened
 yet. Report only blocking issues: behavior that can be wrong, architecture that violates a locked
