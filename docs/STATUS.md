@@ -6,6 +6,8 @@
 
 ## Health at a glance
 
+**Count rule:** Test counts in this file are re-derived from runner output on every update; they are not a source of truth — the runner is authoritative.
+
 | Area | State | One-liner |
 |---|---|---|
 | Backend API (`apps/api`) | 🟢 solid core, 🟠 gaps | Phase 1 + recipe slice done, 66/66 tests. No publish lifecycle (SAV-129); 1 live-proven auth hole (L-1); goal-range bug (L-12). |
@@ -61,13 +63,9 @@ work continues; only UAT-gated items park):
 | S3 | L-2 — logs management endpoints | backend | **landed** — `3f431dd`, 107/107 tests |
 | S7b | L-28 — follow/friends + activity | backend | **landed** — `583b602`, 117/117 tests |
 | S8b | L-37 — USDA foods: schema/endpoints/importer (code complete; real data import deferred to Dylan — no overnight downloads) | backend | **landed** — `804cd84`, 124/124 tests. **Backend track parked: stretch queue drained.** |
-| S2 | SAV-133 — profiles/usernames endpoints | backend | queued |
-| S3 | L-2 — logs management endpoints | backend | queued |
 | S4 | SAV-72 — editor save/publish UX (mock-first) | frontend | queued |
 | S5 | L-25 — sign-in/onboarding screen (mock-first) | frontend | queued |
 | S6 | L-5 — Discover tab UI (mock-first, standard rails) | frontend | queued |
-| S7 | L-28 — follow/friends + activity backend | backend | queued |
-| S8 | L-37 — port USDA foods to D1 + foods search endpoints (replaces research half of L-3) | backend | queued |
 
 Note: #10 (Today UAT) parks only the *integration* ladder until Dylan responds;
 backend/frontend tracks keep working the stretch queue.
@@ -197,8 +195,8 @@ before landing):
 | L-23 | `825a827` | **Today live against the real backend** — first-ever app↔API connection |
 | L-35 | `a3f1803` | UI guardrails: primitives, layout tests, token lint |
 
-Backend: 66 → **131 tests** (124 + 7 foods) across 16 files, typecheck clean.
-iOS: 204 → **224 unit/snapshot tests + 2 UI journeys** (1 live-gated).
+Backend: 66 → **124 tests** across 16 files, typecheck clean.
+iOS: 204 → **242 unit/snapshot tests + 2 UI journeys** (1 live-gated).
 Every audit blocker (auth hole, goal corruption, dark mode, XXXL, jargon) is
 fixed with regression coverage. Root repo clean, parked on pushed main
 `a3f1803`. All worktrees removed, simulators shut down, no stray processes.
