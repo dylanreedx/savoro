@@ -55,7 +55,16 @@ rather than inventing a second architecture.
 Report changed files, commands run with exit codes, acceptance-criteria status, evidence paths
 (snapshots/screenshots/curl transcripts), the negative-witness observation, and risks.
 
+When ready, include exactly one single-line ledger handoff immediately before the final token:
+
+`LEDGER_EVIDENCE: commands=<commands and exit codes>; counts=<exact derived runner counts/lines, including before→after>; evidence=<artifact paths>; negative-witness=<each required witness and exact red assertion, or "not required by packet">; limits=<honest limits, or "none">`
+
+Use those five keys in that order with nonempty values. The orchestrator preserves the line verbatim
+and copies it into the ticket's `_LEDGER.md` row only after independent approval and passing final
+checks. Do not edit the ledger yourself. Keep the handoff on one physical line and do not use a
+literal `|` character (write `&#124;` when an exact assertion contains a pipe).
+
 Your final nonblank line must be exactly one of:
 
-- `WORKER: READY`
+- `WORKER: READY` (requires the `LEDGER_EVIDENCE:` line above)
 - `WORKER: BLOCKED <concrete reason>`

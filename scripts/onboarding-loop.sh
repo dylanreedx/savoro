@@ -184,6 +184,27 @@ EOF
   [ "$count" -gt 0 ] || { echo "worker produced no ticket changes" >&2; return 1; }
 }
 
+capture_ledger_evidence() {
+  local worker_output="$1" evidence_file="$2" count evidence
+  count="$(grep -c '^LEDGER_EVIDENCE: ' "$worker_output" || true)"
+  [ "$count" -eq 1 ] || {
+    echo "worker must provide exactly one LEDGER_EVIDENCE line; found $count" >&2
+    return 1
+  }
+  evidence="$(sed -n 's/^LEDGER_EVIDENCE: //p' "$worker_output")"
+  [ -n "$evidence" ] || { echo "LEDGER_EVIDENCE is empty" >&2; return 1; }
+  case "$evidence" in
+    *'|'*) echo "LEDGER_EVIDENCE contains a literal pipe; encode it as &#124;" >&2; return 1 ;;
+    *$'\r'*) echo "LEDGER_EVIDENCE contains a carriage return" >&2; return 1 ;;
+  esac
+  printf '%s\n' "$evidence" |
+    grep -Eq '^commands=.+; counts=.+; evidence=.+; negative-witness=.+; limits=.+$' || {
+      echo "LEDGER_EVIDENCE must contain nonempty commands, counts, evidence, negative-witness, and limits fields" >&2
+      return 1
+    }
+  printf '%s\n' "$evidence" > "$evidence_file"
+}
+
 worker_model() {
   local models=($PI_WORKER_MODELS) index
   index=$(( (ITERATION - 1) % ${#models[@]} ))
@@ -230,7 +251,10 @@ $(cat "$PROMPT_FILE")"
 
   token="$(awk 'NF { line=$0 } END { print line }' "$output")"
   case "$token" in
-    'WORKER: READY') return 0 ;;
+    'WORKER: READY')
+      capture_ledger_evidence "$output" "$task_dir/ledger-evidence-$pass.txt" || return 22
+      return 0
+      ;;
     'WORKER: BLOCKED '*) echo "$token" >&2; return 20 ;;
     *) echo "malformed worker result: ${token:-empty}" >&2; return 21 ;;
   esac
@@ -239,6 +263,7 @@ $(cat "$PROMPT_FILE")"
 run_review() {
   local ticket="$1" model="$2" task_dir="$3" round="$4"
   local diff="$task_dir/candidate-$round.diff" request="$task_dir/review-request-$round.md"
+  local worker_report="$task_dir/worker-$round.md" ledger_evidence="$task_dir/ledger-evidence-$round.txt"
   local output="$task_dir/review-final-$round.md" session="$task_dir/reviewer-session-$round" rc
   git diff --binary > "$diff"
   git ls-files --others --exclude-standard | while IFS= read -r newfile; do
@@ -252,14 +277,21 @@ Read:
 - $PROGRAM_DIR/_DESIGN.md
 - $PROGRAM_DIR/_RUNBOOK.md
 - $diff
+- $worker_report
+- $ledger_evidence
+- scripts/onboarding-loop.sh (the orchestrator-owned post-approval ledger path)
 - relevant production files needed to understand the changed seams
 
 Be strict about correctness, packet architecture, privacy (no raw ids, no credential exposure, DTO
 privacy projection), banned copy in visible strings, file scope, deterministic proof (including the
-packet's required negative witness), and gate weakening. Report only blocking issues: behavior that
-can be wrong, architecture that violates a locked decision in _DESIGN.md, unsafe handling, or a
-named done criterion left unproved. Do not request stylistic cleanup or unrelated hardening. Give
-at most five blocking findings. You are read-only.
+packet's required negative witness), and gate weakening. The worker must not edit `_LEDGER.md`;
+instead, verify that `$ledger_evidence` contains every ticket-specific fact the packet requires in
+its `commands`, `counts`, `evidence`, `negative-witness`, and `limits` fields. After approval and
+final checks, the harness copies that evidence into the row verbatim. Do not reject a candidate
+merely because the orchestrator-owned ledger update has not happened
+yet. Report only blocking issues: behavior that can be wrong, architecture that violates a locked
+decision in _DESIGN.md, unsafe handling, or a named done criterion left unproved. Do not request
+stylistic cleanup or unrelated hardening. Give at most five blocking findings. You are read-only.
 
 End with exactly DECISION: APPROVE or DECISION: REWORK.
 EOF
@@ -316,11 +348,19 @@ run_final_checks() {
 }
 
 update_ledger_done() {
-  local ticket="$1" task_dir="$2" worker="$3" reviewer="$4" timestamp tmp note
+  local ticket="$1" task_dir="$2" worker="$3" reviewer="$4" approved_pass="$5"
+  local timestamp tmp note evidence_file ledger_evidence
   timestamp="$(now_utc)"
   tmp="$LEDGER_FILE.tmp"
-  note="Harness-owned completion: focused worker checks ($worker), independent opposite-model review ($reviewer), and final track checks passed. Evidence: $task_dir."
-  awk -F'|' -v OFS='|' -v ticket="$ticket" -v timestamp="$timestamp" -v note="$note" '
+  evidence_file="$task_dir/ledger-evidence-$approved_pass.txt"
+  [ -s "$evidence_file" ] || { echo "missing ledger evidence: $evidence_file" >&2; return 1; }
+  ledger_evidence="$(cat "$evidence_file")"
+  case "$ledger_evidence" in
+    *'|'*) echo "ledger evidence contains a literal pipe" >&2; return 1 ;;
+  esac
+  note="$ledger_evidence Harness completion: focused worker checks ($worker), independent opposite-model review ($reviewer), and final track checks exited 0. Evidence root: $task_dir."
+  LEDGER_NOTE="$note" awk -F'|' -v OFS='|' -v ticket="$ticket" -v timestamp="$timestamp" '
+    BEGIN { note=ENVIRON["LEDGER_NOTE"] }
     /^last-touch / {
       print "last-touch " timestamp " · ticket " ticket " · attempt 1 · pid — · status done"
       next
@@ -408,10 +448,11 @@ for ITERATION in $(seq 1 "$MAX_ITER"); do
   if ! validate_scope "$CURRENT_TICKET"; then finish "scope-failed:$CURRENT_TICKET"; break; fi
 
   approved=0
+  approved_pass=0
   for round in $(seq 1 $((MAX_REPAIR_PASSES + 1))); do
     run_review "$CURRENT_TICKET" "$reviewer" "$task_dir" "$round"
     review_rc=$?
-    if [ "$review_rc" -eq 0 ]; then approved=1; break; fi
+    if [ "$review_rc" -eq 0 ]; then approved=1; approved_pass="$round"; break; fi
     if [ "$review_rc" -ne 10 ]; then finish "reviewer-failed:$CURRENT_TICKET"; break 2; fi
     [ "$round" -le "$MAX_REPAIR_PASSES" ] || break
     if ! run_worker "$CURRENT_TICKET" "$model" "$task_dir" $((round + 1)) "$task_dir/review-final-$round.md"; then
@@ -425,7 +466,7 @@ for ITERATION in $(seq 1 "$MAX_ITER"); do
   if ! run_final_checks "$task_dir"; then finish "final-check-failed:$CURRENT_TICKET"; break; fi
   [ "$(git rev-parse HEAD)" = "$before_head" ] || { finish "unexpected-commit:$CURRENT_TICKET"; break; }
   if ! validate_scope "$CURRENT_TICKET"; then finish "scope-failed-after-checks:$CURRENT_TICKET"; break; fi
-  if ! update_ledger_done "$CURRENT_TICKET" "$task_dir" "$model" "$reviewer"; then finish "ledger-update-failed:$CURRENT_TICKET"; break; fi
+  if ! update_ledger_done "$CURRENT_TICKET" "$task_dir" "$model" "$reviewer" "$approved_pass"; then finish "ledger-update-failed:$CURRENT_TICKET"; break; fi
   stage_and_commit "$CURRENT_TICKET" "$task_dir"
   commit_rc=$?
   if [ "$commit_rc" -eq 2 ]; then finish "push-failed:$CURRENT_TICKET"; break; fi
