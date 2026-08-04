@@ -1,0 +1,73 @@
+--- a/docs/api-contract.md
++++ b/docs/api-contract.md
+@@ -40,16 +40,26 @@
+ ```
+ 
+ `fiberGrams` / `sodiumMilligrams` optional (omitted when unknown).
+ 
++### NutrientMap
++
++An extensible JSON object keyed by nutrient identifier. The required key set is exactly
++`calories`, `proteinGrams`, `carbsGrams`, and `fatGrams`; each value is the numeric amount for
++the frozen log. All keys beyond those four are optional and open-ended, starting with
++`fiberGrams` and `sodiumMilligrams`; any other nutrient identifier may be added without changing
++this contract. Existing readers ignore unknown keys.
++The required keys make `NutrientMap` a superset of today's `MacroTotals`, so manual logging and
++the existing day-total semantics remain unchanged.
++
+ ### NutritionSnapshot
+ 
+ Frozen at log time, server-computed, immutable thereafter.
+ 
+ ```json
+ {
+   "displayName": "Chicken Burrito Bowl",
+-  "macros": { "...": "MacroTotals" },
++  "macros": { "...": "NutrientMap" },
+   "sourceLabel": "recipe v3",
+   "capturedAt": "2026-06-10T18:03:21Z"
+ }
+ ```
+@@ -193,6 +202,42 @@
+ ```
+ 
+ Response `201`: same shape as `POST /v1/logs/recipes` — `{ "entry": ..., "dayLog": ... }`
+ with `itemType: "food"`, `sourceType: "manual"`. Client-supplied `userId` is ignored.
++
++The same endpoint also accepts a catalog-food variant. Its request contains exactly the catalog
++identity and log fields; the client does not send nutrition:
++
++```json
++{
++  "foodId": "food_01J...",
++  "servingId": "fsv_01J...",
++  "quantity": 1.5,
++  "date": "2026-06-10",
++  "mealType": "lunch"
++}
++```
++
++`quantity` is the finite, positive number of the selected serving. The server resolves `foodId`
++and `servingId`, requires that the serving belongs to that food, scales the serving's nutrition
++by `quantity`, and freezes the result server-side in `snapshot.macros` as a `NutrientMap`.
++`displayName` is resolved from the catalog, `quantityUnit` in the returned entry is `serving`,
++and the response is the same `201 { "entry": ..., "dayLog": ... }` envelope with
++`itemType: "food"`, `sourceType: "search"`, and the supplied `foodId` and `servingId`.
++Client-supplied nutrition or a client-supplied snapshot is ignored for computation on this path;
++the server-computed frozen values are authoritative. Unknown `foodId` returns `not_found`; a
++missing, unknown, or unrelated `servingId` returns `validation_failed` because it must belong to
++the supplied `foodId`.
++
++The variants are distinguished by the presence of `foodId` versus the `displayName` + `macros`
++pair. A valid catalog request must not include either manual field. A valid manual request must
++not include `foodId` or `servingId`. Missing or invalid fields, an incomplete variant, or mixing
++the variants returns `validation_failed`; in particular, supplying `foodId` with `displayName`
++or `macros` is invalid rather than a request to override the catalog nutrition. The existing
++manual request and `MacroTotals` shape stay unchanged, and its frozen values occupy the same
++required-key superset. New nutrient keys are additive: readers ignore unknown keys and existing
++frozen logs never migrate or get rewritten, so no frozen-log migration is required.
++
++This catalog variant and nutrient-map evolution are approved-but-deferred: implementation belongs
++to the Checkpoint B program, and nothing in this onboarding program builds it.
+ 
+ ---
