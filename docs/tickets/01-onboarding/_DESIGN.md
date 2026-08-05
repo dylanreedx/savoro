@@ -1,6 +1,6 @@
 # 01-onboarding — account, onboarding, and Checkpoint A
 
-Status: queue authored; contract/design approvals pending (P0.8)
+Status: P0.8 contract/design gate approved 2026-08-05; downstream paused while bounded P0.3 is reopened
 Owner direction: privacy-first, calm, zero-judgment; no mixed mock/live in any distributed build
 Outer loop: `docs/loop-protocol.md` and `docs/agent-workflow.md` remain the operating system; this
 program specializes them for one queue. Decisions here were recorded in the hosted roadmap
