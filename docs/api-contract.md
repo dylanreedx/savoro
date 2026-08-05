@@ -22,7 +22,7 @@ Non-2xx responses:
 { "error": { "code": "unauthorized", "message": "Invalid or expired session token." } }
 ```
 
-Codes used in Phase 1: `unauthorized` (401), `not_found` (404), `validation_failed` (422), `internal` (500).
+Codes used in Phase 1: `unauthorized` (401), `conflict` (409), `not_found` (404), `validation_failed` (422), `internal` (500).
 
 ## Shared shapes
 
@@ -150,6 +150,81 @@ Response `200`:
 Server verifies the token against Apple's JWKS (issuer `https://appleid.apple.com`,
 audience = app bundle id), upserts the user by Apple `sub`, and stores only a hash of
 the session token. Invalid/expired identity token → `unauthorized`.
+
+### POST /v1/auth/signup
+
+No auth. Creates an email/password account and immediately issues the same opaque session
+used by `POST /v1/auth/apple`.
+
+Request:
+
+```json
+{ "email": "person@example.com", "password": "<password>" }
+```
+
+Before lookup and storage, the server trims surrounding whitespace and lowercases the entire
+email address. The normalized email is the uniqueness key and is returned in `user.email`.
+Missing or non-string fields, or a malformed email → `422 validation_failed`.
+
+Response `201`:
+
+```json
+{
+  "sessionToken": "<opaque bearer token — returned once, store in Keychain>",
+  "user": { "id": "usr_01J...", "email": "person@example.com", "displayName": null }
+}
+```
+
+`displayName` is `null` at signup; identity is collected later during onboarding. A normalized
+email that is already registered → `409 conflict` with the standard error envelope.
+
+Proposal — minimum password rule: `password` must be a string of at least 12 characters.
+A missing, invalid, or weak password → `422 validation_failed`. The response does not echo the
+password.
+
+### POST /v1/auth/login
+
+No auth. Exchanges an email and password for the same opaque session shape as the Apple exchange
+and signup; the session is stored and used identically regardless of auth method.
+
+Request:
+
+```json
+{ "email": "person@example.com", "password": "<password>" }
+```
+
+The server applies the same email normalization as signup before lookup. A structurally invalid
+request → `422 validation_failed`.
+
+Response `200`:
+
+```json
+{
+  "sessionToken": "<opaque bearer token — returned once, store in Keychain>",
+  "user": { "id": "usr_01J...", "email": "person@example.com", "displayName": null }
+}
+```
+
+Invalid credentials, including an unknown email or an incorrect password, return the identical
+`401 unauthorized` error envelope and message: `{ "error": { "code": "unauthorized", "message": "Invalid email or password." } }`.
+The server uses the same password-verification path and timing intent for both cases, including
+verification against a fixed dummy hash when the email is unknown, so the response does not
+reveal whether the email is registered.
+
+### POST /v1/auth/logout
+
+Auth required. Revokes the presented opaque bearer session by setting its `revokedAt`.
+The response is `204` with no body. Any subsequent request using that token returns
+`401 unauthorized`. A missing or invalid bearer token uses the standard `unauthorized` response.
+
+### Password storage
+
+Passwords are stored only as PBKDF2 verifiers using WebCrypto. Each stored hash includes a
+versioned parameter set with its salt and derived key so the parameters can be upgraded; password
+verification uses a constant-time comparison. Plaintext passwords are never stored at rest.
+
+Password reset and email verification are post-core-gate. Lockout recovery is manual re-issue via
+seed tooling (P1.4); this is an accepted, documented limitation.
 
 ### GET /v1/goals/current?date=YYYY-MM-DD
 
