@@ -268,7 +268,57 @@ appear. No logs, goals, or private data in any response (server-enforced DTO map
 DTOs: `UserProfile`, `PublicProfile` (profile + isSelf + followState + publicRecipes),
 `UserRelationship`.
 
-- `GET /v1/me` — current user + own profile + settings.
+- `GET /v1/me` — current user + own profile + settings + `onboardingState`.
+
+  Response `200`:
+
+  ```json
+  {
+    "onboardingState": "accountCreated",
+    "user": { "id": "usr_01J...", "email": "person@example.com", "displayName": null },
+    "profile": {
+      "userId": "usr_01J...",
+      "username": null,
+      "displayName": null,
+      "bio": null,
+      "avatarUrl": null,
+      "coverImageUrl": null,
+      "websiteUrl": null,
+      "instagramUrl": null,
+      "tiktokUrl": null,
+      "visibility": "private",
+      "createdAt": "2026-06-10T18:03:21Z",
+      "updatedAt": "2026-06-10T18:03:21Z"
+    },
+    "settings": {}
+  }
+  ```
+
+  This draft proposes `onboardingState` as a server-authoritative enum with exactly these values:
+  `accountCreated | usernameSet | complete`.
+
+  - `accountCreated`: the account exists but has no username yet. `username` and
+    `displayName` may be `null`.
+  - `usernameSet`: the username has been saved, but onboarding is not complete. `username` is
+    non-null; `displayName` may remain `null` while the optional profile-basics step is offered.
+  - `complete`: onboarding is complete. Both `username` and `displayName` are required and
+    non-null; a completed profile never carries a `null` identity field.
+
+  `username` and `displayName` are nullable only while `onboardingState` is not `complete`.
+  Profile basics and targets are optional steps and do not independently gate completion; any
+  transition to `complete` must still satisfy the non-null identity requirement. Intent is a
+  client-side routing hint and is not persisted or added to this response.
+
+  On launch, relaunch, or reinstall with a restorable session, the client fetches `GET /v1/me`
+  and resumes from this server state. It must not infer onboarding progress from cached screens,
+  local flags, or intent; the server response is the source of truth.
+
+  Identity projection rule (no raw-ID fallback): raw user ids never appear as `username` or
+  `displayName` in any DTO, including the `/v1/me` profile, recipe `creator`, and activity `actor`
+  projections. `id` and `userId` remain identifier fields only. A pre-completion public projection
+  carries explicit `null` identity fields or is excluded; it never substitutes a raw user id as an
+  identity value.
+
 - `PATCH /v1/me/profile` — username, displayName, bio, avatarUrl, links, visibility.
 - `GET /v1/profiles/:username` — public profile. **Never includes** logs, goals, body
   metrics, day progress, or adherence — tested denylist.
